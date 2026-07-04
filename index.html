@@ -1,37 +1,49 @@
-<script>
-    // 1. Tus credenciales
-    const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Barbería App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Bienvenido a la Barbería</h1>
+    <p id="status">Conectando a Supabase...</p>
 
-    // 2. Esta función espera hasta que la librería 'supabase' exista
-    function iniciarConexion() {
-        if (typeof supabase !== 'undefined') {
-            // Si la librería ya cargó, creamos el cliente
-            const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            probarConexion(cliente);
-        } else {
-            // Si no, esperamos 200ms y volvemos a intentar
-            setTimeout(iniciarConexion, 200);
-        }
-    }
+    <script>
+        // 1. Tus credenciales
+        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    async function probarConexion(cliente) {
-        const statusText = document.getElementById('status');
-        try {
-            const { data, error } = await cliente.from('citas').select('*');
-            
-            if (error) {
-                statusText.innerText = "Error: " + error.message;
+        // 2. Función que espera a que la librería cargue y luego conecta
+        function iniciarApp() {
+            if (typeof supabase !== 'undefined') {
+                console.log("Supabase cargado, conectando...");
+                const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                probarConexion(cliente);
             } else {
-                statusText.innerText = "¡Conexión exitosa! Ya tienes " + (data ? data.length : 0) + " citas.";
-                console.log("Datos recibidos:", data);
+                console.log("Esperando a Supabase...");
+                setTimeout(iniciarApp, 500); // Reintenta cada medio segundo
             }
-        } catch (err) {
-            statusText.innerText = "Error crítico de conexión.";
-            console.error(err);
         }
-    }
 
-    // Iniciar el proceso
-    iniciarConexion();
-</script>
+        async function probarConexion(cliente) {
+            const statusText = document.getElementById('status');
+            try {
+                const { data, error } = await cliente.from('citas').select('*');
+                
+                if (error) {
+                    statusText.innerText = "Error: " + error.message;
+                } else {
+                    statusText.innerText = "¡Conexión exitosa! Citas encontradas: " + (data ? data.length : 0);
+                }
+            } catch (err) {
+                statusText.innerText = "Error crítico de conexión.";
+                console.error(err);
+            }
+        }
+
+        // Ejecutar al cargar
+        iniciarApp();
+    </script>
+</body>
+</html>
