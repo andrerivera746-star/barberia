@@ -2,9 +2,39 @@
 <html>
 <head>
     <title>Barbería App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h1>Bienvenido a la Barbería</h1>
-    <p>Estamos configurando la conexión a Supabase.</p>
+    <p id="status">Conectando con Supabase...</p>
+
+    <script>
+        // Tus credenciales
+        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+
+        // Inicializar Supabase
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Probar conexión
+        async function probarConexion() {
+            const statusText = document.getElementById('status');
+            try {
+                // Intentamos consultar la tabla citas
+                const { data, error } = await supabase.from('citas').select('*');
+                
+                if (error) {
+                    statusText.innerText = "Error: " + error.message;
+                } else {
+                    statusText.innerText = "¡Conexión exitosa! Ya puedes registrar citas.";
+                    console.log("Datos:", data);
+                }
+            } catch (err) {
+                statusText.innerText = "Error crítico de conexión.";
+            }
+        }
+
+        probarConexion();
+    </script>
 </body>
 </html>
