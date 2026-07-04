@@ -1,14 +1,17 @@
 <script>
+    // 1. Tus credenciales
     const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    // Usamos window.supabase para evitar conflictos con la librería cargada
-    const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 2. ¡NO crees una variable llamada 'supabase'! 
+    // Usamos la que ya existe en la librería.
+    const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function probarConexion() {
         const statusText = document.getElementById('status');
         try {
-            const { data, error } = await clienteSupabase.from('citas').select('*');
+            // 3. Usamos 'cliente' para hacer la consulta
+            const { data, error } = await cliente.from('citas').select('*');
             
             if (error) {
                 statusText.innerText = "Error: " + error.message;
