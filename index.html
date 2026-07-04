@@ -1,29 +1,49 @@
-<script>
-    // 1. Tus credenciales (estas variables deben estar arriba)
-    const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Barbería App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>Bienvenido a la Barbería</h1>
+    <p id="status">Conectando a Supabase...</p>
 
-    // 2. Crear el cliente (usando window.supabase para evitar errores)
-    const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script>
+        // 2. Definir credenciales
+        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    // 3. AQUÍ PEGAS LA FUNCIÓN probarConexion
-    async function probarConexion() {
-        console.log("Intentando conectar...");
-        try {
-            const { data, error } = await cliente.from('citas').select('*');
-            
-            if (error) {
-                console.error("Error al conectar:", error.message);
-                alert("Error: " + error.message);
+        // 3. Función para inicializar la conexión de forma segura
+        function inicializarConexion() {
+            // Verificamos si 'supabase' está disponible en el objeto global 'window'
+            if (typeof window.supabase !== 'undefined') {
+                const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                ejecutarConsulta(cliente);
             } else {
-                console.log("¡Conexión exitosa! Datos recibidos:", data);
-                alert("¡Conexión exitosa! Ya tienes " + data.length + " citas.");
+                // Si aún no carga, esperamos 300ms y reintentamos
+                setTimeout(inicializarConexion, 300);
             }
-        } catch (err) {
-            console.error("Error crítico:", err);
         }
-    }
 
-    // 4. Llamar a la función para que se ejecute al cargar la página
-    probarConexion();
-</script>
+        async function ejecutarConsulta(cliente) {
+            const statusText = document.getElementById('status');
+            try {
+                const { data, error } = await cliente.from('citas').select('*');
+                
+                if (error) {
+                    statusText.innerText = "Error: " + error.message;
+                } else {
+                    statusText.innerText = "¡Conexión exitosa! Ya tienes " + (data ? data.length : 0) + " citas.";
+                }
+            } catch (err) {
+                statusText.innerText = "Error inesperado de conexión.";
+                console.error(err);
+            }
+        }
+
+        // Iniciar el proceso
+        inicializarConexion();
+    </script>
+</body>
+</html>
