@@ -3,8 +3,9 @@
     const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    // 2. ¡NO crees una variable llamada 'supabase'! 
-    // Usamos la que ya existe en la librería.
+    // 2. ¡CORRECCIÓN! No creamos una variable 'const supabase'.
+    // Usamos el objeto 'supabase' que ya creó la librería automáticamente.
+    // Guardamos la instancia del cliente en una variable con otro nombre, como 'cliente'.
     const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function probarConexion() {
