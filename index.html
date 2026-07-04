@@ -3,14 +3,15 @@
     const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    // 2. Función que espera a que la librería 'supabase' exista en el navegador
-    function inicializarSupabase() {
-        if (window.supabase) {
-            const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 2. Esta función espera hasta que la librería 'supabase' exista
+    function iniciarConexion() {
+        if (typeof supabase !== 'undefined') {
+            // Si la librería ya cargó, creamos el cliente
+            const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             probarConexion(cliente);
         } else {
-            console.log("Esperando a que cargue Supabase...");
-            setTimeout(inicializarSupabase, 500); // Reintenta cada medio segundo
+            // Si no, esperamos 200ms y volvemos a intentar
+            setTimeout(iniciarConexion, 200);
         }
     }
 
@@ -32,5 +33,5 @@
     }
 
     // Iniciar el proceso
-    inicializarSupabase();
+    iniciarConexion();
 </script>
