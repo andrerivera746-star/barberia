@@ -1,40 +1,63 @@
-<div id="formulario-citas">
-    <input type="text" id="nombre" placeholder="Nombre del cliente">
-    <select id="servicio">
-        <option value="Corte">Corte de pelo</option>
-        <option value="Afeitado">Afeitado</option>
-        <option value="Corte y Barba">Corte y Barba</option>
-    </select>
-    <select id="pago" onchange="toggleYape()">
-        <option value="Efectivo">Efectivo</option>
-        <option value="Yape">Yape</option>
-    </select>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Barbería App</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Estilos para el diseño de tarjetas */
+        body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px; 
+            padding: 20px; 
+        }
+        .card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+        }
+    </style>
+</head>
+<body>
+    <h1>Servicios de barbería</h1>
+    <p id="status">Cargando servicios...</p>
     
-    <div id="campo-yape" style="display:none;">
-        <input type="text" id="codigo_yape" placeholder="Código de transacción">
-    </div>
-    
-    <input type="time" id="hora">
-    <button onclick="guardarCita()">Reservar Cita</button>
-</div>
+    <div id="servicios-container" class="grid"></div>
 
-<script>
-    function toggleYape() {
-        const pago = document.getElementById('pago').value;
-        document.getElementById('campo-yape').style.display = (pago === 'Yape') ? 'block' : 'none';
-    }
+    <script>
+        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    async function guardarCita() {
-        const cita = {
-            cliente_nombre: document.getElementById('nombre').value,
-            servicio: document.getElementById('servicio').value,
-            metodo_pago: document.getElementById('pago').value,
-            codigo_yape: document.getElementById('codigo_yape').value,
-            hora: document.getElementById('hora').value
-        };
+        function conectar() {
+            if (window.supabase) {
+                const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                obtenerDatos(cliente);
+            } else {
+                setTimeout(conectar, 300);
+            }
+        }
 
-        const { data, error } = await window.miCliente.from('citas').insert([cita]);
-        if (error) alert("Error: " + error.message);
-        else alert("¡Cita guardada con éxito!");
-    }
-</script>
+        async function obtenerDatos(cliente) {
+            const container = document.getElementById('servicios-container');
+            const status = document.getElementById('status');
+            const { data } = await cliente.from('citas').select('*');
+            
+            status.style.display = 'none';
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${item.servicio}</h3>
+                    <p>Cliente: ${item.cliente_nombre}</p>
+                    <p><strong>Precio: $${item.monto}</strong></p>
+                `;
+                container.appendChild(card);
+            });
+        }
+        conectar();
+    </script>
+</body>
+</html>
