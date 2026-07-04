@@ -1,40 +1,25 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Barbería App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-    <h1>Bienvenido a la Barbería</h1>
-    <p id="status">Conectando con Supabase...</p>
+<script>
+    const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    <script>
-        // Tus credenciales
-        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+    // Usamos 'clienteSupabase' para evitar el error de duplicado
+    const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Inicializar Supabase
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // Probar conexión
-        async function probarConexion() {
-            const statusText = document.getElementById('status');
-            try {
-                // Intentamos consultar la tabla citas
-                const { data, error } = await supabase.from('citas').select('*');
-                
-                if (error) {
-                    statusText.innerText = "Error: " + error.message;
-                } else {
-                    statusText.innerText = "¡Conexión exitosa! Ya puedes registrar citas.";
-                    console.log("Datos:", data);
-                }
-            } catch (err) {
-                statusText.innerText = "Error crítico de conexión.";
+    async function probarConexion() {
+        const statusText = document.getElementById('status');
+        try {
+            const { data, error } = await clienteSupabase.from('citas').select('*');
+            
+            if (error) {
+                statusText.innerText = "Error: " + error.message;
+            } else {
+                statusText.innerText = "¡Conexión exitosa! Ya tienes " + data.length + " citas.";
+                console.log("Datos recibidos:", data);
             }
+        } catch (err) {
+            statusText.innerText = "Error crítico.";
         }
+    }
 
-        probarConexion();
-    </script>
-</body>
-</html>
+    probarConexion();
+</script>
