@@ -1,60 +1,40 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Barbería App</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-    <h1>Bienvenido a la Barbería</h1>
-    <p id="status">Conectando a Supabase...</p>
+<div id="formulario-citas">
+    <input type="text" id="nombre" placeholder="Nombre del cliente">
+    <select id="servicio">
+        <option value="Corte">Corte de pelo</option>
+        <option value="Afeitado">Afeitado</option>
+        <option value="Corte y Barba">Corte y Barba</option>
+    </select>
+    <select id="pago" onchange="toggleYape()">
+        <option value="Efectivo">Efectivo</option>
+        <option value="Yape">Yape</option>
+    </select>
     
-    <ul id="lista-citas"></ul>
+    <div id="campo-yape" style="display:none;">
+        <input type="text" id="codigo_yape" placeholder="Código de transacción">
+    </div>
+    
+    <input type="time" id="hora">
+    <button onclick="guardarCita()">Reservar Cita</button>
+</div>
 
-    <script>
-        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+<script>
+    function toggleYape() {
+        const pago = document.getElementById('pago').value;
+        document.getElementById('campo-yape').style.display = (pago === 'Yape') ? 'block' : 'none';
+    }
 
-        function conectar() {
-            if (window.supabase) {
-                const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                ejecutarConsulta(cliente);
-            } else {
-                setTimeout(conectar, 300);
-            }
-        }
+    async function guardarCita() {
+        const cita = {
+            cliente_nombre: document.getElementById('nombre').value,
+            servicio: document.getElementById('servicio').value,
+            metodo_pago: document.getElementById('pago').value,
+            codigo_yape: document.getElementById('codigo_yape').value,
+            hora: document.getElementById('hora').value
+        };
 
-        async function ejecutarConsulta(cliente) {
-            const statusText = document.getElementById('status');
-            const listaCitas = document.getElementById('lista-citas');
-
-            try {
-                const { data, error } = await cliente.from('citas').select('*');
-                
-                if (error) {
-                    statusText.innerText = "Error: " + error.message;
-                } else {
-                    if (data.length === 0) {
-                        statusText.innerText = "No hay citas programadas actualmente.";
-                    } else {
-                        statusText.innerText = "Tus citas actuales:";
-                        
-                        data.forEach(cita => {
-                            const li = document.createElement('li');
-                            // Asegúrate de que estos nombres coincidan con tus columnas en Supabase
-                            li.innerHTML = `<strong>${cita.cliente_nombre}</strong> - ${cita.servicio} ($${cita.monto})`;
-                            listaCitas.appendChild(li);
-                        });
-                    }
-                    console.log("Datos recibidos:", data);
-                }
-            } catch (err) {
-                statusText.innerText = "Error crítico de conexión.";
-                console.error(err);
-            }
-        }
-
-        conectar();
-    </script>
-</body>
-</html>
+        const { data, error } = await window.miCliente.from('citas').insert([cita]);
+        if (error) alert("Error: " + error.message);
+        else alert("¡Cita guardada con éxito!");
+    }
+</script>
