@@ -3,15 +3,20 @@
     const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-    // 2. ¡CORRECCIÓN! No creamos una variable 'const supabase'.
-    // Usamos el objeto 'supabase' que ya creó la librería automáticamente.
-    // Guardamos la instancia del cliente en una variable con otro nombre, como 'cliente'.
-    const cliente = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // 2. Función que espera a que la librería 'supabase' exista en el navegador
+    function inicializarSupabase() {
+        if (window.supabase) {
+            const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            probarConexion(cliente);
+        } else {
+            console.log("Esperando a que cargue Supabase...");
+            setTimeout(inicializarSupabase, 500); // Reintenta cada medio segundo
+        }
+    }
 
-    async function probarConexion() {
+    async function probarConexion(cliente) {
         const statusText = document.getElementById('status');
         try {
-            // 3. Usamos 'cliente' para hacer la consulta
             const { data, error } = await cliente.from('citas').select('*');
             
             if (error) {
@@ -26,5 +31,6 @@
         }
     }
 
-    probarConexion();
+    // Iniciar el proceso
+    inicializarSupabase();
 </script>
