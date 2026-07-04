@@ -5,59 +5,86 @@
     <title>Barbería App</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos para el diseño de tarjetas */
-        body { font-family: sans-serif; text-align: center; background: #f4f4f4; }
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
-            gap: 20px; 
-            padding: 20px; 
-        }
-        .card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-        }
+        /* Diseño básico para las tarjetas */
+        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; }
+        nav { margin-bottom: 20px; }
+        button { padding: 10px 20px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <h1>Servicios de barbería</h1>
-    <p id="status">Cargando servicios...</p>
-    
-    <div id="servicios-container" class="grid"></div>
+
+    <nav>
+        <button onclick="mostrar('servicios')">Ver Citas/Servicios</button>
+        <button onclick="mostrar('registro')">Nueva Cita</button>
+    </nav>
+
+    <div id="vista-servicios">
+        <h1>Servicios y Citas</h1>
+        <div id="servicios-container" class="grid"></div>
+    </div>
+
+    <div id="vista-registro" style="display:none;">
+        <h1>Registrar Nueva Cita</h1>
+        <input type="text" id="nombre" placeholder="Nombre cliente"><br><br>
+        <select id="servicio">
+            <option>Corte de pelo</option>
+            <option>Afeitado</option>
+            <option>Masaje facial</option>
+        </select><br><br>
+        <select id="pago" onchange="verificarYape()">
+            <option value="Efectivo">Efectivo</option>
+            <option value="Yape">Yape</option>
+        </select><br><br>
+        <input type="text" id="codigo_yape" placeholder="Código Yape" style="display:none;"><br><br>
+        <input type="time" id="hora"><br><br>
+        <button onclick="guardarCita()">Guardar Cita</button>
+    </div>
 
     <script>
         const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-        function conectar() {
-            if (window.supabase) {
-                const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                obtenerDatos(cliente);
-            } else {
-                setTimeout(conectar, 300);
-            }
+        // Inicializar cliente
+        const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function mostrar(vista) {
+            document.getElementById('vista-servicios').style.display = (vista === 'servicios') ? 'block' : 'none';
+            document.getElementById('vista-registro').style.display = (vista === 'registro') ? 'block' : 'none';
         }
 
-        async function obtenerDatos(cliente) {
-            const container = document.getElementById('servicios-container');
-            const status = document.getElementById('status');
-            const { data } = await cliente.from('citas').select('*');
+        function verificarYape() {
+            const esYape = document.getElementById('pago').value === 'Yape';
+            document.getElementById('codigo_yape').style.display = esYape ? 'block' : 'none';
+        }
+
+        async function guardarCita() {
+            const nuevaCita = {
+                cliente_nombre: document.getElementById('nombre').value,
+                servicio: document.getElementById('servicio').value,
+                metodo_pago: document.getElementById('pago').value,
+                codigo_yape: document.getElementById('codigo_yape').value,
+                hora: document.getElementById('hora').value
+            };
             
-            status.style.display = 'none';
+            const { error } = await cliente.from('citas').insert([nuevaCita]);
+            if (error) alert("Error: " + error.message);
+            else { alert("¡Cita registrada!"); location.reload(); }
+        }
+
+        async function cargarDatos() {
+            const container = document.getElementById('servicios-container');
+            const { data } = await cliente.from('citas').select('*');
             data.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `
-                    <h3>${item.servicio}</h3>
-                    <p>Cliente: ${item.cliente_nombre}</p>
-                    <p><strong>Precio: $${item.monto}</strong></p>
-                `;
+                card.innerHTML = `<h3>${item.servicio}</h3><p>Cliente: ${item.cliente_nombre}</p><p>Hora: ${item.hora}</p>`;
                 container.appendChild(card);
             });
         }
-        conectar();
+
+        cargarDatos();
     </script>
 </body>
 </html>
