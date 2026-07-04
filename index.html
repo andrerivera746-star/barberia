@@ -8,36 +8,52 @@
 <body>
     <h1>Bienvenido a la Barbería</h1>
     <p id="status">Conectando a Supabase...</p>
+    
+    <ul id="lista-citas"></ul>
 
     <script>
-        // 2. Definimos las credenciales
         const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-        // 3. Función de conexión segura
         function conectar() {
-            // Verificamos si Supabase ya existe
             if (window.supabase) {
                 const cliente = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                
-                // Hacemos la consulta
-                cliente.from('citas').select('*').then(({ data, error }) => {
-                    if (error) {
-                        document.getElementById('status').innerText = "Error: " + error.message;
-                    } else {
-                        document.getElementById('status').innerText = "¡Conexión exitosa! Citas encontradas: " + data.length;
-                        console.log("Datos recibidos:", data);
-                        // Hacemos la variable global para que puedas probarla en consola
-                        window.miCliente = cliente; 
-                    }
-                });
+                ejecutarConsulta(cliente);
             } else {
-                // Si aún no carga, esperamos un poquito y reintentamos
                 setTimeout(conectar, 300);
             }
         }
 
-        // Ejecutar
+        async function ejecutarConsulta(cliente) {
+            const statusText = document.getElementById('status');
+            const listaCitas = document.getElementById('lista-citas');
+
+            try {
+                const { data, error } = await cliente.from('citas').select('*');
+                
+                if (error) {
+                    statusText.innerText = "Error: " + error.message;
+                } else {
+                    if (data.length === 0) {
+                        statusText.innerText = "No hay citas programadas actualmente.";
+                    } else {
+                        statusText.innerText = "Tus citas actuales:";
+                        
+                        data.forEach(cita => {
+                            const li = document.createElement('li');
+                            // Asegúrate de que estos nombres coincidan con tus columnas en Supabase
+                            li.innerHTML = `<strong>${cita.cliente_nombre}</strong> - ${cita.servicio} ($${cita.monto})`;
+                            listaCitas.appendChild(li);
+                        });
+                    }
+                    console.log("Datos recibidos:", data);
+                }
+            } catch (err) {
+                statusText.innerText = "Error crítico de conexión.";
+                console.error(err);
+            }
+        }
+
         conectar();
     </script>
 </body>
