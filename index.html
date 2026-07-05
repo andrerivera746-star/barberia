@@ -1314,6 +1314,40 @@ function resetLoginForms(){
   document.getElementById("loginGate").classList.remove("hidden");
 }
 
+function saveSession(data){
+  localStorage.setItem('barberia_session', JSON.stringify(data));
+}
+
+function clearSession(){
+  localStorage.removeItem('barberia_session');
+}
+
+function restoreSession(){
+  try {
+    const raw = localStorage.getItem('barberia_session');
+    if(!raw) return false;
+    const session = JSON.parse(raw);
+    if(session.role === 'admin'){
+      document.getElementById("loginGate").classList.add("hidden");
+      enterAdmin();
+      return true;
+    }
+    if(session.role === 'worker' && session.workerId){
+      const worker = DATA.workers.find(w=>w.id===session.workerId && (w.active===true || w.active==="true"));
+      if(worker){
+        currentWorker = worker;
+        document.getElementById("loginGate").classList.add("hidden");
+        enterWorker();
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('No se pudo restaurar la sesión.', err);
+  }
+  clearSession();
+  return false;
+}
+
 function setLoginRoleTab(role){
   document.querySelectorAll("[data-role-tab]").forEach(btn=>{
     btn.classList.toggle("active", btn.dataset.roleTab === role);
@@ -1331,6 +1365,7 @@ document.getElementById("loginForm").addEventListener("submit", (e)=>{
   const pw = document.getElementById("loginPassword").value;
   if(pw === DATA.adminPassword){
     document.getElementById("loginGate").classList.add("hidden");
+    saveSession({ role: 'admin' });
     enterAdmin();
   } else {
     document.getElementById("loginError").classList.remove("hidden");
@@ -1345,6 +1380,7 @@ document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
   if(worker){
     currentWorker = worker;
     document.getElementById("loginGate").classList.add("hidden");
+    saveSession({ role: 'worker', workerId: worker.id });
     enterWorker();
   } else {
     document.getElementById("workerLoginError").classList.remove("hidden");
@@ -1363,6 +1399,7 @@ function enterAdmin(){
 
 document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
   document.getElementById("adminPanel").classList.add("hidden");
+  clearSession();
   resetLoginForms();
 });
 
@@ -1382,6 +1419,7 @@ function enterWorker(){
 
 document.getElementById("workerLogoutBtn").addEventListener("click", ()=>{
   currentWorker = null;
+  clearSession();
   document.getElementById("workerPanel").classList.add("hidden");
   resetLoginForms();
 });
@@ -2150,6 +2188,7 @@ document.getElementById('testBtn').addEventListener('click', conectarSupabase);
    ============================================================ */
 loadData();
 renderLoginBrand();
+restoreSession();
 
 // Intentar conectar automáticamente al cargar
 setTimeout(() => {
