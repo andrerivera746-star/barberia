@@ -412,6 +412,32 @@
   .history-card .hc-meta span{display:block;}
   .history-card .hc-amount{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);text-align:right;flex-shrink:0;}
 
+  /* Historial del trabajador: toggle + calendario */
+  .history-mode-toggle{display:flex;gap:8px;margin:14px 0 16px;}
+  .history-mode-btn{flex:1;background:#fff;border:1px solid #ececec;border-radius:14px;padding:10px 8px;
+    font-size:12.5px;font-weight:700;color:var(--muted);transition:all .2s ease;}
+  .history-mode-btn.active{background:var(--ink);border-color:var(--ink);color:var(--cream);}
+
+  #workerHistoryCalendarWrap{background:#fff;border:1px solid #f0eff2;border-radius:18px;padding:14px 14px 10px;
+    margin-bottom:18px;box-shadow:0 12px 28px rgba(28,23,18,.05);}
+  .wh-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .wh-cal-header span{font-family:var(--font-display);font-weight:700;font-size:15px;text-transform:capitalize;}
+  .wh-cal-header button{background:#f4f4f7;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;color:var(--ink);}
+  .wh-cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10.5px;
+    font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:4px;}
+  .wh-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+  .wh-cal-day{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;
+    border:none;background:none;border-radius:10px;font-size:13px;color:var(--ink);font-weight:600;}
+  .wh-cal-day:disabled{visibility:hidden;}
+  .wh-cal-day.wh-today{box-shadow:inset 0 0 0 1.5px var(--gold);}
+  .wh-cal-day.wh-has-cuts::after{content:"";position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+    width:4px;height:4px;border-radius:50%;background:var(--gold);}
+  .wh-cal-day.wh-selected{background:var(--ink);color:var(--cream);}
+  .wh-cal-day.wh-selected.wh-has-cuts::after{background:var(--gold-light);}
+  .wh-cal-day.wh-future{color:#d8d4cb;}
+  .wh-cal-today-btn{display:block;margin:10px auto 2px;background:none;border:none;color:var(--gold);
+    font-size:12.5px;font-weight:700;text-decoration:underline;}
+
   @media(min-width:601px){ .worker-app{box-shadow:var(--shadow);} }
 
   @media(max-width:700px){
@@ -816,10 +842,29 @@
       <!-- TAB: MI HISTORIAL -->
       <section class="worker-tab-panel hidden" data-worker-panel="historial">
         <div class="stat-chip-row" style="grid-template-columns:repeat(2,1fr);padding:0 0 4px;">
-          <div class="stat-chip"><span class="stat-chip-value" id="workerStatCount">0</span><span class="stat-chip-label">Cortes totales</span></div>
-          <div class="stat-chip"><span class="stat-chip-value" id="workerStatTotal">$0.00</span><span class="stat-chip-label">Total cobrado</span></div>
+          <div class="stat-chip"><span class="stat-chip-value" id="workerStatCount">0</span><span class="stat-chip-label" id="workerStatCountLabel">Cortes</span></div>
+          <div class="stat-chip"><span class="stat-chip-value" id="workerStatTotal">$0.00</span><span class="stat-chip-label" id="workerStatTotalLabel">Cobrado</span></div>
         </div>
-        <div class="worker-section-title">Historial completo</div>
+
+        <div class="history-mode-toggle">
+          <button type="button" class="history-mode-btn active" data-history-mode="calendar">📅 Calendario</button>
+          <button type="button" class="history-mode-btn" data-history-mode="last30">🗓️ Últimos 30 días</button>
+        </div>
+
+        <div id="workerHistoryCalendarWrap">
+          <div class="wh-cal-header">
+            <button type="button" id="whCalPrev" aria-label="Mes anterior">‹</button>
+            <span id="whCalMonthLabel">—</span>
+            <button type="button" id="whCalNext" aria-label="Mes siguiente">›</button>
+          </div>
+          <div class="wh-cal-weekdays">
+            <span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span>
+          </div>
+          <div class="wh-cal-grid" id="whCalGrid"></div>
+          <button type="button" class="wh-cal-today-btn" id="whCalTodayBtn">Ir a hoy</button>
+        </div>
+
+        <div class="worker-section-title" id="workerHistorySectionTitle">Cortes de hoy</div>
         <div class="history-card-list" id="workerHistoryList"></div>
         <div class="empty-state hidden" id="workerHistoryEmpty">Aún no has registrado atenciones.</div>
       </section>
@@ -2815,12 +2860,126 @@ document.querySelector('#workerOperationsOverlay').addEventListener('click', (ev
   }
 });
 
-function renderWorkerHistory(){
+/* ============================================================
+   WORKER: HISTORIAL (calendario + últimos 30 días)
+   ============================================================ */
+let workerHistoryMode = 'calendar'; // 'calendar' | 'last30'
+let workerHistorySelectedDate = new Date().toISOString().slice(0,10);
+let workerHistoryCalMonth = new Date();
+
+const WH_MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+function toLocalDateStr(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+document.querySelectorAll("[data-history-mode]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    workerHistoryMode = btn.dataset.historyMode;
+    document.querySelectorAll("[data-history-mode]").forEach(b=> b.classList.toggle("active", b===btn));
+    document.getElementById("workerHistoryCalendarWrap").classList.toggle("hidden", workerHistoryMode !== "calendar");
+    renderWorkerHistoryList();
+  });
+});
+
+document.getElementById("whCalPrev").addEventListener("click", ()=>{
+  workerHistoryCalMonth.setMonth(workerHistoryCalMonth.getMonth()-1);
+  renderWorkerHistoryCalendar();
+});
+document.getElementById("whCalNext").addEventListener("click", ()=>{
+  workerHistoryCalMonth.setMonth(workerHistoryCalMonth.getMonth()+1);
+  renderWorkerHistoryCalendar();
+});
+document.getElementById("whCalTodayBtn").addEventListener("click", ()=>{
+  workerHistoryCalMonth = new Date();
+  workerHistorySelectedDate = toLocalDateStr(new Date());
+  renderWorkerHistoryCalendar();
+  renderWorkerHistoryList();
+});
+
+function renderWorkerHistoryCalendar(){
+  if(!currentWorker) return;
+  const year = workerHistoryCalMonth.getFullYear();
+  const month = workerHistoryCalMonth.getMonth();
+  document.getElementById("whCalMonthLabel").textContent = `${WH_MONTH_NAMES[month]} ${year}`;
+
+  const todayStr = toLocalDateStr(new Date());
+  const paidDates = new Set(
+    DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado" && p.date)
+      .map(p => p.date)
+  );
+
+  const firstOfMonth = new Date(year, month, 1);
+  // Lunes=0 ... Domingo=6
+  const startOffset = (firstOfMonth.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+
+  const grid = document.getElementById("whCalGrid");
+  grid.innerHTML = "";
+
+  for(let i=0; i<startOffset; i++){
+    const filler = document.createElement("button");
+    filler.className = "wh-cal-day";
+    filler.disabled = true;
+    grid.appendChild(filler);
+  }
+
+  for(let day=1; day<=daysInMonth; day++){
+    const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "wh-cal-day";
+    if(dateStr === todayStr) btn.classList.add("wh-today");
+    if(dateStr > todayStr) btn.classList.add("wh-future");
+    if(paidDates.has(dateStr)) btn.classList.add("wh-has-cuts");
+    if(dateStr === workerHistorySelectedDate) btn.classList.add("wh-selected");
+    btn.textContent = day;
+    btn.addEventListener("click", ()=>{
+      workerHistorySelectedDate = dateStr;
+      renderWorkerHistoryCalendar();
+      renderWorkerHistoryList();
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function renderWorkerHistoryList(){
   if(!currentWorker) return;
   const wrap = document.getElementById("workerHistoryList");
   wrap.innerHTML = "";
-  const list = sortPaymentsRecentFirst(DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado"));
+
+  const allPaid = sortPaymentsRecentFirst(DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado"));
+
+  let list, title, emptyMsg, countLabel, totalLabel;
+  if(workerHistoryMode === "last30"){
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = toLocalDateStr(cutoff);
+    list = allPaid.filter(p => (p.date||"") >= cutoffStr);
+    title = "Últimos 30 días";
+    emptyMsg = "No has registrado atenciones en los últimos 30 días.";
+    countLabel = "Cortes (30 días)";
+    totalLabel = "Cobrado (30 días)";
+  } else {
+    const todayStr = toLocalDateStr(new Date());
+    list = allPaid.filter(p => p.date === workerHistorySelectedDate);
+    if(workerHistorySelectedDate === todayStr){
+      title = "Cortes de hoy";
+      emptyMsg = "Aún no has registrado atenciones hoy.";
+    } else {
+      const [y,m,d] = workerHistorySelectedDate.split("-").map(Number);
+      title = `Cortes del ${d} de ${WH_MONTH_NAMES[m-1]}`;
+      emptyMsg = "No registraste atenciones ese día.";
+    }
+    countLabel = "Cortes";
+    totalLabel = "Cobrado";
+  }
+
+  document.getElementById("workerHistorySectionTitle").textContent = title;
+  document.getElementById("workerHistoryEmpty").textContent = emptyMsg;
   document.getElementById("workerHistoryEmpty").classList.toggle("hidden", list.length>0);
+  document.getElementById("workerStatCountLabel").textContent = countLabel;
+  document.getElementById("workerStatTotalLabel").textContent = totalLabel;
 
   let total = 0;
   list.forEach(p=> total += parseFloat(p.amount)||0);
@@ -2842,6 +3001,12 @@ function renderWorkerHistory(){
       <div class="hc-amount">${p.amount?money(p.amount):"—"}</div>`;
     wrap.appendChild(card);
   });
+}
+
+function renderWorkerHistory(){
+  if(!currentWorker) return;
+  renderWorkerHistoryCalendar();
+  renderWorkerHistoryList();
 }
 
 /* ============================================================
