@@ -38,20 +38,15 @@
   .hidden{display:none !important;}
   img{max-width:100%;display:block;}
 
-  /* ---------- Barra de estado de conexión ---------- */
+  /* ---------- Estado de sincronización (dentro de Ajustes) ---------- */
   .connection-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    padding: 8px 20px;
+    padding: 12px 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--ink);
-    color: var(--cream);
-    font-size: 12px;
+    background: var(--cream-dark);
+    border-radius: 12px;
+    font-size: 12.5px;
     flex-wrap: wrap;
     gap: 8px;
   }
@@ -77,10 +72,10 @@
     background: var(--gold);
     color: var(--ink);
     border: none;
-    padding: 4px 14px;
+    padding: 7px 16px;
     border-radius: 20px;
     font-weight: 600;
-    font-size: 11px;
+    font-size: 12px;
     cursor: pointer;
     transition: all 0.3s;
   }
@@ -94,7 +89,7 @@
   .section-eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;}
 
   /* ---------- Header ---------- */
-  .site-header{position:sticky;top:36px;z-index:40;display:flex;align-items:center;justify-content:space-between;
+  .site-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:16px 5%;background:rgba(28,23,18,.92);backdrop-filter:blur(6px);color:var(--cream);}
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.02em;}
   .logo img{height:34px;width:auto;border-radius:6px;}
@@ -130,7 +125,7 @@
     display:flex;flex-direction:column;gap:16px;position:relative;border:1px solid var(--line);}
   .service-icon{width:46px;height:46px;color:var(--gold);}
   .service-icon svg{width:100%;height:100%;}
-  .service-card h3{font-size:19px;font-weight:700;font-family:var(--font-body);}
+  .service-card h3{font-size:19px;font-weight:700;font-family:var(--font-body);text-transform:capitalize;}
   .service-price{font-size:13px;color:var(--muted);font-weight:600;}
   .service-book-btn{margin-top:auto;align-self:flex-start;background:none;border:none;color:var(--gold);
     font-weight:600;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;}
@@ -157,6 +152,7 @@
   .field input, .field select, .field textarea{width:100%;padding:11px 13px;border-radius:10px;
     border:1px solid var(--line);font-family:inherit;font-size:14px;background:var(--cream);color:var(--ink);}
   .field textarea{resize:vertical;min-height:64px;}
+  .field select{text-transform:capitalize;}
   .modal-actions{display:flex;gap:10px;margin-top:22px;}
   .btn-secondary{background:var(--cream-dark);border:none;padding:12px 20px;border-radius:999px;font-weight:600;
     font-size:14px;color:var(--ink);}
@@ -173,10 +169,10 @@
   .role-tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(28,23,18,.08);}
 
   /* ---------- ADMIN ---------- */
-  #adminPanel{min-height:100vh;background:var(--cream);display:flex;}
+  #adminPanel{min-height:100vh;background:var(--cream);display:flex;align-items:flex-start;}
   #workerPanel{min-height:100vh;background:var(--cream);}
   .admin-sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:26px 18px;
-    display:flex;flex-direction:column;gap:6px;position:sticky;top:36px;height:calc(100vh - 36px);}
+    display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;}
   .admin-brand{font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:20px;
     display:flex;align-items:center;gap:8px;}
   .admin-brand .stripe{width:20px;height:20px;border-radius:4px;background:
@@ -187,7 +183,7 @@
   .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
   .admin-back{margin-top:auto;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
     padding:10px 14px;border-radius:10px;font-size:13px;}
-  .admin-main{flex:1;padding:38px 4% 60px;max-width:1100px;}
+  .admin-main{flex:1;padding:38px 4% 60px;max-width:900px;margin:0 auto;}
   .admin-panel-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
   .admin-panel-header h2{font-size:26px;}
   .admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
@@ -283,7 +279,7 @@
     align-items:center;gap:12px;box-shadow:0 4px 14px rgba(28,23,18,.05);}
   .cita-card-main{flex:1;min-width:0;}
   .cita-card-client{font-weight:700;font-size:14.5px;}
-  .cita-card-service{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .cita-card-service{font-size:12.5px;color:var(--muted);margin-top:2px;text-transform:capitalize;}
   .cita-card-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .btn-call{width:38px;height:38px;border-radius:50%;background:var(--cream-dark);display:flex;align-items:center;
     justify-content:center;text-decoration:none;font-size:15px;flex-shrink:0;}
@@ -296,7 +292,7 @@
   .service-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
   .service-pick-btn{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 8px;
     display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
-    color:var(--ink-soft);text-align:center;}
+    color:var(--ink-soft);text-align:center;text-transform:capitalize;}
   .service-pick-btn .service-icon{width:26px;height:26px;color:var(--gold);}
   .service-pick-btn.selected{border-color:var(--gold);background:#fdf9f0;}
 
@@ -325,26 +321,13 @@
     justify-content:space-between;align-items:center;gap:10px;}
   .history-card .hc-main{min-width:0;}
   .history-card .hc-client{font-weight:700;font-size:13.5px;}
-  .history-card .hc-meta{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .history-card .hc-meta{font-size:11.5px;color:var(--muted);margin-top:2px;text-transform:capitalize;}
   .history-card .hc-amount{font-family:var(--font-display);font-weight:700;font-size:15px;flex-shrink:0;}
 
   @media(min-width:601px){ .worker-app{box-shadow:var(--shadow);} }
 </style>
 </head>
 <body>
-
-<!-- ================= BARRA DE CONEXIÓN ================= -->
-<div class="connection-bar" id="connectionBar">
-  <div class="status-group">
-    <span class="dot offline" id="statusDot"></span>
-    <span id="statusText">🔴 Desconectado</span>
-    <span id="clientCount" style="color:var(--muted);font-size:11px;">(0 clientes)</span>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <button class="btn-test" id="testBtn">🔌 Probar Conexión</button>
-    <span id="syncBadge" class="sync-badge local">📁 Local</span>
-  </div>
-</div>
 
 <!-- ================= PUBLIC SITE ================= -->
 <div id="publicSite">
@@ -378,7 +361,7 @@
   <section class="cta-book" id="reservar">
     <p class="section-eyebrow" style="color:var(--gold-light)">Sin filas, sin llamadas</p>
     <h2>Agenda tu cita en un minuto</h2>
-    <p>Elige tu servicio, deja tus datos y te confirmamos por teléfono.</p>
+    <p>Elige tu servicio, deja tus datos y te confirmamos por celular.</p>
     <div style="margin-top:26px;"><button class="btn-primary" id="openBookingBtn">Reservar ahora</button></div>
   </section>
 
@@ -404,7 +387,7 @@
           <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="bkDoi" required></div>
           <div class="field"><label>Fecha de nacimiento</label><input type="date" id="bkBirthdate" required></div>
         </div>
-        <div class="field"><label>Teléfono</label><input type="tel" id="bkPhone" required></div>
+        <div class="field"><label>Celular</label><input type="tel" id="bkPhone" required></div>
         <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
         <div class="grid-2">
           <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
@@ -443,7 +426,6 @@
       <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
       <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
     </form>
-    <p id="adminLoginHint" style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña de fábrica: <b>barberia2026</b> — cámbiala en Ajustes.</p>
 
     <form id="workerLoginForm" data-role-form="worker" class="hidden">
       <div class="field"><label>Usuario</label><input type="text" id="workerLoginUser" required></div>
@@ -532,7 +514,14 @@
           <div class="field"><label>Usuario</label><input type="text" id="wkrUsername" placeholder="Ej. carlos.b"></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label>Contraseña</label><input type="text" id="wkrPassword" placeholder="Mínimo 4 caracteres"></div>
+          <div class="field"><label>Contraseña</label>
+            <div style="position:relative;">
+              <input type="password" id="wkrPassword" placeholder="Mínimo 4 caracteres" style="padding-right:40px;">
+              <button type="button" id="wkrPasswordToggle" title="Mostrar/ocultar"
+                style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;
+                color:var(--muted);font-size:15px;padding:4px;">👁</button>
+            </div>
+          </div>
           <div class="field">
             <label>Estado</label>
             <select id="wkrActive"><option value="true">Activo</option><option value="false">Inactivo</option></select>
@@ -557,7 +546,7 @@
     <section class="admin-tab-panel hidden" data-panel="clientes">
       <div class="admin-panel-header">
         <h2>Clientes</h2>
-        <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o teléfono">
+        <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o celular">
       </div>
 
       <div class="admin-card">
@@ -572,7 +561,7 @@
           <div class="field"><label>Fecha de nacimiento</label><input type="date" id="cliBirthdate"></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label>Teléfono</label><input type="text" id="cliPhone"></div>
+          <div class="field"><label>Celular</label><input type="tel" id="cliPhone"></div>
           <div class="field"><label>Email (opcional)</label><input type="email" id="cliEmail"></div>
         </div>
         <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
@@ -584,7 +573,7 @@
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table>
-          <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Teléfono</th><th>Cliente desde</th><th></th></tr></thead>
+          <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Celular</th><th>Cliente desde</th><th></th></tr></thead>
           <tbody id="clientsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="clientsEmpty">Aún no tienes clientes registrados.</div>
@@ -635,6 +624,21 @@
     <!-- TAB: AJUSTES -->
     <section class="admin-tab-panel hidden" data-panel="ajustes">
       <div class="admin-panel-header"><h2>Ajustes</h2></div>
+
+      <div class="admin-card">
+        <h3>Estado de sincronización</h3>
+        <div class="connection-bar" id="connectionBar">
+          <div class="status-group">
+            <span class="dot offline" id="statusDot"></span>
+            <span id="statusText">🔴 Desconectado</span>
+            <span id="clientCount" style="color:var(--muted);font-size:11px;">(0 clientes)</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-test" id="testBtn">🔌 Probar conexión</button>
+            <span id="syncBadge" class="sync-badge local">📁 Local</span>
+          </div>
+        </div>
+      </div>
 
       <div class="admin-card">
         <h3>Cambiar contraseña del panel</h3>
@@ -700,13 +704,13 @@
 
         <div class="worker-section-title">2. Cliente</div>
         <div class="client-chip-row" id="wkClientChips"></div>
-        <div class="field"><input type="text" id="wkClientSearch" placeholder="Buscar cliente por nombre o teléfono..."></div>
+        <div class="field"><input type="text" id="wkClientSearch" placeholder="Buscar cliente por nombre o celular..."></div>
         <div id="wkNewClientFields" class="hidden">
           <div class="grid-2">
             <div class="field"><label>Nombres</label><input type="text" id="wkAttendNombres"></div>
             <div class="field"><label>Apellidos</label><input type="text" id="wkAttendApellidos"></div>
           </div>
-          <div class="field"><label>Teléfono</label><input type="text" id="wkAttendPhone"></div>
+          <div class="field"><label>Celular</label><input type="tel" id="wkAttendPhone"></div>
         </div>
 
         <div class="worker-section-title">3. Cobro</div>
@@ -1547,7 +1551,6 @@ function setLoginRoleTab(role){
     btn.classList.toggle("active", btn.dataset.roleTab === role);
   });
   document.getElementById("loginForm").classList.toggle("hidden", role !== "admin");
-  document.getElementById("adminLoginHint").classList.toggle("hidden", role !== "admin");
   document.getElementById("workerLoginForm").classList.toggle("hidden", role !== "worker");
 }
 
@@ -1722,7 +1725,7 @@ function renderAdminServices(){
           <button class="btn-danger" data-del="${svc.id}">Eliminar</button>
         </div>
       </div>
-      <div style="font-weight:700;margin-top:4px;">${escapeHtml(svc.title)}</div>
+      <div style="font-weight:700;margin-top:4px;text-transform:capitalize;">${escapeHtml(svc.title)}</div>
       <div style="font-size:12.5px;color:var(--muted);">${svc.price?money(svc.price):"Sin precio fijo"}</div>
     `;
     grid.appendChild(card);
@@ -1819,6 +1822,7 @@ function loadWorkerForEdit(id){
   document.getElementById("wkrName").value = w.name || "";
   document.getElementById("wkrUsername").value = w.username || "";
   document.getElementById("wkrPassword").value = w.password || "";
+  document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = (w.active === true || w.active === "true") ? "true" : "false";
   document.getElementById("cancelEditWorkerBtn").classList.remove("hidden");
   window.scrollTo({top:0, behavior:"smooth"});
@@ -1831,9 +1835,15 @@ function resetWorkerForm(){
   document.getElementById("wkrName").value = "";
   document.getElementById("wkrUsername").value = "";
   document.getElementById("wkrPassword").value = "";
+  document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = "true";
   document.getElementById("cancelEditWorkerBtn").classList.add("hidden");
 }
+
+document.getElementById("wkrPasswordToggle").addEventListener("click", ()=>{
+  const input = document.getElementById("wkrPassword");
+  input.type = input.type === "password" ? "text" : "password";
+});
 
 document.getElementById("saveWorkerBtn").addEventListener("click", async ()=>{
   const name = document.getElementById("wkrName").value.trim();
@@ -1923,7 +1933,7 @@ document.getElementById("saveClientBtn").addEventListener("click", async ()=>{
   const nombres = document.getElementById("cliNombres").value.trim();
   const apellidos = document.getElementById("cliApellidos").value.trim();
   const phone = document.getElementById("cliPhone").value.trim();
-  if(!nombres || !apellidos || !phone){ showToast("Nombres, apellidos y teléfono son obligatorios.", "error"); return; }
+  if(!nombres || !apellidos || !phone){ showToast("Nombres, apellidos y celular son obligatorios.", "error"); return; }
   const doi = document.getElementById("cliDoi").value.trim();
   const birthdate = document.getElementById("cliBirthdate").value;
   const email = document.getElementById("cliEmail").value.trim();
@@ -2014,7 +2024,7 @@ function renderAdminPayments(){
       `<option value="${w.id}" ${p.workerid===w.id?"selected":""}>${escapeHtml(w.name)}</option>`).join("");
     tr.innerHTML = `
       <td>${escapeHtml(p.clientname)}</td>
-      <td>${escapeHtml(p.servicetitle)}</td>
+      <td style="text-transform:capitalize;">${escapeHtml(p.servicetitle)}</td>
       <td>${escapeHtml(p.date||"—")}</td>
       <td>${p.amount?money(p.amount):"—"}</td>
       <td>${escapeHtml(p.method||"—")}</td>
@@ -2269,7 +2279,7 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
     const nombres = document.getElementById("wkAttendNombres").value.trim();
     const apellidos = document.getElementById("wkAttendApellidos").value.trim();
     const phone = document.getElementById("wkAttendPhone").value.trim();
-    if(!nombres || !apellidos || !phone){ showToast("Elige un cliente o completa nombres, apellidos y teléfono.", "error"); return; }
+    if(!nombres || !apellidos || !phone){ showToast("Elige un cliente o completa nombres, apellidos y celular.", "error"); return; }
     client = {
       id: uid("c"),
       nombres, apellidos,
