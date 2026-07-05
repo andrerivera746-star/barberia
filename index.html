@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 🔴 SUPABASE CDN 🔴 -->
+    <!-- 🔴 SUPABASE 🔴 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
     
@@ -64,7 +64,6 @@
             display: block;
         }
 
-        /* Estado de conexión */
         .connection-status {
             position: fixed;
             top: 10px;
@@ -86,12 +85,7 @@
             border-color: var(--danger);
             color: var(--danger);
         }
-        .connection-status.testing {
-            border-color: var(--gold);
-            color: var(--gold);
-        }
 
-        /* Razor divider */
         .razor-divider {
             width: 86px;
             height: 18px;
@@ -115,7 +109,6 @@
             font-weight: 600;
         }
 
-        /* Header */
         .site-header {
             position: sticky;
             top: 0;
@@ -174,7 +167,6 @@
             background: rgba(247, 242, 231, .15);
         }
 
-        /* Hero */
         .hero {
             position: relative;
             min-height: 78vh;
@@ -185,6 +177,7 @@
             background-position: center;
             text-align: center;
             color: var(--cream);
+            background: linear-gradient(135deg, #2a2118, #14100c);
         }
         .hero-overlay {
             position: absolute;
@@ -225,18 +218,7 @@
             background: var(--gold-light);
             transform: translateY(-1px);
         }
-        .btn-ghost {
-            display: inline-block;
-            background: transparent;
-            border: 1px solid var(--ink);
-            color: var(--ink);
-            padding: 12px 26px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 14px;
-        }
 
-        /* Services */
         .services {
             padding: 90px 6% 60px;
             text-align: center;
@@ -305,7 +287,6 @@
             text-underline-offset: 3px;
         }
 
-        /* CTA */
         .cta-book {
             background: var(--ink);
             color: var(--cream);
@@ -324,7 +305,6 @@
             margin-right: auto;
         }
 
-        /* Footer */
         footer {
             padding: 34px 6%;
             text-align: center;
@@ -337,7 +317,6 @@
             text-decoration: none;
         }
 
-        /* Modals */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -436,7 +415,6 @@
             font-size: 26px;
         }
 
-        /* ADMIN */
         #adminPanel {
             min-height: 100vh;
             background: var(--cream);
@@ -719,6 +697,17 @@
             font-size: 13.5px;
             z-index: 200;
             box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
         }
         .empty-state {
             padding: 30px 0;
@@ -738,45 +727,39 @@
             object-fit: cover;
             border: 1px solid var(--line);
         }
-        .sync-status {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 6px;
+
+        /* Notificaciones de Supabase */
+        .supabase-notice {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
         }
-        .sync-status.synced {
-            background: var(--success);
+        .supabase-notice.error {
+            background: #ffebee;
+            border-color: #f44336;
         }
-        .sync-status.syncing {
-            background: var(--gold);
-            animation: pulse 1s infinite;
-        }
-        .sync-status.error {
-            background: var(--danger);
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.3;
-            }
+        .supabase-notice .icon {
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
 
-    <!-- ================= CONNECTION STATUS ================= -->
-    <div class="connection-status testing" id="connectionStatus">
-        🔄 Conectando a Supabase...
+    <!-- ================= STATUS ================= -->
+    <div class="connection-status offline" id="connectionStatus">
+        🔴 Desconectado
     </div>
 
     <!-- ================= PUBLIC SITE ================= -->
     <div id="publicSite">
         <header class="site-header">
-            <div class="logo" id="logoDisplay"></div>
+            <div class="logo" id="logoDisplay">✂ Barbería</div>
             <nav class="site-nav">
                 <a href="#servicios">Servicios</a>
                 <a href="#reservar">Reservar</a>
@@ -828,8 +811,8 @@
                         <div class="field"><label>Apellidos</label><input type="text" id="bkApellidos" required></div>
                     </div>
                     <div class="grid-2">
-                        <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="bkDoi" required></div>
-                        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="bkBirthdate" required></div>
+                        <div class="field"><label>DOI</label><input type="text" id="bkDoi" required></div>
+                        <div class="field"><label>Fecha nacimiento</label><input type="date" id="bkBirthdate" required></div>
                     </div>
                     <div class="field"><label>Teléfono</label><input type="tel" id="bkPhone" required></div>
                     <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
@@ -837,7 +820,7 @@
                         <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
                         <div class="field"><label>Hora</label><input type="time" id="bkTime" required></div>
                     </div>
-                    <div class="field"><label>Notas (opcional)</label><textarea id="bkNotes" placeholder="Ej. corte con degradado, alergias, etc."></textarea></div>
+                    <div class="field"><label>Notas</label><textarea id="bkNotes" placeholder="Ej. corte con degradado"></textarea></div>
                     <div class="modal-actions">
                         <button type="button" class="btn-secondary" data-close="bookingModalBackdrop">Cancelar</button>
                         <button type="submit" class="btn-gold">Confirmar reserva</button>
@@ -853,7 +836,7 @@
         </div>
     </div>
 
-    <!-- ================= ADMIN LOGIN MODAL ================= -->
+    <!-- ================= ADMIN LOGIN ================= -->
     <div class="modal-backdrop hidden" id="loginModalBackdrop">
         <div class="modal-box" style="max-width:360px;">
             <button class="close-x" data-close="loginModalBackdrop">✕</button>
@@ -864,7 +847,7 @@
                 <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
                 <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
             </form>
-            <p style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña de fábrica: <b>barberia2026</b> — cámbiala en Ajustes.</p>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña: <b>barberia2026</b></p>
         </div>
     </div>
 
@@ -874,66 +857,552 @@
             <div class="admin-brand"><span class="stripe"></span> Panel</div>
             <button class="admin-tab" data-tab="sitio">Sitio</button>
             <button class="admin-tab" data-tab="servicios">Servicios</button>
-            <button class="admin-tab" data-tab="clientes">Clientes</button>
+            <button class="admin-tab active" data-tab="clientes">Clientes</button>
             <button class="admin-tab" data-tab="pagos">Pagos</button>
             <button class="admin-tab" data-tab="ajustes">Ajustes</button>
             <button class="admin-back" id="backToSiteBtn">← Volver al sitio</button>
         </aside>
 
         <main class="admin-main">
-            <!-- TAB: SITIO -->
-            <section class="admin-tab-panel" data-panel="sitio">
+            <!-- SITIO -->
+            <section class="admin-tab-panel hidden" data-panel="sitio">
                 <div class="admin-panel-header"><h2>Apariencia del sitio</h2></div>
-
                 <div class="admin-card">
                     <h3>Logo</h3>
                     <div class="field"><label>Texto del logo</label><input type="text" id="cfgLogoText" placeholder="Ej. Barbería Central"></div>
-                    <div class="field"><label>Imagen de logo (opcional)</label><input type="file" id="cfgLogoFile" accept="image/*"></div>
-                    <div class="field-row-flex">
-                        <img id="logoPreview" class="thumb-preview hidden" alt="logo">
-                        <button type="button" class="btn-danger hidden" id="clearLogoBtn">Quitar imagen</button>
-                    </div>
                 </div>
-
-                <div class="admin-card">
-                    <h3>Fondo del encabezado (hero)</h3>
-                    <div class="field"><label>URL de imagen</label><input type="text" id="cfgHeroUrl" placeholder="https://..."></div>
-                    <div class="field"><label>O sube una imagen</label><input type="file" id="cfgHeroFile" accept="image/*"></div>
-                    <img id="heroPreview" class="thumb-preview hidden" alt="fondo" style="width:120px;height:70px;">
-                </div>
-
                 <div class="admin-card">
                     <h3>Textos principales</h3>
-                    <div class="field"><label>Título del encabezado</label><input type="text" id="cfgHeroTitle"></div>
+                    <div class="field"><label>Título</label><input type="text" id="cfgHeroTitle"></div>
                     <div class="field"><label>Subtítulo</label><input type="text" id="cfgHeroSubtitle"></div>
-                    <div class="field"><label>Título de sección de servicios</label><input type="text" id="cfgServicesTitle"></div>
-                    <div class="field"><label>Texto del pie de página</label><input type="text" id="cfgFooterText"></div>
                 </div>
                 <button class="btn-gold" id="saveSiteBtn">Guardar cambios</button>
             </section>
 
-            <!-- TAB: SERVICIOS -->
+            <!-- SERVICIOS -->
             <section class="admin-tab-panel hidden" data-panel="servicios">
                 <div class="admin-panel-header"><h2>Servicios</h2></div>
-
                 <div class="admin-card">
                     <h3 id="serviceFormTitle">Agregar nuevo servicio</h3>
                     <input type="hidden" id="svcEditId">
                     <div class="grid-2">
-                        <div class="field"><label>Nombre del servicio</label><input type="text" id="svcTitle" placeholder="Ej. Corte de pelo"></div>
-                        <div class="field"><label>Precio (opcional)</label><input type="text" id="svcPrice" placeholder="Ej. 15.00"></div>
+                        <div class="field"><label>Nombre</label><input type="text" id="svcTitle" placeholder="Ej. Corte de pelo"></div>
+                        <div class="field"><label>Precio</label><input type="text" id="svcPrice" placeholder="Ej. 15.00"></div>
                     </div>
-                    <div class="field"><label>Ícono</label><div class="icon-picker" id="iconPicker"></div></div>
                     <div class="modal-actions" style="margin-top:6px;">
                         <button class="btn-gold" id="saveServiceBtn">Guardar servicio</button>
-                        <button class="btn-secondary hidden" id="cancelEditServiceBtn">Cancelar edición</button>
+                        <button class="btn-secondary hidden" id="cancelEditServiceBtn">Cancelar</button>
                     </div>
                 </div>
-
                 <div class="services-admin-grid" id="servicesAdminGrid"></div>
             </section>
 
-            <!-- TAB: CLIENTES -->
-            <section class="admin-tab-panel hidden" data-panel="clientes">
+            <!-- CLIENTES - PRINCIPAL -->
+            <section class="admin-tab-panel" data-panel="clientes">
                 <div class="admin-panel-header">
-                    <h2>Clientes</h
+                    <h2>Clientes</h2>
+                    <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o teléfono">
+                </div>
+
+                <!-- NOTIFICACIÓN DE SUPABASE -->
+                <div id="supabaseNotice" class="supabase-notice">
+                    <span class="icon">🔄</span>
+                    <span id="noticeText">Conectando con Supabase...</span>
+                </div>
+
+                <div class="admin-card">
+                    <h3 id="clientFormTitle">Agregar cliente</h3>
+                    <input type="hidden" id="cliEditId">
+                    <div class="grid-2">
+                        <div class="field"><label>Nombres</label><input type="text" id="cliNombres" required></div>
+                        <div class="field"><label>Apellidos</label><input type="text" id="cliApellidos" required></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="cliDoi" required></div>
+                        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="cliBirthdate"></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field"><label>Teléfono</label><input type="text" id="cliPhone" required></div>
+                        <div class="field"><label>Email (opcional)</label><input type="email" id="cliEmail"></div>
+                    </div>
+                    <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
+                    <div class="modal-actions" style="margin-top:6px;">
+                        <button class="btn-gold" id="saveClientBtn">Guardar cliente en Supabase</button>
+                        <button class="btn-secondary hidden" id="cancelEditClientBtn">Cancelar edición</button>
+                    </div>
+                </div>
+
+                <div class="admin-card" style="padding:0;overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Teléfono</th><th>Cliente desde</th><th></th></tr></thead>
+                        <tbody id="clientsTableBody"></tbody>
+                    </table>
+                    <div class="empty-state hidden" id="clientsEmpty">No hay clientes en Supabase</div>
+                </div>
+            </section>
+
+            <!-- PAGOS -->
+            <section class="admin-tab-panel hidden" data-panel="pagos">
+                <div class="admin-panel-header"><h2>Pagos y citas</h2></div>
+                <div class="stat-row">
+                    <div class="stat-box"><div class="label">Ingresos cobrados</div><div class="value" id="statPaid">$0.00</div></div>
+                    <div class="stat-box"><div class="label">Pendiente</div><div class="value" id="statPending">$0.00</div></div>
+                    <div class="stat-box"><div class="label">Transacciones</div><div class="value" id="statCount">0</div></div>
+                </div>
+                <div class="admin-card">
+                    <h3>Registrar cobro</h3>
+                    <div class="grid-2">
+                        <div class="field"><label>Cliente</label><select id="payClient"></select></div>
+                        <div class="field"><label>Servicio</label><select id="payService"></select></div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="field"><label>Fecha</label><input type="date" id="payDate"></div>
+                        <div class="field"><label>Monto</label><input type="text" id="payAmount" placeholder="15.00"></div>
+                    </div>
+                    <button class="btn-gold" id="addPaymentBtn">Agregar registro</button>
+                </div>
+                <div class="admin-card" style="padding:0;overflow-x:auto;">
+                    <table>
+                        <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Estado</th><th></th></tr></thead>
+                        <tbody id="paymentsTableBody"></tbody>
+                    </table>
+                    <div class="empty-state hidden" id="paymentsEmpty">No hay pagos</div>
+                </div>
+            </section>
+
+            <!-- AJUSTES -->
+            <section class="admin-tab-panel hidden" data-panel="ajustes">
+                <div class="admin-panel-header"><h2>Ajustes</h2></div>
+                <div class="admin-card">
+                    <h3>Cambiar contraseña</h3>
+                    <div class="field"><label>Nueva contraseña</label><input type="password" id="newAdminPassword"></div>
+                    <button class="btn-gold" id="changePasswordBtn">Actualizar</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ============================================================
+        //  🔴 CONFIGURACIÓN DE SUPABASE 🔴
+        //  ¡REEMPLAZA CON TUS DATOS!
+        // ============================================================
+        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+
+        // ============================================================
+        //  VARIABLES GLOBALES
+        // ============================================================
+        let supabase;
+        let clientesCache = [];
+
+        // ============================================================
+        //  ELEMENTOS DOM
+        // ============================================================
+        const statusEl = document.getElementById('connectionStatus');
+        const noticeEl = document.getElementById('supabaseNotice');
+        const noticeText = document.getElementById('noticeText');
+        const clientsBody = document.getElementById('clientsTableBody');
+        const clientsEmpty = document.getElementById('clientsEmpty');
+        const searchInput = document.getElementById('clientSearch');
+
+        // ============================================================
+        //  FUNCIONES DE UTILIDAD
+        // ============================================================
+        function showToast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = 'toast';
+            el.textContent = msg;
+            el.style.border = type === 'error' ? '2px solid var(--danger)' : '2px solid var(--success)';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+        }
+
+        function updateStatus(online, msg) {
+            statusEl.className = `connection-status ${online ? 'online' : 'offline'}`;
+            statusEl.textContent = online ? `✅ ${msg || 'Conectado'}` : `🔴 ${msg || 'Desconectado'}`;
+        }
+
+        function updateNotice(type, msg) {
+            noticeEl.className = `supabase-notice ${type === 'error' ? 'error' : ''}`;
+            const icons = {
+                'loading': '🔄',
+                'success': '✅',
+                'error': '❌',
+                'info': 'ℹ️'
+            };
+            noticeEl.querySelector('.icon').textContent = icons[type] || 'ℹ️';
+            noticeText.textContent = msg;
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str == null ? '' : String(str);
+            return div.innerHTML;
+        }
+
+        function money(n) {
+            const num = parseFloat(n);
+            if (isNaN(num)) return '$0.00';
+            return '$' + num.toFixed(2);
+        }
+
+        // ============================================================
+        //  CONEXIÓN A SUPABASE
+        // ============================================================
+        async function conectarSupabase() {
+            try {
+                updateStatus(false, 'Conectando...');
+                updateNotice('loading', 'Conectando con Supabase...');
+
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+                // Probar conexión
+                const { data, error } = await supabase
+                    .from('clientes')
+                    .select('count', { count: 'exact', head: true });
+
+                if (error && error.code === '42P01') {
+                    updateNotice('error',
+                        '⚠️ La tabla "clientes" no existe. Ejecuta el SQL en el Editor SQL de Supabase.'
+                    );
+                    updateStatus(false, 'Tabla no existe');
+                    return false;
+                }
+
+                if (error) throw error;
+
+                updateStatus(true, 'Conectado a Supabase');
+                updateNotice('success', '✅ Conectado a Supabase correctamente');
+                return true;
+
+            } catch (error) {
+                console.error('Error de conexión:', error);
+                updateStatus(false, 'Error de conexión');
+                updateNotice('error', `❌ Error: ${error.message}`);
+                return false;
+            }
+        }
+
+        // ============================================================
+        //  CRUD - CLIENTES
+        // ============================================================
+
+        // 📋 LISTAR CLIENTES
+        async function listarClientes(filter = '') {
+            try {
+                let query = supabase
+                    .from('clientes')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (filter) {
+                    const f = filter.toLowerCase();
+                    query = query.or(`name.ilike.%${f}%,doi.ilike.%${f}%,phone.ilike.%${f}%`);
+                }
+
+                const { data, error } = await query;
+
+                if (error) throw error;
+
+                clientesCache = data || [];
+
+                // Renderizar tabla
+                clientsBody.innerHTML = '';
+                if (clientesCache.length === 0) {
+                    clientsEmpty.classList.remove('hidden');
+                    return;
+                }
+                clientsEmpty.classList.add('hidden');
+
+                clientesCache.forEach(cli => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><strong>${escapeHtml(cli.name || cli.nombres + ' ' + cli.apellidos)}</strong></td>
+                        <td>${escapeHtml(cli.doi || '—')}</td>
+                        <td>${escapeHtml(cli.birthdate || '—')}</td>
+                        <td>${escapeHtml(cli.phone || '—')}</td>
+                        <td>${escapeHtml(cli.created_at ? new Date(cli.created_at).toLocaleDateString() : '—')}</td>
+                        <td style="white-space:nowrap;">
+                            <button class="btn-link" onclick="editarCliente('${cli.id}')">Editar</button>
+                            <button class="btn-danger" onclick="eliminarCliente('${cli.id}')" style="margin-left:8px;">Eliminar</button>
+                        </td>
+                    `;
+                    clientsBody.appendChild(tr);
+                });
+
+                updateNotice('success', `✅ ${clientesCache.length} clientes en Supabase`);
+
+            } catch (error) {
+                console.error('Error al listar clientes:', error);
+                updateNotice('error', `❌ Error: ${error.message}`);
+                showToast('Error al cargar clientes', 'error');
+            }
+        }
+
+        // ➕ INSERTAR CLIENTE
+        async function insertarCliente(datos) {
+            try {
+                updateNotice('loading', 'Guardando en Supabase...');
+
+                const nuevoCliente = {
+                    id: 'cli_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                    nombres: datos.nombres,
+                    apellidos: datos.apellidos,
+                    name: `${datos.nombres} ${datos.apellidos}`,
+                    doi: datos.doi,
+                    birthdate: datos.birthdate || '',
+                    phone: datos.phone,
+                    email: datos.email || '',
+                    notes: datos.notes || '',
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('clientes')
+                    .insert([nuevoCliente])
+                    .select();
+
+                if (error) throw error;
+
+                showToast(`✅ Cliente "${nuevoCliente.name}" registrado en Supabase`);
+                updateNotice('success', `✅ Cliente "${nuevoCliente.name}" guardado en Supabase`);
+
+                // Recargar lista
+                await listarClientes(searchInput.value);
+
+                return data[0];
+
+            } catch (error) {
+                console.error('Error al insertar:', error);
+
+                let msg = error.message;
+                if (error.code === '23505') {
+                    msg = '⚠️ Ya existe un cliente con ese DOI. El DOI debe ser único.';
+                }
+
+                showToast(`❌ Error: ${msg}`, 'error');
+                updateNotice('error', `❌ ${msg}`);
+                return null;
+            }
+        }
+
+        // ✏️ EDITAR CLIENTE
+        function editarCliente(id) {
+            const cliente = clientesCache.find(c => c.id === id);
+            if (!cliente) return;
+
+            document.getElementById('clientFormTitle').textContent = 'Editar cliente';
+            document.getElementById('cliEditId').value = cliente.id;
+            document.getElementById('cliNombres').value = cliente.nombres || '';
+            document.getElementById('cliApellidos').value = cliente.apellidos || '';
+            document.getElementById('cliDoi').value = cliente.doi || '';
+            document.getElementById('cliBirthdate').value = cliente.birthdate || '';
+            document.getElementById('cliPhone').value = cliente.phone || '';
+            document.getElementById('cliEmail').value = cliente.email || '';
+            document.getElementById('cliNotes').value = cliente.notes || '';
+            document.getElementById('cancelEditClientBtn').classList.remove('hidden');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 🗑️ ELIMINAR CLIENTE
+        async function eliminarCliente(id) {
+            if (!confirm('¿Eliminar este cliente de Supabase?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('clientes')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showToast('✅ Cliente eliminado de Supabase');
+                await listarClientes(searchInput.value);
+
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                showToast(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // 🔄 ACTUALIZAR CLIENTE
+        async function actualizarCliente(id, datos) {
+            try {
+                updateNotice('loading', 'Actualizando en Supabase...');
+
+                const { error } = await supabase
+                    .from('clientes')
+                    .update({
+                        nombres: datos.nombres,
+                        apellidos: datos.apellidos,
+                        name: `${datos.nombres} ${datos.apellidos}`,
+                        doi: datos.doi,
+                        birthdate: datos.birthdate || '',
+                        phone: datos.phone,
+                        email: datos.email || '',
+                        notes: datos.notes || ''
+                    })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                showToast('✅ Cliente actualizado en Supabase');
+                updateNotice('success', '✅ Cliente actualizado correctamente');
+
+                resetClientForm();
+                await listarClientes(searchInput.value);
+
+            } catch (error) {
+                console.error('Error al actualizar:', error);
+                showToast(`❌ Error: ${error.message}`, 'error');
+                updateNotice('error', `❌ ${error.message}`);
+            }
+        }
+
+        // ============================================================
+        //  RESET FORMULARIOS
+        // ============================================================
+        function resetClientForm() {
+            document.getElementById('clientFormTitle').textContent = 'Agregar cliente';
+            document.getElementById('cliEditId').value = '';
+            document.getElementById('cliNombres').value = '';
+            document.getElementById('cliApellidos').value = '';
+            document.getElementById('cliDoi').value = '';
+            document.getElementById('cliBirthdate').value = '';
+            document.getElementById('cliPhone').value = '';
+            document.getElementById('cliEmail').value = '';
+            document.getElementById('cliNotes').value = '';
+            document.getElementById('cancelEditClientBtn').classList.add('hidden');
+        }
+
+        // ============================================================
+        //  EVENTOS
+        // ============================================================
+
+        // Guardar cliente
+        document.getElementById('saveClientBtn').addEventListener('click', async () => {
+            const editId = document.getElementById('cliEditId').value;
+            const nombres = document.getElementById('cliNombres').value.trim();
+            const apellidos = document.getElementById('cliApellidos').value.trim();
+            const doi = document.getElementById('cliDoi').value.trim();
+            const phone = document.getElementById('cliPhone').value.trim();
+
+            if (!nombres || !apellidos || !doi || !phone) {
+                showToast('⚠️ Completa todos los campos obligatorios', 'error');
+                return;
+            }
+
+            const datos = {
+                nombres,
+                apellidos,
+                doi,
+                phone,
+                birthdate: document.getElementById('cliBirthdate').value,
+                email: document.getElementById('cliEmail').value.trim(),
+                notes: document.getElementById('cliNotes').value.trim()
+            };
+
+            if (editId) {
+                await actualizarCliente(editId, datos);
+            } else {
+                await insertarCliente(datos);
+            }
+        });
+
+        // Cancelar edición
+        document.getElementById('cancelEditClientBtn').addEventListener('click', resetClientForm);
+
+        // Buscar clientes
+        searchInput.addEventListener('input', (e) => {
+            listarClientes(e.target.value);
+        });
+
+        // ============================================================
+        //  ADMIN NAVEGACIÓN
+        // ============================================================
+        document.getElementById('adminEntryBtn').addEventListener('click', () => openLogin());
+        document.getElementById('adminEntryLink').addEventListener('click', (e) => { e.preventDefault();
+            openLogin(); });
+
+        function openLogin() {
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginModalBackdrop').classList.remove('hidden');
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pw = document.getElementById('loginPassword').value;
+            // Contraseña por defecto - en producción debería venir de Supabase
+            if (pw === 'barberia2026') {
+                document.getElementById('loginModalBackdrop').classList.add('hidden');
+                enterAdmin();
+            } else {
+                document.getElementById('loginError').classList.remove('hidden');
+            }
+        });
+
+        function enterAdmin() {
+            document.getElementById('publicSite').classList.add('hidden');
+            document.getElementById('adminPanel').classList.remove('hidden');
+            switchTab('clientes');
+            listarClientes();
+        }
+
+        document.getElementById('backToSiteBtn').addEventListener('click', () => {
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('publicSite').classList.remove('hidden');
+        });
+
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        });
+
+        function switchTab(name) {
+            document.querySelectorAll('.admin-tab').forEach(t =>
+                t.classList.toggle('active', t.dataset.tab === name)
+            );
+            document.querySelectorAll('.admin-tab-panel').forEach(p =>
+                p.classList.toggle('hidden', p.dataset.panel !== name)
+            );
+            if (name === 'clientes') {
+                listarClientes(searchInput.value);
+            }
+        }
+
+        // ============================================================
+        //  INICIALIZACIÓN
+        // ============================================================
+        async function init() {
+            const conectado = await conectarSupabase();
+            if (conectado) {
+                await listarClientes();
+            } else {
+                updateNotice('error',
+                    'No se pudo conectar a Supabase. Revisa tus credenciales en el código.'
+                );
+            }
+        }
+
+        // ============================================================
+        //  FUNCIONES GLOBALES PARA PRUEBAS
+        // ============================================================
+        window.testConexion = conectarSupabase;
+        window.listarClientes = listarClientes;
+        window.insertarCliente = insertarCliente;
+        window.eliminarCliente = eliminarCliente;
+
+        console.log('🪒 Barbería con Supabase - Modo de prueba');
+        console.log('📌 Comandos disponibles:');
+        console.log('  • testConexion() - Probar conexión');
+        console.log('  • listarClientes() - Listar clientes');
+        console.log('  • insertarCliente(datos) - Insertar cliente');
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
+</body>
+</html>
