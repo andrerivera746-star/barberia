@@ -191,6 +191,20 @@
   .toast.success { border: 2px solid var(--success); }
   .empty-state{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
   .field-row-flex{display:flex;gap:10px;align-items:flex-end;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:20px;z-index:400;}
+  .modal-overlay.active{display:flex;}
+  .operations-modal{background:#fff;border-radius:18px;max-width:860px;width:100%;max-height:90vh;overflow:hidden;box-shadow:var(--shadow);}
+  .operations-modal header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line);}
+  .operations-modal header h3{margin:0;font-size:18px;}
+  .operations-modal header button{border:none;background:none;color:var(--ink);font-size:18px;cursor:pointer;}
+  .operations-modal .modal-body{padding:18px 20px;overflow:auto;max-height:calc(90vh - 78px);}
+  .operations-modal .operations-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .operations-modal .operations-table th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;padding:10px 12px;border-bottom:1px solid var(--line);}
+  .operations-modal .operations-table td{padding:12px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  .operations-modal .operations-summary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+  .operations-modal .operations-summary span{font-size:14px;color:var(--muted);}
+  .operations-modal .empty-state-small{padding:24px 0;text-align:center;color:var(--muted);font-size:14px;}
   .thumb-preview{width:70px;height:70px;border-radius:10px;object-fit:cover;border:1px solid var(--line);}
   
   /* Sincronización */
@@ -453,7 +467,10 @@
 
     <!-- TAB: PAGOS -->
     <section class="admin-tab-panel hidden" data-panel="pagos">
-      <div class="admin-panel-header"><h2>Pagos y citas</h2></div>
+      <div class="admin-panel-header" style="align-items:center;gap:12px;">
+        <h2>Pagos y citas</h2>
+        <button class="btn-gold" id="exportPaymentsExcelMainBtn">Descargar pagos (.csv)</button>
+      </div>
 
       <div class="stat-row">
         <div class="stat-box"><div class="label">Ingresos cobrados</div><div class="value" id="statPaid">$0.00</div></div>
@@ -623,6 +640,36 @@
 
     <div class="sticky-confirm-bar hidden" id="wkConfirmBar">
       <button class="btn-gold" id="wkAttendSaveBtn" style="width:100%;">✓ Registrar atención</button>
+    </div>
+  </div>
+</div>
+
+<div id="workerOperationsOverlay" class="modal-overlay">
+  <div class="operations-modal">
+    <header>
+      <h3 id="operationsModalTitle">Operaciones del trabajador</h3>
+      <button id="closeOperationsModal" aria-label="Cerrar">✕</button>
+    </header>
+    <div class="modal-body">
+      <div class="operations-summary" id="operationsSummary">
+        <span>Cargando operaciones...</span>
+      </div>
+      <div class="empty-state-small hidden" id="operationsEmpty">No hay operaciones registradas para este trabajador.</div>
+      <table class="operations-table" id="operationsTable">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Servicio</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Monto</th>
+            <th>Método</th>
+            <th>Estado</th>
+            <th>Código Yape</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -1587,10 +1634,14 @@ function renderAdminWorkers(){
       <td><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
       <td>${cortes}</td>
       <td style="white-space:nowrap;">
+        <button class="btn-link" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
         <button class="btn-link" data-edit-worker="${w.id}">Editar</button>
         <button class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
     tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-view-worker]").forEach(btn=>{
+    btn.addEventListener("click", ()=> openWorkerOperations(btn.dataset.viewWorker));
   });
   tbody.querySelectorAll("[data-edit-worker]").forEach(btn=>{
     btn.addEventListener("click", ()=> loadWorkerForEdit(btn.dataset.editWorker));
@@ -1888,10 +1939,7 @@ document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
   URL.revokeObjectURL(url);
 });
 
-document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>{
-  const fromDate = document.getElementById("exportFromDate").value;
-  const toDate = document.getElementById("exportToDate").value;
-
+function exportPaymentsCsv(fromDate, toDate){
   const filterPayment = p => {
     if(!fromDate && !toDate) return true;
     const paymentDate = p.date || "";
@@ -1922,6 +1970,18 @@ document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>
   a.download = 'pagos_barberia_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>{
+  const fromDate = document.getElementById("exportFromDate").value;
+  const toDate = document.getElementById("exportToDate").value;
+  exportPaymentsCsv(fromDate, toDate);
+});
+
+document.getElementById("exportPaymentsExcelMainBtn").addEventListener("click", ()=>{
+  const fromDate = document.getElementById("exportFromDate").value;
+  const toDate = document.getElementById("exportToDate").value;
+  exportPaymentsCsv(fromDate, toDate);
 });
 
 document.getElementById("importBackupFile").addEventListener("change", (e)=>{
@@ -2173,6 +2233,57 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
 /* ============================================================
    WORKER: MI HISTORIAL
    ============================================================ */
+function openWorkerOperations(workerId){
+  const worker = DATA.workers.find(w=>w.id===workerId);
+  if(!worker) return;
+  const payments = DATA.payments.filter(p=>p.workerid===workerId).slice().reverse();
+  document.getElementById('operationsModalTitle').textContent = `Operaciones de ${worker.name}`;
+  const summary = document.getElementById('operationsSummary');
+  const total = payments.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const paidCount = payments.filter(p=>p.status==='pagado').length;
+  summary.innerHTML = `
+    <span><strong>${payments.length}</strong> operaciones</span>
+    <span><strong>${paidCount}</strong> pagadas</span>
+    <span><strong>${money(total)}</strong> total</span>
+  `;
+
+  const tbody = document.querySelector('#operationsTable tbody');
+  tbody.innerHTML = '';
+  if(payments.length === 0){
+    document.getElementById('operationsTable').classList.add('hidden');
+    document.getElementById('operationsEmpty').classList.remove('hidden');
+  } else {
+    document.getElementById('operationsTable').classList.remove('hidden');
+    document.getElementById('operationsEmpty').classList.add('hidden');
+    payments.forEach(p=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(p.clientname)}</td>
+        <td>${escapeHtml(p.servicetitle)}</td>
+        <td>${escapeHtml(p.date||'—')}</td>
+        <td>${escapeHtml(p.time||'—')}</td>
+        <td>${p.amount?money(p.amount):'—'}</td>
+        <td>${escapeHtml(p.method||'—')}</td>
+        <td>${escapeHtml(p.status||'—')}</td>
+        <td>${escapeHtml(p.yape_code||'—')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  document.getElementById('workerOperationsOverlay').classList.add('active');
+}
+
+document.getElementById('closeOperationsModal').addEventListener('click', ()=>{
+  document.getElementById('workerOperationsOverlay').classList.remove('active');
+});
+
+document.querySelector('#workerOperationsOverlay').addEventListener('click', (event)=>{
+  if(event.target === event.currentTarget){
+    document.getElementById('workerOperationsOverlay').classList.remove('active');
+  }
+});
+
 function renderWorkerHistory(){
   if(!currentWorker) return;
   const wrap = document.getElementById("workerHistoryList");
