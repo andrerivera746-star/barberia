@@ -206,7 +206,23 @@
   .operations-modal .operations-summary span{font-size:14px;color:var(--muted);}
   .operations-modal .empty-state-small{padding:24px 0;text-align:center;color:var(--muted);font-size:14px;}
   .thumb-preview{width:70px;height:70px;border-radius:10px;object-fit:cover;border:1px solid var(--line);}
-  
+  .worker-active-cut-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:18px;}
+  .worker-active-cut-card .cut-title{font-size:14px;font-weight:700;margin-bottom:10px;}
+  .worker-active-cut-card .cut-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+  .worker-active-cut-card .cut-meta span{font-size:13px;color:var(--muted);}
+  .worker-active-cut-card .cut-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .worker-active-cut-card .cut-actions button{flex:1;min-width:120px;}
+  .admin-card table th, .admin-card table td{padding:10px 12px;}
+  .admin-card table tbody tr:hover{background:rgba(163,129,79,0.07);}
+  .admin-card table tbody td:first-child{width:180px;}
+
+  /* Worker service picker */
+  .service-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:10px 0 18px;}
+  .service-pick-btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
+  .service-pick-btn.selected{border-color:var(--gold);background:linear-gradient(180deg, #fff, #fff);} 
+  .service-pick-btn .service-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--gold)}
+  .service-pick-btn span{font-size:13px;text-transform:capitalize;color:var(--ink);}
+
   /* Sincronización */
   .sync-badge {
     display: inline-block;
@@ -345,6 +361,7 @@
     <button class="admin-tab" data-tab="trabajadores">Trabajadores</button>
     <button class="admin-tab" data-tab="clientes">Clientes</button>
     <button class="admin-tab" data-tab="pagos">Pagos</button>
+    <button class="admin-tab" data-tab="cortes">Cortes</button>
     <button class="admin-tab" data-tab="ajustes">Ajustes</button>
     <button class="admin-back" id="backToSiteBtn">← Cerrar sesión</button>
   </aside>
@@ -517,6 +534,25 @@
       </div>
     </section>
 
+    <!-- TAB: CORTES -->
+    <section class="admin-tab-panel hidden" data-panel="cortes">
+      <div class="admin-panel-header"><h2>Cortes</h2></div>
+      <div class="admin-card">
+        <div class="stat-row">
+          <div class="stat-box"><div class="label">Cortes activos</div><div class="value" id="activeCutsCount">0</div></div>
+          <div class="stat-box"><div class="label">Trabajadores activos</div><div class="value" id="activeWorkersCount">0</div></div>
+          <div class="stat-box"><div class="label">Duración promedio</div><div class="value" id="activeAvgDuration">0 min</div></div>
+        </div>
+      </div>
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Trabajador</th><th>Cliente</th><th>Servicio</th><th>Inicio</th><th>Tiempo</th><th>Estado</th></tr></thead>
+          <tbody id="activeCutsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="activeCutsEmpty">No hay cortes activos en este momento.</div>
+      </div>
+    </section>
+
     <!-- TAB: AJUSTES -->
     <section class="admin-tab-panel hidden" data-panel="ajustes">
       <div class="admin-panel-header"><h2>Ajustes</h2></div>
@@ -582,10 +618,7 @@
     <div class="stat-chip-row">
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayCount">0</span><span class="stat-chip-label">Hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayTotal">$0</span><span class="stat-chip-label">Cobrado hoy</span></div>
-      <div class="stat-chip"><span class="stat-chip-value" id="workerPendingCount">0</span><span class="stat-chip-label">Pendientes</span></div>
-    </div>
-
-    <nav class="worker-navbar">
+      <div class="stat-chip"><span class="stat-chip-value" id="workerActiveCount">0</span><span class="stat-chip-label">En curso</span></div>
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
       <button class="worker-nav-btn" data-worker-tab="atender"><span class="nav-icon">✂️</span>Atender</button>
       <button class="worker-nav-btn" data-worker-tab="historial"><span class="nav-icon">📊</span>Historial</button>
@@ -614,18 +647,21 @@
           <div class="field"><label>Celular</label><input type="tel" id="wkAttendPhone"></div>
         </div>
 
+        <div id="wkActiveCutContainer" class="worker-active-cut-container hidden"></div>
         <div class="worker-section-title">3. Cobro</div>
-        <div class="method-btn-row" id="wkMethodPicker">
-          <button type="button" class="method-btn selected" data-method="Efectivo">💵 Efectivo</button>
-          <button type="button" class="method-btn" data-method="Yape">🟡 Yape</button>
-        </div>
-        <div id="wkYapeFields" class="hidden">
-          <div class="grid-2">
-            <div class="field"><label>Fecha de operación</label><input type="date" id="wkYapeDate"></div>
-            <div class="field"><label>Código de operación</label><input type="text" id="wkYapeCode" placeholder="Ej. 123456"></div>
+        <div id="wkPaymentFields" class="hidden">
+          <div class="method-btn-row" id="wkMethodPicker">
+            <button type="button" class="method-btn selected" data-method="Efectivo">💵 Efectivo</button>
+            <button type="button" class="method-btn" data-method="Yape">🟡 Yape</button>
           </div>
+          <div id="wkYapeFields" class="hidden">
+            <div class="grid-2">
+              <div class="field"><label>Fecha de operación</label><input type="date" id="wkYapeDate"></div>
+              <div class="field"><label>Código de operación</label><input type="text" id="wkYapeCode" placeholder="Ej. 123456"></div>
+            </div>
+          </div>
+          <div class="field"><label>Monto cobrado</label><input type="text" id="wkAttendAmount" class="amount-input-big" placeholder="0.00"></div>
         </div>
-        <div class="field"><label>Monto cobrado</label><input type="text" id="wkAttendAmount" class="amount-input-big" placeholder="0.00"></div>
       </section>
 
       <!-- TAB: MI HISTORIAL -->
@@ -2120,11 +2156,13 @@ function renderWorkerCitas(){
 let wkSelectedServiceId = null;
 let wkSelectedClientId = null; // null = nada elegido, "__new__" = cliente nuevo
 let wkSelectedMethod = "Efectivo";
+let wkCurrentCutId = null;
 
 function renderWorkerAttendForm(){
   wkSelectedServiceId = null;
   wkSelectedClientId = null;
   wkSelectedMethod = "Efectivo";
+  wkCurrentCutId = null;
   document.getElementById("wkAttendAmount").value = "";
   document.getElementById("wkYapeDate").value = "";
   document.getElementById("wkYapeCode").value = "";
@@ -2134,22 +2172,81 @@ function renderWorkerAttendForm(){
   document.getElementById("wkClientSearch").value = "";
   document.getElementById("wkNewClientFields").classList.add("hidden");
   document.getElementById("wkYapeFields").classList.add("hidden");
+  document.getElementById("wkActiveCutContainer").classList.add("hidden");
+  document.getElementById("wkPaymentFields").classList.add("hidden");
   renderServicePicker();
   renderClientChips("");
   renderMethodPicker();
+  updateWorkerConfirmButton();
+}
+
+function renderWorkerActiveCutCard(){
+  const container = document.getElementById("wkActiveCutContainer");
+  if(!wkCurrentCutId){
+    container.classList.add("hidden");
+    return;
+  }
+  const cut = DATA.payments.find(p => p.id === wkCurrentCutId);
+  if(!cut){
+    container.classList.add("hidden");
+    wkCurrentCutId = null;
+    return;
+  }
+  const start = new Date(cut.started_at);
+  const duration = Math.max(0, Math.round((Date.now() - start.getTime()) / 60000));
+  container.classList.remove("hidden");
+  container.innerHTML = `
+    <div class="worker-active-cut-card">
+      <div class="cut-title">Corte en curso</div>
+      <div class="cut-meta">
+        <span><strong>Cliente:</strong> ${escapeHtml(cut.clientname)}</span>
+        <span><strong>Servicio:</strong> ${escapeHtml(cut.servicetitle)}</span>
+        <span><strong>Inicio:</strong> ${start.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
+        <span><strong>Tiempo:</strong> ${duration} min</span>
+      </div>
+      <div class="cut-actions">
+        <button type="button" class="btn-secondary" id="wkCancelCutBtn">Cancelar corte</button>
+      </div>
+    </div>`;
+  document.getElementById("wkCancelCutBtn").addEventListener("click", async ()=>{
+    if(!confirm('¿Cancelar el corte activo? Se eliminará el registro en curso.')) return;
+    await eliminarPagoSupabase(cut.id);
+    wkCurrentCutId = null;
+    renderWorkerAttendForm();
+    renderWorkerHome();
+  });
+}
+
+function updateWorkerConfirmButton(){
+  const btn = document.getElementById("wkAttendSaveBtn");
+  if(wkCurrentCutId){
+    btn.textContent = "✓ Finalizar corte";
+    document.getElementById("wkPaymentFields").classList.remove("hidden");
+  } else {
+    btn.textContent = "✓ Iniciar corte";
+    document.getElementById("wkPaymentFields").classList.add("hidden");
+  }
 }
 
 function renderServicePicker(){
   const grid = document.getElementById("wkServicePicker");
   grid.innerHTML = "";
+  if(!Array.isArray(DATA.services) || DATA.services.length === 0){
+    grid.innerHTML = `<div class="empty-state">No hay servicios definidos.</div>`;
+    return;
+  }
   DATA.services.forEach(svc=>{
+    const svcTitle = svc.title || svc.name || "Servicio";
+    const svcIcon = svc.icon || svc.icon_name || "star";
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "service-pick-btn" + (wkSelectedServiceId===svc.id ? " selected" : "");
-    btn.innerHTML = `<div class="service-icon">${ICONS[svc.icon]||ICONS.star}</div><span>${escapeHtml(svc.title)}</span>`;
+    btn.innerHTML = `<div class="service-icon">${ICONS[svcIcon]||ICONS.star}</div><span>${escapeHtml(svcTitle)}</span>`;
     btn.addEventListener("click", ()=>{
       wkSelectedServiceId = svc.id;
-      document.getElementById("wkAttendAmount").value = svc.price || "";
+      if(!wkCurrentCutId){
+        document.getElementById("wkAttendAmount").value = svc.price || svc.price_cents || "";
+      }
       renderServicePicker();
     });
     grid.appendChild(btn);
@@ -2206,6 +2303,7 @@ document.querySelectorAll("#wkMethodPicker .method-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
     wkSelectedMethod = btn.dataset.method;
     renderMethodPicker();
+    updateWorkerConfirmButton();
   });
 });
 
@@ -2233,6 +2331,34 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
     await insertarClienteSupabase(client);
   }
 
+  if(!wkCurrentCutId){
+    const corte = {
+      id: uid("p"),
+      clientid: client.id,
+      clientname: client.name,
+      serviceid: service.id,
+      servicetitle: service.title || service.name || "Servicio",
+      started_at: new Date().toISOString(),
+      start_date: new Date().toISOString().slice(0,10),
+      start_time: new Date().toTimeString().slice(0,5),
+      amount: "",
+      method: wkSelectedMethod,
+      status: "in_progress",
+      workerid: currentWorker.id,
+      workername: currentWorker.name,
+      yape_code: "",
+      notes: "",
+      created_at: new Date().toISOString()
+    };
+    await insertarPagoSupabase(corte);
+    wkCurrentCutId = corte.id;
+    renderWorkerActiveCutCard();
+    updateWorkerConfirmButton();
+    renderWorkerHome();
+    showToast(`✅ Corte iniciado para ${client.name}`);
+    return;
+  }
+
   const amount = document.getElementById("wkAttendAmount").value.trim();
   if(!amount){ showToast("Ingresa el monto cobrado.", "error"); return; }
 
@@ -2244,29 +2370,72 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
     if(!yapeDate || !yapeCode){ showToast("Completa la fecha y el código de Yape.", "error"); return; }
   }
 
-  const pago = {
-    id: uid("p"),
-    clientid: client.id,
-    clientname: client.name,
-    serviceid: service.id,
-    servicetitle: service.title,
-    date: wkSelectedMethod === "Yape" ? yapeDate : new Date().toISOString().slice(0,10),
-    time: new Date().toTimeString().slice(0,5),
-    amount: amount,
-    method: wkSelectedMethod,
-    status: "pagado",
-    workerid: currentWorker.id,
-    workername: currentWorker.name,
-    yape_code: wkSelectedMethod === "Yape" ? yapeCode : "",
-    notes: "",
-    created_at: new Date().toISOString()
-  };
-  await insertarPagoSupabase(pago);
-  showToast(`✅ Atención registrada — ${client.name}`);
+  const cut = DATA.payments.find(p=>p.id===wkCurrentCutId);
+  if(!cut){ showToast("No se encontró el corte activo.", "error"); return; }
+  cut.amount = amount;
+  cut.method = wkSelectedMethod;
+  cut.status = "pagado";
+  cut.time = new Date().toTimeString().slice(0,5);
+  cut.date = cut.start_date;
+  cut.yape_code = wkSelectedMethod === "Yape" ? yapeCode : "";
+  cut.finished_at = new Date().toISOString();
+  cut.duration_minutes = Math.max(0, Math.round((new Date(cut.finished_at) - new Date(cut.started_at))/60000));
+
+  await actualizarPagoSupabase(cut.id, cut);
+  showToast(`✅ Corte finalizado y pago registrado — ${cut.clientname}`);
+  wkCurrentCutId = null;
   renderWorkerAttendForm();
   renderWorkerHistory();
   renderWorkerHome();
 });
+
+function calcMinutesSince(iso){
+  const start = new Date(iso);
+  if(isNaN(start)) return 0;
+  return Math.max(0, Math.round((Date.now() - start.getTime()) / 60000));
+}
+
+function renderWorkerHome(){
+  if(!currentWorker) return;
+  const today = new Date().toISOString().slice(0,10);
+  const todays = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pagado" && p.date===today);
+  const total = todays.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const pending = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pendiente").length;
+  const active = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="in_progress").length;
+  document.getElementById("workerTodayCount").textContent = todays.length;
+  document.getElementById("workerTodayTotal").textContent = money(total);
+  document.getElementById("workerPendingCount").textContent = pending;
+  document.getElementById("workerActiveCount").textContent = active;
+}
+
+function renderAdminActiveCuts(){
+  const active = DATA.payments.filter(p=>p.status==="in_progress");
+  document.getElementById('activeCutsCount').textContent = active.length;
+  document.getElementById('activeWorkersCount').textContent = [...new Set(active.map(p=>p.workerid))].length;
+  const avg = active.length ? Math.round(active.reduce((sum,p)=> sum + calcMinutesSince(p.started_at),0)/active.length) : 0;
+  document.getElementById('activeAvgDuration').textContent = `${avg} min`;
+  const tbody = document.getElementById('activeCutsTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('activeCutsEmpty').classList.toggle('hidden', active.length>0);
+  active.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${escapeHtml(p.workername)}</td>
+      <td>${escapeHtml(p.clientname)}</td>
+      <td>${escapeHtml(p.servicetitle)}</td>
+      <td>${escapeHtml(p.start_date)} ${escapeHtml(p.start_time)}</td>
+      <td>${calcMinutesSince(p.started_at)} min</td>
+      <td><span class="badge pendiente">En curso</span></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function switchTab(name){
+  document.querySelectorAll(".admin-tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
+  if(name === 'cortes') renderAdminActiveCuts();
+  if(name === 'pagos') renderAdminPayments();
+}
 
 /* ============================================================
    WORKER: MI HISTORIAL
