@@ -149,8 +149,22 @@
   .admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
   .admin-card h3{font-size:15px;font-family:var(--font-body);font-weight:700;margin-bottom:16px;}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-  @media(max-width:700px){.grid-2{grid-template-columns:1fr;} .admin-main{padding:30px 5%;} #adminPanel{flex-direction:column;}
-    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;} .admin-back{margin-top:0;}}
+  @media(max-width:900px){
+    .admin-main{padding:30px 4%;}
+    .admin-panel-header{flex-direction:column;align-items:flex-start;}
+    .admin-panel-header h2{font-size:22px;}
+    .grid-2{grid-template-columns:1fr;}
+  }
+  @media(max-width:700px){
+    .admin-main{padding:24px 4%;}
+    #adminPanel{flex-direction:column;}
+    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;}
+    .admin-sidebar{padding:18px 12px;}
+    .admin-tab{flex:0 0 auto;white-space:nowrap;}
+    .admin-back{margin-top:0;}
+    .admin-card{padding:18px;}
+    .admin-panel-header{margin-bottom:18px;}
+  }
   .btn-gold{background:var(--gold);color:var(--ink);border:none;padding:11px 20px;border-radius:999px;
     font-weight:700;font-size:13px;}
   .btn-gold:hover{background:var(--gold-light);}
@@ -328,6 +342,55 @@
   .history-card .hc-amount{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);text-align:right;flex-shrink:0;}
 
   @media(min-width:601px){ .worker-app{box-shadow:var(--shadow);} }
+
+  @media(max-width:700px){
+    body{background: #f7f7f9;}
+    #loginGate .login-screen{padding:18px;}
+    #loginGate .login-card{width:100%;max-width:100%;padding:22px;}
+    .role-tabs{gap:4px;}
+    .role-tab-btn{padding:10px 8px;font-size:13px;}
+
+    #adminPanel{flex-direction:column;}
+    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;padding:16px 12px;gap:8px;}
+    .admin-sidebar .admin-brand{flex:1;min-width:0;}
+    .admin-tab{white-space:nowrap;flex:0 0 auto;}
+    .admin-main{padding:24px 4% 60px;}
+    .admin-card{padding:18px;}
+    .admin-panel-header{flex-direction:column;align-items:flex-start;gap:10px;}
+    .admin-panel-header h2{font-size:22px;}
+    .grid-2{grid-template-columns:1fr;}
+    .stat-row{grid-template-columns:1fr 1fr;}
+    .stat-box{padding:16px 16px;}
+    table{font-size:12px;}
+    th, td{padding:8px 8px;}
+    .search-input{width:100%;}
+
+    .worker-app{padding-bottom:24px;}
+    .worker-topbar{padding:14px 16px;gap:12px;}
+    .worker-avatar{width:40px;height:40px;font-size:16px;}
+    .worker-topbar-name{font-size:15px;}
+    .stat-chip-row{grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 8px;}
+    .worker-navbar{grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px 8px;}
+    .worker-nav-btn{padding:12px 8px;font-size:11px;}
+    .worker-main{padding:16px 14px 120px;}
+    .worker-section-title{margin:20px 0 10px;}
+    .cita-card{flex-direction:column;align-items:stretch;padding:16px;}
+    .cita-card-actions{width:100%;}
+    .cita-amount-input{width:100%;}
+    .service-picker-grid{gap:10px;}
+    .service-pick-btn{min-width:150px;padding:16px 12px;}
+    .client-chip-row{gap:8px;}
+    .client-chip{padding:10px 14px;font-size:12px;}
+    .method-btn-row{grid-template-columns:1fr 1fr;}
+    .method-btn{padding:12px 10px;font-size:12px;}
+    .amount-input-big{font-size:20px !important;padding:14px !important;}
+    .sticky-confirm-bar{left:8px;right:8px;transform:none;width:auto;max-width:none;padding:12px 12px 16px;}
+    .history-card{grid-template-columns:1fr;}
+    .history-card .hc-amount{text-align:left;margin-top:12px;}
+    .operations-modal{max-width:100%;margin:0 12px;}
+    .operations-modal .modal-body{padding:16px;}
+    .operations-modal .operations-table th, .operations-modal .operations-table td{padding:10px 10px;}
+  }
 </style>
 </head>
 <body>
@@ -784,10 +847,12 @@ function defaultData(){
 let DATA = null;
 let supabaseClient = null;
 let isConnected = false;
+let sessionRestored = false;
 let clientesCache = [];
 let serviciosCache = [];
 let pagosCache = [];
 let currentWorker = null;
+let realtimeChannel = null;
 const STORAGE_KEY = "barberia_app_data_v1";
 
 /* ============================================================
@@ -815,6 +880,23 @@ function escapeHtml(str){
 
 function uid(prefix){ 
   return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); 
+}
+
+// Ordena los pagos del más reciente al más antiguo de forma confiable,
+// sin depender del orden en que quedaron dentro del arreglo DATA.payments
+// (ese orden puede mezclarse entre datos cargados de Supabase y pagos
+// agregados/actualizados localmente o por tiempo real).
+function sortPaymentsRecentFirst(list){
+  return list.slice().sort((a, b)=>{
+    const getTime = (p)=>{
+      if(p.created_at){ const t = new Date(p.created_at).getTime(); if(!isNaN(t)) return t; }
+      const fecha = p.date || p.start_date || "";
+      const hora = p.time || p.start_time || "00:00";
+      const t2 = new Date(`${fecha}T${hora}`).getTime();
+      return isNaN(t2) ? 0 : t2;
+    };
+    return getTime(b) - getTime(a);
+  });
 }
 
 /* ============================================================
@@ -890,7 +972,14 @@ async function conectarSupabase() {
     
     // Cargar datos desde Supabase
     await cargarTodosLosDatos();
-    
+    if(!sessionRestored){
+      restoreSession();
+    }
+
+    // Activar sincronización en tiempo real (para que admin y trabajadores
+    // vean los pagos al instante, sin necesidad de recargar la página)
+    suscribirRealtimePagos();
+
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
     return true;
@@ -964,6 +1053,69 @@ async function cargarTodosLosDatos() {
 
   } catch (error) {
     console.error('Error al cargar datos:', error);
+  }
+}
+
+/* ============================================================
+   TIEMPO REAL: PAGOS
+   Escucha los cambios (insertar/actualizar/eliminar) que ocurran
+   en la tabla "pagos" de Supabase, sin importar desde qué
+   dispositivo o rol se hayan hecho, y actualiza la pantalla al
+   instante en todos los paneles abiertos (admin y trabajador).
+   ============================================================ */
+function suscribirRealtimePagos() {
+  if (!supabaseClient) return;
+
+  // Evitar suscripciones duplicadas si se reconecta
+  if (realtimeChannel) {
+    supabaseClient.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+
+  realtimeChannel = supabaseClient
+    .channel('pagos-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pagos' }, (payload) => {
+      manejarCambioPagoRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (pagos)');
+      }
+    });
+}
+
+function manejarCambioPagoRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'INSERT') {
+    const yaExiste = DATA.payments.some(p => p.id === nuevo.id);
+    if (!yaExiste) DATA.payments.push(nuevo);
+  } else if (eventType === 'UPDATE') {
+    const idx = DATA.payments.findIndex(p => p.id === nuevo.id);
+    if (idx >= 0) DATA.payments[idx] = nuevo;
+    else DATA.payments.push(nuevo);
+  } else if (eventType === 'DELETE') {
+    DATA.payments = DATA.payments.filter(p => p.id !== viejo.id);
+  }
+
+  saveDataLocal();
+  actualizarVistasTrasCambioPago();
+}
+
+function actualizarVistasTrasCambioPago() {
+  // Panel admin: tab de pagos y tab de cortes en curso
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    renderAdminPayments();
+    renderAdminActiveCuts();
+  }
+
+  // Panel trabajador: su resumen, su tarjeta de corte activo y su historial
+  const workerPanel = document.getElementById('workerPanel');
+  if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
+    renderWorkerHome();
+    renderWorkerHistory();
+    if (typeof renderWorkerActiveCutCard === 'function') renderWorkerActiveCutCard();
   }
 }
 
@@ -1439,6 +1591,7 @@ function restoreSession(){
     const session = JSON.parse(raw);
     if(session.role === 'admin'){
       document.getElementById("loginGate").classList.add("hidden");
+      sessionRestored = true;
       enterAdmin();
       return true;
     }
@@ -1447,8 +1600,13 @@ function restoreSession(){
       if(worker){
         currentWorker = worker;
         document.getElementById("loginGate").classList.add("hidden");
+        sessionRestored = true;
         enterWorker();
         return true;
+      }
+      if(!isConnected && DATA.workers.length === 0){
+        // Esperar carga en línea antes de invalidar la sesión.
+        return false;
       }
     }
   } catch (err) {
@@ -1483,18 +1641,35 @@ document.getElementById("loginForm").addEventListener("submit", (e)=>{
   }
 });
 
-document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
+document.getElementById("workerLoginForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const username = document.getElementById("workerLoginUser").value.trim();
   const pw = document.getElementById("workerLoginPassword").value;
-  const worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
+  let worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
+
+  if(!worker && !isConnected){
+    const errorEl = document.getElementById("workerLoginError");
+    errorEl.textContent = 'Buscando trabajadores en Supabase. Por favor espera...';
+    errorEl.classList.remove("hidden");
+    const connected = await conectarSupabase();
+    if(connected){
+      worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
+    }
+  }
+
   if(worker){
     currentWorker = worker;
     document.getElementById("loginGate").classList.add("hidden");
     saveSession({ role: 'worker', workerId: worker.id });
     enterWorker();
   } else {
-    document.getElementById("workerLoginError").classList.remove("hidden");
+    const noWorkers = DATA.workers.length === 0;
+    const message = noWorkers
+      ? 'No hay trabajadores disponibles. Conecta a Supabase o registra trabajadores desde el panel administrador.'
+      : 'Usuario o contraseña incorrectos, o cuenta inactiva.';
+    const errorEl = document.getElementById("workerLoginError");
+    errorEl.textContent = message;
+    errorEl.classList.remove("hidden");
   }
 });
 
@@ -1930,7 +2105,7 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
 function renderAdminPayments(){
   const tbody = document.getElementById("paymentsTableBody");
   tbody.innerHTML = "";
-  const list = DATA.payments.slice().reverse().slice(0, 10);
+  const list = sortPaymentsRecentFirst(DATA.payments).slice(0, 10);
   document.getElementById("paymentsEmpty").classList.toggle("hidden", list.length>0);
 
   let totalPaid = 0, totalPending = 0;
@@ -2025,7 +2200,7 @@ function exportPaymentsCsv(fromDate, toDate){
     return true;
   };
 
-  const rows = DATA.payments.slice().reverse().filter(filterPayment).map(p => ({
+  const rows = sortPaymentsRecentFirst(DATA.payments).filter(filterPayment).map(p => ({
     ID: p.id,
     Cliente: p.clientname,
     Servicio: p.servicetitle,
@@ -2053,7 +2228,7 @@ function exportWorkerPaymentsCsv(workerId){
   const worker = DATA.workers.find(w => w.id === workerId);
   if(!worker){ showToast('Trabajador no encontrado.', 'error'); return; }
 
-  const rows = DATA.payments.slice().reverse().filter(p => p.workerid === workerId).map(p => ({
+  const rows = sortPaymentsRecentFirst(DATA.payments).filter(p => p.workerid === workerId).map(p => ({
     ID: p.id,
     Cliente: p.clientname,
     Servicio: p.servicetitle,
@@ -2515,7 +2690,7 @@ function openWorkerOperations(workerId){
   }
   const worker = DATA.workers.find(w=>w.id===workerId);
   if(!worker) return;
-  const payments = DATA.payments.filter(p=>p.workerid===workerId).slice().reverse();
+  const payments = sortPaymentsRecentFirst(DATA.payments.filter(p=>p.workerid===workerId));
   document.getElementById('operationsModalTitle').textContent = `Operaciones de ${worker.name}`;
   const summary = document.getElementById('operationsSummary');
   const total = payments.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
@@ -2573,8 +2748,7 @@ function renderWorkerHistory(){
   if(!currentWorker) return;
   const wrap = document.getElementById("workerHistoryList");
   wrap.innerHTML = "";
-  const list = DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado")
-    .slice().reverse();
+  const list = sortPaymentsRecentFirst(DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado"));
   document.getElementById("workerHistoryEmpty").classList.toggle("hidden", list.length>0);
 
   let total = 0;
