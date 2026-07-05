@@ -598,9 +598,13 @@
         <div class="worker-section-title">3. Cobro</div>
         <div class="method-btn-row" id="wkMethodPicker">
           <button type="button" class="method-btn selected" data-method="Efectivo">💵 Efectivo</button>
-          <button type="button" class="method-btn" data-method="Transferencia">📲 Transf.</button>
-          <button type="button" class="method-btn" data-method="Tarjeta">💳 Tarjeta</button>
-          <button type="button" class="method-btn" data-method="Otro">🔖 Otro</button>
+          <button type="button" class="method-btn" data-method="Yape">🟡 Yape</button>
+        </div>
+        <div id="wkYapeFields" class="hidden">
+          <div class="grid-2">
+            <div class="field"><label>Fecha de operación</label><input type="date" id="wkYapeDate"></div>
+            <div class="field"><label>Código de operación</label><input type="text" id="wkYapeCode" placeholder="Ej. 123456"></div>
+          </div>
         </div>
         <div class="field"><label>Monto cobrado</label><input type="text" id="wkAttendAmount" class="amount-input-big" placeholder="0.00"></div>
       </section>
@@ -2024,11 +2028,14 @@ function renderWorkerAttendForm(){
   wkSelectedClientId = null;
   wkSelectedMethod = "Efectivo";
   document.getElementById("wkAttendAmount").value = "";
+  document.getElementById("wkYapeDate").value = "";
+  document.getElementById("wkYapeCode").value = "";
   document.getElementById("wkAttendNombres").value = "";
   document.getElementById("wkAttendApellidos").value = "";
   document.getElementById("wkAttendPhone").value = "";
   document.getElementById("wkClientSearch").value = "";
   document.getElementById("wkNewClientFields").classList.add("hidden");
+  document.getElementById("wkYapeFields").classList.add("hidden");
   renderServicePicker();
   renderClientChips("");
   renderMethodPicker();
@@ -2087,10 +2094,15 @@ function renderClientChips(filter){
 
 document.getElementById("wkClientSearch").addEventListener("input", (e)=> renderClientChips(e.target.value));
 
+function updateWorkerYapeFields(){
+  document.getElementById("wkYapeFields").classList.toggle("hidden", wkSelectedMethod !== "Yape");
+}
+
 function renderMethodPicker(){
   document.querySelectorAll("#wkMethodPicker .method-btn").forEach(btn=>{
     btn.classList.toggle("selected", btn.dataset.method === wkSelectedMethod);
   });
+  updateWorkerYapeFields();
 }
 document.querySelectorAll("#wkMethodPicker .method-btn").forEach(btn=>{
   btn.addEventListener("click", ()=>{
@@ -2126,19 +2138,28 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
   const amount = document.getElementById("wkAttendAmount").value.trim();
   if(!amount){ showToast("Ingresa el monto cobrado.", "error"); return; }
 
+  let yapeDate = "";
+  let yapeCode = "";
+  if(wkSelectedMethod === "Yape"){
+    yapeDate = document.getElementById("wkYapeDate").value;
+    yapeCode = document.getElementById("wkYapeCode").value.trim();
+    if(!yapeDate || !yapeCode){ showToast("Completa la fecha y el código de Yape.", "error"); return; }
+  }
+
   const pago = {
     id: uid("p"),
     clientid: client.id,
     clientname: client.name,
     serviceid: service.id,
     servicetitle: service.title,
-    date: new Date().toISOString().slice(0,10),
+    date: wkSelectedMethod === "Yape" ? yapeDate : new Date().toISOString().slice(0,10),
     time: new Date().toTimeString().slice(0,5),
     amount: amount,
     method: wkSelectedMethod,
     status: "pagado",
     workerid: currentWorker.id,
     workername: currentWorker.name,
+    yape_code: wkSelectedMethod === "Yape" ? yapeCode : "",
     notes: "",
     created_at: new Date().toISOString()
   };
