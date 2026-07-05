@@ -473,10 +473,16 @@
         </div>
         <div class="grid-2">
           <div class="field"><label>Método de pago</label>
-            <select id="payMethod"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select>
+            <select id="payMethod"><option>Efectivo</option><option>Yape</option></select>
           </div>
           <div class="field"><label>Estado</label>
             <select id="payStatus"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
+          </div>
+        </div>
+        <div id="payYapeFields" class="hidden">
+          <div class="grid-2">
+            <div class="field"><label>Hora</label><input type="time" id="payYapeHour"></div>
+            <div class="field"><label>Código de operación</label><input type="text" id="payYapeCode" placeholder="Ej. ABC123"></div>
           </div>
         </div>
         <div class="field"><label>Atendido por (opcional)</label><select id="payWorker"><option value="">Sin asignar</option></select></div>
@@ -1695,6 +1701,14 @@ function refreshPaymentSelectors(){
   workerSel.innerHTML = `<option value="">Sin asignar</option>` + activeWorkers.map(w=>`<option value="${w.id}">${escapeHtml(w.name)}</option>`).join("");
 }
 
+function updateYapeFieldsVisibility(){
+  const method = document.getElementById("payMethod").value;
+  document.getElementById("payYapeFields").classList.toggle("hidden", method !== "Yape");
+}
+
+document.getElementById("payMethod").addEventListener("change", updateYapeFieldsVisibility);
+updateYapeFieldsVisibility();
+
 document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
   const clientId = document.getElementById("payClient").value;
   if(!clientId){ showToast("Agrega primero un cliente.", "error"); return; }
@@ -1708,6 +1722,9 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
   const workerId = document.getElementById("payWorker").value;
   const worker = DATA.workers.find(w=>w.id===workerId);
 
+  const yapeHour = document.getElementById("payYapeHour").value;
+  const yapeCode = document.getElementById("payYapeCode").value.trim();
+
   const pago = {
     id: uid("p"),
     clientid: clientId,
@@ -1715,12 +1732,13 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
     serviceid: serviceId,
     servicetitle: service?service.title:"",
     date: date,
-    time: "",
+    time: method === 'Yape' ? yapeHour : "",
     amount: amount,
     method: method,
     status: status,
     workerid: workerId || null,
     workername: worker ? worker.name : "",
+    yape_code: method === 'Yape' ? yapeCode : "",
     notes: "",
     created_at: new Date().toISOString()
   };
