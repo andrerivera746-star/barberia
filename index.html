@@ -155,7 +155,9 @@
     font-weight:700;font-size:13px;}
   .btn-gold:hover{background:var(--gold-light);}
   .btn-danger{background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;}
-  .btn-link{background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;}
+  .btn-link{background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;}
+  .btn-link.view-worker-btn{font-size:16px;padding:6px 8px;border-radius:10px;transition:background .2s;}
+  .btn-link.view-worker-btn:hover{background:rgba(163,129,79,.08);text-decoration:none;}
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
   th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;
     letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line);}
@@ -217,10 +219,15 @@
   .admin-card table tbody td:first-child{width:180px;}
 
   /* Worker service picker */
-  .service-picker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:10px 0 18px;}
-  .service-pick-btn{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer}
-  .service-pick-btn.selected{border-color:var(--gold);background:linear-gradient(180deg, #fff, #fff);} 
-  .service-pick-btn .service-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:var(--gold)}
+  .service-picker-grid{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;margin:10px 0 18px;}
+  .service-picker-grid::-webkit-scrollbar{height:8px;}
+  .service-picker-grid::-webkit-scrollbar-thumb{background:rgba(163,129,79,.35);border-radius:999px;}
+  .service-picker-grid::-webkit-scrollbar-track{background:transparent;}
+  .service-pick-btn{min-width:170px;flex:0 0 auto;background:#fff;border:1.5px solid #f0eff2;border-radius:18px;padding:18px 14px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);text-align:center;transition:all .2s ease;}
+  .service-pick-btn:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(28,23,18,.08);}
+  .service-pick-btn.selected{border-color:var(--gold);background:#fff9ec;}
+  .service-pick-btn .service-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:22px;}
   .service-pick-btn span{font-size:13px;text-transform:capitalize;color:var(--ink);}
 
   /* Sincronización */
@@ -236,84 +243,89 @@
   .sync-badge.local { background: #fff3e0; color: #e65100; }
 
   /* ---------- WORKER APP UI ---------- */
-  .worker-app{display:block;width:100%;max-width:560px;margin:0 auto;min-height:100vh;background:var(--cream);
-    position:relative;}
-  .worker-topbar{display:flex;align-items:center;gap:12px;padding:18px 20px 14px;background:var(--ink);
-    color:var(--cream);position:sticky;top:0;z-index:20;}
-  .worker-avatar{width:42px;height:42px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:800;
+  .worker-app{display:block;width:100%;max-width:560px;margin:0 auto;min-height:100vh;background:#f6f6f8;
+    position:relative;padding-bottom:20px;}
+  .worker-topbar{display:flex;align-items:center;gap:14px;padding:18px 20px;background:#ffffff;
+    color:var(--ink);position:sticky;top:0;z-index:20;box-shadow:0 10px 30px rgba(28,23,18,.08);border-bottom:1px solid #f0eff2;}
+  .worker-avatar{width:44px;height:44px;border-radius:50%;background:var(--gold);color:var(--ink);font-weight:800;
     font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--font-display);}
   .worker-topbar-info{flex:1;min-width:0;}
   .worker-topbar-name{font-weight:700;font-size:16px;font-family:var(--font-display);white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;}
-  .worker-topbar-sub{font-size:11.5px;color:rgba(247,242,231,.7);}
-  .worker-logout-icon{background:rgba(247,242,231,.12);border:none;color:var(--cream);width:36px;height:36px;
+  .worker-topbar-sub{font-size:12px;color:var(--muted);}
+  .worker-logout-icon{background:#f4f4f7;border:none;color:var(--ink);width:38px;height:38px;
     border-radius:50%;font-size:16px;flex-shrink:0;}
 
-  .stat-chip-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px 16px 4px;}
-  .stat-chip{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 8px;text-align:center;}
+  .stat-chip-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px 16px 8px;}
+  .stat-chip{background:#fff;border:1px solid #ececec;border-radius:16px;padding:16px 12px;text-align:center;box-shadow:0 6px 20px rgba(28,23,18,.05);}
   .stat-chip-value{display:block;font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);}
-  .stat-chip-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-top:2px;}
+  .stat-chip-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
 
-  .worker-navbar{display:flex;gap:6px;padding:14px 16px 6px;}
-  .worker-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;background:#fff;
-    border:1px solid var(--line);border-radius:14px;padding:10px 4px;font-size:11.5px;font-weight:700;color:var(--muted);}
-  .worker-nav-btn .nav-icon{font-size:19px;}
+  .worker-navbar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 8px;}
+  .worker-nav-btn{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;
+    border:1px solid #ececec;border-radius:18px;padding:14px 6px;font-size:12px;font-weight:700;color:var(--muted);transition:all .25s ease;}
+  .worker-nav-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(28,23,18,.06);}
+  .worker-nav-btn .nav-icon{font-size:20px;}
   .worker-nav-btn.active{background:var(--ink);border-color:var(--ink);color:var(--cream);}
 
-  .worker-main{padding:8px 16px 110px;}
-  .worker-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
-    color:var(--muted);margin:22px 2px 10px;}
-  .worker-section-title:first-child{margin-top:6px;}
+  .worker-main{padding:18px 16px 110px;}
+  .worker-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--muted);margin:26px 2px 12px;}
+  .worker-section-title:first-child{margin-top:4px;}
 
-  .cita-card-list{display:flex;flex-direction:column;gap:10px;}
-  .cita-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;
-    align-items:center;gap:12px;box-shadow:0 4px 14px rgba(28,23,18,.05);}
-  .cita-card-main{flex:1;min-width:0;}
-  .cita-card-client{font-weight:700;font-size:14.5px;}
-  .cita-card-service{font-size:12.5px;color:var(--muted);margin-top:2px;text-transform:capitalize;}
-  .cita-card-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-  .btn-call{width:38px;height:38px;border-radius:50%;background:var(--cream-dark);display:flex;align-items:center;
-    justify-content:center;text-decoration:none;font-size:15px;flex-shrink:0;}
+  .cita-card-list{display:flex;flex-direction:column;gap:12px;}
+  .cita-card{background:#fff;border:1px solid #f0eff2;border-radius:18px;padding:16px 18px;display:flex;
+    align-items:center;gap:12px;box-shadow:0 12px 32px rgba(28,23,18,.06);}
+  .cita-card-client{font-weight:700;font-size:14px;color:var(--ink);}
+  .cita-card-service{font-size:12.5px;color:var(--muted);margin-top:4px;text-transform:capitalize;}
+  .cita-card-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .btn-call{width:38px;height:38px;border-radius:50%;background:#f4f4f7;display:flex;align-items:center;
+    justify-content:center;text-decoration:none;font-size:16px;color:var(--ink);flex-shrink:0;}
   .btn-check{width:42px;height:42px;border-radius:50%;background:var(--success);color:#fff;border:none;font-size:18px;
     font-weight:800;flex-shrink:0;}
-  .cita-inline-amount{display:flex;align-items:center;gap:6px;}
-  .cita-amount-input{width:74px;padding:9px 8px;border-radius:9px;border:1px solid var(--line);font-size:13px;
-    text-align:right;background:var(--cream);}
+  .cita-inline-amount{display:flex;align-items:center;gap:8px;}
+  .cita-amount-input{width:84px;padding:10px 10px;border-radius:12px;border:1px solid #ececec;font-size:13px;
+    text-align:right;background:#fafafa;}
 
-  .service-picker-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-  .service-pick-btn{background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:14px 8px;
-    display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
-    color:var(--ink-soft);text-align:center;text-transform:capitalize;}
-  .service-pick-btn .service-icon{width:26px;height:26px;color:var(--gold);}
-  .service-pick-btn.selected{border-color:var(--gold);background:#fdf9f0;}
+  .service-picker-grid{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;margin:10px 0 18px;scroll-snap-type:x mandatory;}
+  .service-picker-grid::-webkit-scrollbar{height:8px;}
+  .service-picker-grid::-webkit-scrollbar-thumb{background:rgba(163,129,79,.35);border-radius:999px;}
+  .service-picker-grid::-webkit-scrollbar-track{background:transparent;}
+  .service-pick-btn{min-width:170px;flex:0 0 auto;background:#fff;border:1.5px solid #f0eff2;border-radius:18px;padding:18px 14px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;font-weight:700;color:var(--ink);text-align:center;transition:all .2s ease;scroll-snap-align:start;}
+  .service-pick-btn:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(28,23,18,.08);}
+  .service-pick-btn .service-icon{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:22px;}
+  .service-pick-btn.selected{border-color:var(--gold);background:#fff9ec;}
 
-  .client-chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
-  .client-chip{background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-size:13px;
-    font-weight:600;color:var(--ink-soft);}
+  .client-chip-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;}
+  .client-chip{background:#fff;border:1px solid #f0eff2;border-radius:999px;padding:10px 18px;font-size:13px;
+    font-weight:700;color:var(--ink);transition:all .2s ease;}
+  .client-chip:hover{background:#f8f4ed;}
   .client-chip.selected{background:var(--ink);border-color:var(--ink);color:var(--cream);}
   .client-chip.new-chip{border-style:dashed;color:var(--gold);}
   .client-chip.new-chip.selected{background:var(--gold);border-color:var(--gold);color:var(--ink);}
 
-  .method-btn-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
-  .method-btn{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:10px 4px;font-size:11px;
-    font-weight:600;color:var(--ink-soft);}
-  .method-btn.selected{border-color:var(--gold);background:#fdf9f0;color:var(--ink);}
+  .method-btn-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  .method-btn{background:#fff;border:1px solid #f0eff2;border-radius:16px;padding:14px 12px;font-size:13px;
+    font-weight:700;color:var(--ink);transition:all .2s ease;}
+  .method-btn:hover{background:#f8f4ed;}
+  .method-btn.selected{border-color:var(--gold);background:#fff9ec;color:var(--ink);}
 
-  .amount-input-big{font-size:24px !important;font-family:var(--font-display);font-weight:700;text-align:center;
-    padding:14px !important;}
+  .amount-input-big{font-size:22px !important;font-family:var(--font-display);font-weight:700;text-align:center;
+    padding:16px !important;background:#fff;border:1px solid #f0eff2;}
 
   .sticky-confirm-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;
     background:var(--cream);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));
     z-index:30;}
   .sticky-confirm-bar button{padding:15px;font-size:15px;}
 
-  .history-card-list{display:flex;flex-direction:column;gap:8px;}
-  .history-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;
-    justify-content:space-between;align-items:center;gap:10px;}
+  .history-card-list{display:flex;flex-direction:column;gap:12px;}
+  .history-card{background:#fff;border:1px solid #f0eff2;border-radius:18px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;box-shadow:0 14px 28px rgba(28,23,18,.06);}
   .history-card .hc-main{min-width:0;}
-  .history-card .hc-client{font-weight:700;font-size:13.5px;}
-  .history-card .hc-meta{font-size:11.5px;color:var(--muted);margin-top:2px;text-transform:capitalize;}
-  .history-card .hc-amount{font-family:var(--font-display);font-weight:700;font-size:15px;flex-shrink:0;}
+  .history-card .hc-client{font-weight:700;font-size:14px;color:var(--ink);}
+  .history-card .hc-meta{margin-top:8px;font-size:12.5px;color:var(--muted);line-height:1.5;text-transform:none;}
+  .history-card .hc-meta span{display:block;}
+  .history-card .hc-amount{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);text-align:right;flex-shrink:0;}
 
   @media(min-width:601px){ .worker-app{box-shadow:var(--shadow);} }
 </style>
@@ -619,6 +631,9 @@
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayCount">0</span><span class="stat-chip-label">Hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayTotal">$0</span><span class="stat-chip-label">Cobrado hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerActiveCount">0</span><span class="stat-chip-label">En curso</span></div>
+    </div>
+
+    <nav class="worker-navbar">
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
       <button class="worker-nav-btn" data-worker-tab="atender"><span class="nav-icon">✂️</span>Atender</button>
       <button class="worker-nav-btn" data-worker-tab="historial"><span class="nav-icon">📊</span>Historial</button>
@@ -1477,7 +1492,12 @@ document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
 });
 
 function enterAdmin(){
+  currentWorker = null;
+  const overlay = document.getElementById('workerOperationsOverlay');
+  overlay.classList.remove('active');
+  overlay.style.display = '';
   document.getElementById("adminPanel").classList.remove("hidden");
+  document.getElementById("workerPanel").classList.add("hidden");
   renderAdminSiteForm();
   renderAdminServices();
   renderAdminWorkers();
@@ -1496,7 +1516,17 @@ document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
    WORKER: LOGIN / NAVIGATION
    ============================================================ */
 function enterWorker(){
+  if(!currentWorker){
+    showToast('No se encontró el trabajador. Inicia sesión de nuevo.', 'error');
+    document.getElementById('workerPanel').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    return;
+  }
+  const overlay = document.getElementById('workerOperationsOverlay');
+  overlay.classList.remove('active');
+  overlay.style.display = '';
   document.getElementById("workerPanel").classList.remove("hidden");
+  document.getElementById("adminPanel").classList.add("hidden");
   document.getElementById("workerBrandName").textContent = currentWorker.name;
   document.getElementById("workerAvatar").textContent = (currentWorker.name||"?").trim().charAt(0).toUpperCase();
   renderWorkerHome();
@@ -1672,10 +1702,10 @@ function renderAdminWorkers(){
       <td><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
       <td>${cortes}</td>
       <td style="white-space:nowrap;">
-        <button class="btn-link" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
-        <button class="btn-link" data-export-worker="${w.id}" title="Descargar Excel">📥</button>
-        <button class="btn-link" data-edit-worker="${w.id}">Editar</button>
-        <button class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
+        <button type="button" class="btn-link view-worker-btn" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
+        <button type="button" class="btn-link" data-export-worker="${w.id}" title="Descargar Excel">📥</button>
+        <button type="button" class="btn-link" data-edit-worker="${w.id}">Editar</button>
+        <button type="button" class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -2087,61 +2117,88 @@ document.getElementById("resetAllBtn").addEventListener("click", ()=>{
 });
 
 /* ============================================================
-   WORKER: HOME / STATS
-   ============================================================ */
-function renderWorkerHome(){
-  if(!currentWorker) return;
-  const today = new Date().toISOString().slice(0,10);
-  const todays = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pagado" && p.date===today);
-  const total = todays.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
-  const pending = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pendiente").length;
-  document.getElementById("workerTodayCount").textContent = todays.length;
-  document.getElementById("workerTodayTotal").textContent = money(total);
-  document.getElementById("workerPendingCount").textContent = pending;
-}
-
-/* ============================================================
-   WORKER: MIS CITAS
-   ============================================================ */
+   WORKER: CITAS ACTIVAS
+*/
 function renderWorkerCitas(){
   if(!currentWorker) return;
   const wrap = document.getElementById("workerCitasList");
   wrap.innerHTML = "";
-  const list = DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pendiente");
-  document.getElementById("workerCitasEmpty").classList.toggle("hidden", list.length>0);
+  const list = DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "in_progress");
+  document.getElementById("workerCitasEmpty").classList.toggle("hidden", list.length > 0);
+  if(list.length === 0) return;
 
-  list.forEach(p=>{
-    const client = DATA.clients.find(c=>c.id===p.clientid);
+  list.forEach(p => {
+    const client = DATA.clients.find(c => c.id === p.clientid);
+    const method = p.method || "Efectivo";
     const card = document.createElement("div");
     card.className = "cita-card";
     card.innerHTML = `
       <div class="cita-card-main">
         <div class="cita-card-client">${escapeHtml(p.clientname)}</div>
-        <div class="cita-card-service">${escapeHtml(p.servicetitle)} · ${escapeHtml(p.date||"")} ${escapeHtml(p.time||"")}</div>
+        <div class="cita-card-service">${escapeHtml(p.servicetitle)} · ${escapeHtml(p.start_date || "")} ${escapeHtml(p.start_time || "")}</div>
       </div>
-      <div class="cita-card-actions">
-        ${client && client.phone ? `<a class="btn-call" href="tel:${escapeHtml(client.phone)}" title="Llamar">📞</a>` : ""}
-        ${p.amount
-          ? `<button class="btn-check" data-worker-mark-done="${p.id}" title="Marcar atendido">✓</button>`
-          : `<div class="cita-inline-amount">
-               <input type="text" class="cita-amount-input" data-amount-for="${p.id}" placeholder="Monto">
-               <button class="btn-check" data-worker-mark-done="${p.id}" title="Confirmar y marcar atendido">✓</button>
-             </div>`}
+      <div class="cita-card-actions" style="flex-direction:column;align-items:flex-start;gap:10px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;">
+          ${client && client.phone ? `<a class="btn-call" href="tel:${escapeHtml(client.phone)}" title="Llamar">📞</a>` : ""}
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
+            <span>Método</span>
+            <select class="table-select" data-method-for="${p.id}">
+              <option value="Efectivo" ${method === "Efectivo" ? "selected" : ""}>Efectivo</option>
+              <option value="Yape" ${method === "Yape" ? "selected" : ""}>Yape</option>
+            </select>
+          </label>
+          <input type="text" class="cita-amount-input" data-amount-for="${p.id}" placeholder="Monto" value="${escapeHtml(p.amount || "")}" style="width:110px;">
+        </div>
+        <div class="cita-yape-fields" data-yape-section-for="${p.id}" style="display:${method === "Yape" ? "flex" : "none"};gap:10px;flex-wrap:wrap;align-items:center;width:100%;">
+          <input type="text" class="cita-amount-input" data-yape-code-for="${p.id}" placeholder="Código Yape" value="${escapeHtml(p.yape_code || "")}" style="width:170px;">
+          <input type="time" class="cita-amount-input" data-yape-time-for="${p.id}" value="${escapeHtml(p.time || "")}" style="width:140px;">
+        </div>
+        <button class="btn-check" data-worker-mark-done="${p.id}" title="Registrar pago">✓ Registrar pago</button>
       </div>`;
     wrap.appendChild(card);
   });
-  wrap.querySelectorAll("[data-worker-mark-done]").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-      const id = btn.dataset.workerMarkDone;
-      const p = DATA.payments.find(p=>p.id===id);
-      if(!p.amount){
-        const input = wrap.querySelector(`[data-amount-for="${id}"]`);
-        const val = input ? input.value.trim() : "";
-        if(!val){ showToast("Ingresa el monto cobrado.", "error"); return; }
-        p.amount = val;
+
+  wrap.querySelectorAll("[data-method-for]").forEach(sel => {
+    sel.addEventListener("change", () => {
+      const id = sel.dataset.methodFor;
+      const section = wrap.querySelector(`[data-yape-section-for="${id}"]`);
+      if(section){
+        section.style.display = sel.value === "Yape" ? "flex" : "none";
       }
+    });
+  });
+
+  wrap.querySelectorAll("[data-worker-mark-done]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.workerMarkDone;
+      const p = DATA.payments.find(p => p.id === id);
+      if(!p) return;
+      const amountInput = wrap.querySelector(`[data-amount-for="${id}"]`);
+      const methodSelect = wrap.querySelector(`[data-method-for="${id}"]`);
+      const yapeInput = wrap.querySelector(`[data-yape-code-for="${id}"]`);
+      const amount = amountInput ? amountInput.value.trim() : "";
+      const method = methodSelect ? methodSelect.value : "Efectivo";
+
+      if(!amount){ showToast("Ingresa el monto cobrado.", "error"); return; }
+      if(method === "Yape"){
+        if(!yapeInput || !yapeInput.value.trim()){ showToast("Completa el código de Yape.", "error"); return; }
+        const yapeTime = wrap.querySelector(`[data-yape-time-for="${id}"]`);
+        if(!yapeTime || !yapeTime.value){ showToast("Ingresa la hora de la operación Yape.", "error"); return; }
+        p.yape_code = yapeInput.value.trim();
+        p.time = yapeTime.value;
+      } else {
+        p.time = new Date().toTimeString().slice(0,5);
+        p.yape_code = "";
+      }
+
+      p.amount = amount;
+      p.method = method;
       p.status = "pagado";
-      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername });
+      p.date = p.start_date || new Date().toISOString().slice(0,10);
+      p.finished_at = new Date().toISOString();
+      p.duration_minutes = Math.max(0, Math.round((new Date(p.finished_at) - new Date(p.started_at)) / 60000));
+
+      await actualizarPagoSupabase(p.id, { status: p.status, amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername, yape_code: p.yape_code, date: p.date, time: p.time, finished_at: p.finished_at, duration_minutes: p.duration_minutes });
       showToast(`✅ ${p.clientname} atendido`);
       renderWorkerCitas();
       renderWorkerHistory();
@@ -2400,30 +2457,36 @@ function renderWorkerHome(){
   const today = new Date().toISOString().slice(0,10);
   const todays = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pagado" && p.date===today);
   const total = todays.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
-  const pending = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pendiente").length;
   const active = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="in_progress").length;
   document.getElementById("workerTodayCount").textContent = todays.length;
   document.getElementById("workerTodayTotal").textContent = money(total);
-  document.getElementById("workerPendingCount").textContent = pending;
   document.getElementById("workerActiveCount").textContent = active;
 }
 
 function renderAdminActiveCuts(){
   const active = DATA.payments.filter(p=>p.status==="in_progress");
   document.getElementById('activeCutsCount').textContent = active.length;
-  document.getElementById('activeWorkersCount').textContent = [...new Set(active.map(p=>p.workerid))].length;
+  document.getElementById('activeWorkersCount').textContent = [...new Set(active.map(p=>p.workerid).filter(Boolean))].length;
   const avg = active.length ? Math.round(active.reduce((sum,p)=> sum + calcMinutesSince(p.started_at),0)/active.length) : 0;
   document.getElementById('activeAvgDuration').textContent = `${avg} min`;
+
   const tbody = document.getElementById('activeCutsTableBody');
   tbody.innerHTML = '';
-  document.getElementById('activeCutsEmpty').classList.toggle('hidden', active.length>0);
+
+  if(active.length === 0){
+    document.getElementById('activeCutsEmpty').classList.remove('hidden');
+    return;
+  }
+
+  document.getElementById('activeCutsEmpty').classList.add('hidden');
+
   active.forEach(p=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${escapeHtml(p.workername)}</td>
-      <td>${escapeHtml(p.clientname)}</td>
-      <td>${escapeHtml(p.servicetitle)}</td>
-      <td>${escapeHtml(p.start_date)} ${escapeHtml(p.start_time)}</td>
+      <td>${escapeHtml(p.workername || '—')}</td>
+      <td>${escapeHtml(p.clientname || '—')}</td>
+      <td>${escapeHtml(p.servicetitle || '—')}</td>
+      <td>${escapeHtml(p.start_date || '—')} ${escapeHtml(p.start_time || '')}</td>
       <td>${calcMinutesSince(p.started_at)} min</td>
       <td><span class="badge pendiente">En curso</span></td>`;
     tbody.appendChild(tr);
@@ -2441,6 +2504,11 @@ function switchTab(name){
    WORKER: MI HISTORIAL
    ============================================================ */
 function openWorkerOperations(workerId){
+  const adminPanel = document.getElementById('adminPanel');
+  if(adminPanel.classList.contains('hidden')){
+    showToast('Esta vista solo está disponible para el administrador.', 'error');
+    return;
+  }
   const worker = DATA.workers.find(w=>w.id===workerId);
   if(!worker) return;
   const payments = DATA.payments.filter(p=>p.workerid===workerId).slice().reverse();
@@ -2478,16 +2546,22 @@ function openWorkerOperations(workerId){
     });
   }
 
-  document.getElementById('workerOperationsOverlay').classList.add('active');
+  const overlay = document.getElementById('workerOperationsOverlay');
+  overlay.classList.add('active');
+  overlay.style.display = '';
 }
 
 document.getElementById('closeOperationsModal').addEventListener('click', ()=>{
-  document.getElementById('workerOperationsOverlay').classList.remove('active');
+  const overlay = document.getElementById('workerOperationsOverlay');
+  overlay.classList.remove('active');
+  overlay.style.display = '';
 });
 
 document.querySelector('#workerOperationsOverlay').addEventListener('click', (event)=>{
   if(event.target === event.currentTarget){
-    document.getElementById('workerOperationsOverlay').classList.remove('active');
+    const overlay = document.getElementById('workerOperationsOverlay');
+    overlay.classList.remove('active');
+    overlay.style.display = '';
   }
 });
 
@@ -2510,7 +2584,11 @@ function renderWorkerHistory(){
     card.innerHTML = `
       <div class="hc-main">
         <div class="hc-client">${escapeHtml(p.clientname)}</div>
-        <div class="hc-meta">${escapeHtml(p.servicetitle)} · ${escapeHtml(p.date||"—")} · ${escapeHtml(p.method||"—")}</div>
+        <div class="hc-meta">
+          <span>${escapeHtml(p.servicetitle)}</span>
+          <span>${escapeHtml(p.date||"—")}</span>
+          <span>${escapeHtml(p.method||"—")}</span>
+        </div>
       </div>
       <div class="hc-amount">${p.amount?money(p.amount):"—"}</div>`;
     wrap.appendChild(card);
