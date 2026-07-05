@@ -526,8 +526,13 @@
       <div class="admin-card">
         <h3>Respaldo de datos</h3>
         <p class="modal-sub" style="margin-bottom:14px;">Este sitio guarda todo (clientes, servicios, pagos) en el navegador donde lo abras. Descarga un respaldo regularmente y guárdalo en un lugar seguro.</p>
-        <div class="modal-actions" style="margin-top:0;">
+        <div class="grid-2" style="gap:12px; margin-bottom:14px;">
+          <div class="field"><label>Fecha desde</label><input type="date" id="exportFromDate"></div>
+          <div class="field"><label>Fecha hasta</label><input type="date" id="exportToDate"></div>
+        </div>
+        <div class="modal-actions" style="margin-top:0;gap:10px;flex-wrap:wrap;">
           <button class="btn-gold" id="exportBackupBtn">Descargar respaldo (.json)</button>
+          <button class="btn-gold" id="exportPaymentsExcelBtn">Descargar pagos (.csv)</button>
           <label class="btn-secondary" style="display:inline-flex;align-items:center;">Restaurar respaldo
             <input type="file" id="importBackupFile" accept=".json" style="display:none;">
           </label>
@@ -1837,6 +1842,42 @@ document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
   const a = document.createElement("a");
   a.href = url;
   a.download = "respaldo_barberia_" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>{
+  const fromDate = document.getElementById("exportFromDate").value;
+  const toDate = document.getElementById("exportToDate").value;
+
+  const filterPayment = p => {
+    if(!fromDate && !toDate) return true;
+    const paymentDate = p.date || "";
+    if(fromDate && paymentDate < fromDate) return false;
+    if(toDate && paymentDate > toDate) return false;
+    return true;
+  };
+
+  const rows = DATA.payments.slice().reverse().filter(filterPayment).map(p => ({
+    ID: p.id,
+    Cliente: p.clientname,
+    Servicio: p.servicetitle,
+    Fecha: p.date,
+    Hora: p.time,
+    Monto: p.amount,
+    Metodo: p.method,
+    Estado: p.status,
+    Trabajador: p.workername,
+    CodigoYape: p.yape_code || ""
+  }));
+
+  const header = Object.keys(rows[0] || {}).join(",") + "\n";
+  const csv = header + rows.map(r => Object.values(r).map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'pagos_barberia_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
 });
