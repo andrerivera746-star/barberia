@@ -469,7 +469,6 @@
     <section class="admin-tab-panel hidden" data-panel="pagos">
       <div class="admin-panel-header" style="align-items:center;gap:12px;">
         <h2>Pagos y citas</h2>
-        <button class="btn-gold" id="exportPaymentsExcelMainBtn">Descargar pagos (.csv)</button>
       </div>
 
       <div class="stat-row">
@@ -503,7 +502,10 @@
           </div>
         </div>
         <div class="field"><label>Atendido por (opcional)</label><select id="payWorker"><option value="">Sin asignar</option></select></div>
-        <button class="btn-gold" id="addPaymentBtn">Agregar registro</button>
+        <div class="modal-actions" style="margin-top:14px;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <button class="btn-gold" id="addPaymentBtn">Agregar registro</button>
+          <button class="btn-gold" id="exportPaymentsExcelMainBtn">Descargar pagos (.csv)</button>
+        </div>
       </div>
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
@@ -1635,6 +1637,7 @@ function renderAdminWorkers(){
       <td>${cortes}</td>
       <td style="white-space:nowrap;">
         <button class="btn-link" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
+        <button class="btn-link" data-export-worker="${w.id}" title="Descargar Excel">📥</button>
         <button class="btn-link" data-edit-worker="${w.id}">Editar</button>
         <button class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
@@ -1642,6 +1645,9 @@ function renderAdminWorkers(){
   });
   tbody.querySelectorAll("[data-view-worker]").forEach(btn=>{
     btn.addEventListener("click", ()=> openWorkerOperations(btn.dataset.viewWorker));
+  });
+  tbody.querySelectorAll("[data-export-worker]").forEach(btn=>{
+    btn.addEventListener("click", ()=> exportWorkerPaymentsCsv(btn.dataset.exportWorker));
   });
   tbody.querySelectorAll("[data-edit-worker]").forEach(btn=>{
     btn.addEventListener("click", ()=> loadWorkerForEdit(btn.dataset.editWorker));
@@ -1968,6 +1974,38 @@ function exportPaymentsCsv(fromDate, toDate){
   const a = document.createElement('a');
   a.href = url;
   a.download = 'pagos_barberia_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportWorkerPaymentsCsv(workerId){
+  const worker = DATA.workers.find(w => w.id === workerId);
+  if(!worker){ showToast('Trabajador no encontrado.', 'error'); return; }
+
+  const rows = DATA.payments.slice().reverse().filter(p => p.workerid === workerId).map(p => ({
+    ID: p.id,
+    Cliente: p.clientname,
+    Servicio: p.servicetitle,
+    Fecha: p.date,
+    Hora: p.time,
+    Monto: p.amount,
+    Metodo: p.method,
+    Estado: p.status,
+    CodigoYape: p.yape_code || ""
+  }));
+
+  if(rows.length === 0){
+    showToast('No hay pagos registrados para este trabajador.', 'error');
+    return;
+  }
+
+  const header = Object.keys(rows[0]).join(";") + "\n";
+  const csv = "sep=;\n" + header + rows.map(r => Object.values(r).map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(";")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pagos_${worker.username || worker.name || workerId}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
