@@ -1560,11 +1560,6 @@ document.querySelectorAll(".admin-tab").forEach(tab=>{
   tab.addEventListener("click", ()=> switchTab(tab.dataset.tab));
 });
 
-function switchTab(name){
-  document.querySelectorAll(".admin-tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===name));
-  document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
-}
-
 /* ============================================================
    ADMIN: TAB SITIO
    ============================================================ */
