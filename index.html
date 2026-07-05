@@ -1619,7 +1619,8 @@ function renderAdminClients(filter){
   document.getElementById("clientsEmpty").classList.toggle("hidden", list.length>0);
   document.getElementById('clientCount').textContent = `(${DATA.clients.length} clientes)`;
 
-  list.slice().reverse().forEach(c=>{
+  const visibleClients = list.slice().reverse().slice(0, 10);
+  visibleClients.forEach(c=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(c.name)}</td>
@@ -1757,7 +1758,7 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
 function renderAdminPayments(){
   const tbody = document.getElementById("paymentsTableBody");
   tbody.innerHTML = "";
-  const list = DATA.payments.slice().reverse();
+  const list = DATA.payments.slice().reverse().slice(0, 10);
   document.getElementById("paymentsEmpty").classList.toggle("hidden", list.length>0);
 
   let totalPaid = 0, totalPending = 0;
