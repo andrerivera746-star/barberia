@@ -138,11 +138,13 @@
   .admin-brand .stripe{width:20px;height:20px;border-radius:4px;background:
     repeating-linear-gradient(45deg, var(--gold) 0 4px, #7a1f1f 4px 8px, var(--cream) 8px 12px);}
   .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:11px 14px;
-    border-radius:10px;font-size:14px;font-weight:500;transition:background .15s,color .15s;}
+    border-radius:10px;font-size:14px;font-weight:500;transition:background .15s,color .15s;
+    display:flex;align-items:center;gap:10px;}
+  .admin-tab .admin-tab-icon{font-size:16px;line-height:1;}
   .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;}
   .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
   .admin-back{margin-top:auto;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
-    padding:10px 14px;border-radius:10px;font-size:13px;}
+    padding:10px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;}
   .admin-main{flex:1;padding:38px 4% 60px;max-width:900px;margin:0 auto;}
   .admin-panel-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
   .admin-panel-header h2{font-size:26px;}
@@ -156,14 +158,83 @@
     .grid-2{grid-template-columns:1fr;}
   }
   @media(max-width:700px){
-    .admin-main{padding:24px 4%;}
+    html{scroll-padding-bottom:86px;}
+    body{padding-bottom:0;}
+    .admin-main{padding:20px 16px 96px;}
     #adminPanel{flex-direction:column;}
-    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;}
-    .admin-sidebar{padding:18px 12px;}
-    .admin-tab{flex:0 0 auto;white-space:nowrap;}
-    .admin-back{margin-top:0;}
-    .admin-card{padding:18px;}
-    .admin-panel-header{margin-bottom:18px;}
+
+    /* La barra lateral se convierte en un menú inferior fijo, tipo app */
+    .admin-sidebar{
+      position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;height:auto;z-index:150;
+      flex-direction:row;align-items:stretch;justify-content:flex-start;gap:0;
+      padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+      overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+      box-shadow:0 -8px 24px rgba(0,0,0,.25);
+    }
+    .admin-sidebar::-webkit-scrollbar{display:none;}
+    .admin-brand{display:none;}
+    .admin-tab{
+      flex:0 0 auto;min-width:70px;flex-direction:column;align-items:center;justify-content:center;
+      gap:2px;padding:8px 10px;border-radius:12px;font-size:10.5px;text-align:center;
+    }
+    .admin-tab .admin-tab-icon{font-size:19px;}
+    .admin-tab .admin-tab-label{white-space:nowrap;}
+    .admin-back{
+      flex:0 0 auto;min-width:70px;flex-direction:column;justify-content:center;gap:2px;
+      margin-top:0;border:none;padding:8px 10px;font-size:10.5px;color:rgba(247,242,231,.6);
+    }
+    .admin-back .admin-tab-icon{font-size:19px;}
+
+    .admin-card{padding:16px;}
+    .admin-panel-header{margin-bottom:16px;}
+    .admin-panel-header h2{font-size:20px;}
+    .search-input{width:100%;}
+
+    /* Tablas del panel admin: se muestran como tarjetas apiladas en vez de filas anchas */
+    .responsive-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+    .responsive-table, .responsive-table tbody, .responsive-table tr{display:block;width:100%;}
+    .responsive-table tr{
+      border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:6px 12px;background:#fff;
+    }
+    .responsive-table td{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      border-bottom:1px solid var(--cream-dark);padding:9px 0;text-align:right;white-space:normal !important;
+    }
+    .responsive-table td:last-child{border-bottom:none;}
+    .responsive-table td::before{
+      content:attr(data-label);font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.03em;color:var(--muted);text-align:left;flex-shrink:0;
+    }
+    .responsive-table td[data-label=""]{justify-content:flex-end;}
+    .responsive-table td[data-label=""]::before{content:none;}
+    .operations-modal .operations-table.responsive-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+    .operations-modal .operations-table.responsive-table,
+    .operations-modal .operations-table.responsive-table tbody,
+    .operations-modal .operations-table.responsive-table tr{display:block;width:100%;}
+    .operations-modal .operations-table.responsive-table tr{
+      border:1px solid var(--line);border-radius:12px;margin-bottom:10px;padding:6px 12px;background:#fff;
+    }
+    .operations-modal .operations-table.responsive-table td{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      border-bottom:1px solid var(--cream-dark);padding:9px 0;text-align:right;white-space:normal;
+    }
+    .operations-modal .operations-table.responsive-table td::before{
+      content:attr(data-label);font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.03em;color:var(--muted);text-align:left;flex-shrink:0;
+    }
+    .operations-modal{margin:0 12px;max-width:calc(100% - 24px);}
+  }
+  @media(max-width:400px){
+    .admin-tab{min-width:60px;padding:8px 6px;}
+    .admin-tab .admin-tab-label{font-size:9.5px;}
+  }
+  @media(max-width:700px){
+    .modal-actions{flex-direction:column;}
+    .modal-actions button{width:100%;}
+    .btn-gold, .btn-secondary{padding:13px 20px;font-size:14px;}
+    .field input, .field select, .field textarea{font-size:16px;padding:12px 13px;}
+    .stat-box{padding:14px 16px;}
+    .stat-box .value{font-size:21px;}
   }
   .btn-gold{background:var(--gold);color:var(--ink);border:none;padding:11px 20px;border-radius:999px;
     font-weight:700;font-size:13px;}
@@ -431,14 +502,14 @@
 <div id="adminPanel" class="hidden">
   <aside class="admin-sidebar">
     <div class="admin-brand"><span class="stripe"></span> Panel</div>
-    <button class="admin-tab" data-tab="sitio">Sitio</button>
-    <button class="admin-tab" data-tab="servicios">Servicios</button>
-    <button class="admin-tab" data-tab="trabajadores">Trabajadores</button>
-    <button class="admin-tab" data-tab="clientes">Clientes</button>
-    <button class="admin-tab" data-tab="pagos">Pagos</button>
-    <button class="admin-tab" data-tab="cortes">Cortes</button>
-    <button class="admin-tab" data-tab="ajustes">Ajustes</button>
-    <button class="admin-back" id="backToSiteBtn">← Cerrar sesión</button>
+    <button class="admin-tab" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
+    <button class="admin-tab" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
+    <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
+    <button class="admin-tab" data-tab="clientes"><span class="admin-tab-icon">📇</span><span class="admin-tab-label">Clientes</span></button>
+    <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
+    <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
+    <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
+    <button class="admin-back" id="backToSiteBtn"><span class="admin-tab-icon">↩️</span><span class="admin-tab-label">Cerrar sesión</span></button>
   </aside>
 
   <main class="admin-main">
@@ -511,7 +582,7 @@
       </div>
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Nombre</th><th>Usuario</th><th>Estado</th><th>Cortes atendidos</th><th></th></tr></thead>
           <tbody id="workersTableBody"></tbody>
         </table>
@@ -549,7 +620,7 @@
       </div>
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Celular</th><th>Cliente desde</th><th></th></tr></thead>
           <tbody id="clientsTableBody"></tbody>
         </table>
@@ -601,7 +672,7 @@
       </div>
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Atendido por</th><th>Estado</th><th></th></tr></thead>
           <tbody id="paymentsTableBody"></tbody>
         </table>
@@ -620,7 +691,7 @@
         </div>
       </div>
       <div class="admin-card" style="padding:0;overflow-x:auto;">
-        <table>
+        <table class="responsive-table">
           <thead><tr><th>Trabajador</th><th>Cliente</th><th>Servicio</th><th>Inicio</th><th>Tiempo</th><th>Estado</th></tr></thead>
           <tbody id="activeCutsTableBody"></tbody>
         </table>
@@ -771,7 +842,7 @@
         <span>Cargando operaciones...</span>
       </div>
       <div class="empty-state-small hidden" id="operationsEmpty">No hay operaciones registradas para este trabajador.</div>
-      <table class="operations-table" id="operationsTable">
+      <table class="operations-table responsive-table" id="operationsTable">
         <thead>
           <tr>
             <th>Cliente</th>
@@ -1874,11 +1945,11 @@ function renderAdminWorkers(){
     const cortes = DATA.payments.filter(p=>p.workerid===w.id && p.status==="pagado").length;
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${escapeHtml(w.name)}</td>
-      <td>${escapeHtml(w.username)}</td>
-      <td><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
-      <td>${cortes}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="Nombre">${escapeHtml(w.name)}</td>
+      <td data-label="Usuario">${escapeHtml(w.username)}</td>
+      <td data-label="Estado"><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
+      <td data-label="Cortes atendidos">${cortes}</td>
+      <td data-label="" style="white-space:nowrap;">
         <button type="button" class="btn-link view-worker-btn" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
         <button type="button" class="btn-link" data-export-worker="${w.id}" title="Descargar Excel">📥</button>
         <button type="button" class="btn-link" data-edit-worker="${w.id}">Editar</button>
@@ -1970,12 +2041,12 @@ function renderAdminClients(filter){
   visibleClients.forEach(c=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${escapeHtml(c.name)}</td>
-      <td>${escapeHtml(c.doi||"—")}</td>
-      <td>${escapeHtml(c.birthdate||"—")}</td>
-      <td>${escapeHtml(c.phone)}</td>
-      <td>${escapeHtml(c.created_at ? new Date(c.created_at).toLocaleDateString() : "—")}</td>
-      <td style="white-space:nowrap;">
+      <td data-label="Nombre">${escapeHtml(c.name)}</td>
+      <td data-label="DOI">${escapeHtml(c.doi||"—")}</td>
+      <td data-label="F. nacimiento">${escapeHtml(c.birthdate||"—")}</td>
+      <td data-label="Celular">${escapeHtml(c.phone)}</td>
+      <td data-label="Cliente desde">${escapeHtml(c.created_at ? new Date(c.created_at).toLocaleDateString() : "—")}</td>
+      <td data-label="" style="white-space:nowrap;">
         <button class="btn-link" data-edit-client="${c.id}">Editar</button>
         <button class="btn-danger" data-del-client="${c.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
@@ -2124,14 +2195,14 @@ function renderAdminPayments(){
     const workerOptions = `<option value="">Sin asignar</option>` + activeWorkers.map(w=>
       `<option value="${w.id}" ${p.workerid===w.id?"selected":""}>${escapeHtml(w.name)}</option>`).join("");
     tr.innerHTML = `
-      <td>${escapeHtml(p.clientname)}</td>
-      <td style="text-transform:capitalize;">${escapeHtml(p.servicetitle)}</td>
-      <td>${escapeHtml(p.date||"—")}</td>
-      <td>${p.amount?money(p.amount):"—"}</td>
-      <td>${escapeHtml(p.method||"—")}</td>
-      <td><select class="table-select" data-assign-payment="${p.id}">${workerOptions}</select></td>
-      <td><span class="badge ${p.status}">${p.status==="pagado"?"Pagado":"Pendiente"}</span></td>
-      <td style="white-space:nowrap;">
+      <td data-label="Cliente">${escapeHtml(p.clientname)}</td>
+      <td data-label="Servicio" style="text-transform:capitalize;">${escapeHtml(p.servicetitle)}</td>
+      <td data-label="Fecha">${escapeHtml(p.date||"—")}</td>
+      <td data-label="Monto">${p.amount?money(p.amount):"—"}</td>
+      <td data-label="Método">${escapeHtml(p.method||"—")}</td>
+      <td data-label="Atendido por"><select class="table-select" data-assign-payment="${p.id}">${workerOptions}</select></td>
+      <td data-label="Estado"><span class="badge ${p.status}">${p.status==="pagado"?"Pagado":"Pendiente"}</span></td>
+      <td data-label="" style="white-space:nowrap;">
         ${p.status==="pendiente" ? `<button class="btn-link" data-mark-paid="${p.id}">Marcar pagado</button>` : ""}
         <button class="btn-danger" data-del-payment="${p.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
@@ -2662,12 +2733,12 @@ function renderAdminActiveCuts(){
   active.forEach(p=>{
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${escapeHtml(p.workername || '—')}</td>
-      <td>${escapeHtml(p.clientname || '—')}</td>
-      <td>${escapeHtml(p.servicetitle || '—')}</td>
-      <td>${escapeHtml(p.start_date || '—')} ${escapeHtml(p.start_time || '')}</td>
-      <td>${calcMinutesSince(p.started_at)} min</td>
-      <td><span class="badge pendiente">En curso</span></td>`;
+      <td data-label="Trabajador">${escapeHtml(p.workername || '—')}</td>
+      <td data-label="Cliente">${escapeHtml(p.clientname || '—')}</td>
+      <td data-label="Servicio">${escapeHtml(p.servicetitle || '—')}</td>
+      <td data-label="Inicio">${escapeHtml(p.start_date || '—')} ${escapeHtml(p.start_time || '')}</td>
+      <td data-label="Tiempo">${calcMinutesSince(p.started_at)} min</td>
+      <td data-label="Estado"><span class="badge pendiente">En curso</span></td>`;
     tbody.appendChild(tr);
   });
 }
@@ -2712,14 +2783,14 @@ function openWorkerOperations(workerId){
     payments.forEach(p=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${escapeHtml(p.clientname)}</td>
-        <td>${escapeHtml(p.servicetitle)}</td>
-        <td>${escapeHtml(p.date||'—')}</td>
-        <td>${escapeHtml(p.time || p.start_time || '—')}</td>
-        <td>${p.amount?money(p.amount):'—'}</td>
-        <td>${escapeHtml(p.method||'—')}</td>
-        <td>${escapeHtml(p.status||'—')}</td>
-        <td>${escapeHtml(p.yape_code||'—')}</td>
+        <td data-label="Cliente">${escapeHtml(p.clientname)}</td>
+        <td data-label="Servicio">${escapeHtml(p.servicetitle)}</td>
+        <td data-label="Fecha">${escapeHtml(p.date||'—')}</td>
+        <td data-label="Hora">${escapeHtml(p.time || p.start_time || '—')}</td>
+        <td data-label="Monto">${p.amount?money(p.amount):'—'}</td>
+        <td data-label="Método">${escapeHtml(p.method||'—')}</td>
+        <td data-label="Estado">${escapeHtml(p.status||'—')}</td>
+        <td data-label="Código Yape">${escapeHtml(p.yape_code||'—')}</td>
       `;
       tbody.appendChild(tr);
     });
