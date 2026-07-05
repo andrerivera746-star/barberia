@@ -6,7 +6,6 @@
 <title>Barbería — Servicios y reservas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --ink:#1c1712;
@@ -34,11 +33,13 @@
   .hidden{display:none !important;}
   img{max-width:100%;display:block;}
 
+  /* ---------- Signature razor-stroke divider ---------- */
   .razor-divider{width:86px;height:18px;margin:18px auto 0;opacity:.85;}
   .razor-divider path{stroke:var(--gold-light);stroke-width:1.6;fill:none;stroke-linecap:round;}
   .razor-divider circle{fill:var(--gold-light);}
   .section-eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;}
 
+  /* ---------- Header ---------- */
   .site-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
     padding:16px 5%;background:rgba(28,23,18,.92);backdrop-filter:blur(6px);color:var(--cream);}
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.02em;}
@@ -51,6 +52,7 @@
     transition:background .2s;}
   .admin-entry:hover{background:rgba(247,242,231,.15);}
 
+  /* ---------- Hero ---------- */
   .hero{position:relative;min-height:78vh;display:flex;align-items:center;justify-content:center;
     background-size:cover;background-position:center;text-align:center;color:var(--cream);}
   .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(20,16,12,.55), rgba(20,16,12,.72));}
@@ -64,6 +66,7 @@
   .btn-ghost{display:inline-block;background:transparent;border:1px solid var(--ink);color:var(--ink);
     padding:12px 26px;border-radius:999px;font-weight:600;font-size:14px;}
 
+  /* ---------- Services ---------- */
   .services{padding:90px 6% 60px;text-align:center;}
   .services h2{font-size:clamp(26px,3.4vw,36px);margin-top:10px;}
   .services-grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;text-align:left;}
@@ -78,13 +81,16 @@
   .service-book-btn{margin-top:auto;align-self:flex-start;background:none;border:none;color:var(--gold);
     font-weight:600;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;}
 
+  /* ---------- CTA / Booking section ---------- */
   .cta-book{background:var(--ink);color:var(--cream);text-align:center;padding:80px 6%;margin-top:40px;}
   .cta-book h2{font-size:clamp(24px,3vw,32px);}
   .cta-book p{color:rgba(247,242,231,.75);margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;}
 
+  /* ---------- Footer ---------- */
   footer{padding:34px 6%;text-align:center;font-size:13px;color:var(--muted);border-top:1px solid var(--line);}
   footer a{color:var(--gold);text-decoration:none;}
 
+  /* ---------- Modals ---------- */
   .modal-backdrop{position:fixed;inset:0;background:rgba(20,16,12,.6);z-index:100;display:flex;
     align-items:center;justify-content:center;padding:20px;}
   .modal-box{background:#fff;border-radius:var(--radius);max-width:460px;width:100%;padding:32px;
@@ -106,6 +112,7 @@
   .confirm-box .check{width:52px;height:52px;border-radius:50%;background:#e9f3ea;color:var(--success);
     display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;}
 
+  /* ---------- ADMIN ---------- */
   #adminPanel{min-height:100vh;background:var(--cream);display:flex;}
   .admin-sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:26px 18px;
     display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;}
@@ -130,7 +137,6 @@
   .btn-gold{background:var(--gold);color:var(--ink);border:none;padding:11px 20px;border-radius:999px;
     font-weight:700;font-size:13px;}
   .btn-gold:hover{background:var(--gold-light);}
-  .btn-gold:disabled{opacity:.6;cursor:default;}
   .btn-danger{background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;}
   .btn-link{background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;}
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
@@ -141,8 +147,6 @@
   .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
   .badge.pendiente{background:#fbe9d7;color:#a55b1f;}
   .badge.pagado{background:#e2f0e3;color:var(--success);}
-  .badge.conectado{background:#e2f0e3;color:var(--success);}
-  .badge.desconectado{background:#fbe0dd;color:var(--danger);}
   .icon-picker{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
   .icon-picker label{border:1px solid var(--line);border-radius:10px;padding:8px 0;display:flex;
     align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
@@ -161,7 +165,7 @@
   .stat-box .value{font-size:26px;font-family:var(--font-display);font-weight:700;margin-top:4px;}
   .search-input{padding:10px 14px;border-radius:10px;border:1px solid var(--line);font-size:13.5px;width:220px;background:#fff;}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--cream);
-    padding:12px 22px;border-radius:999px;font-size:13.5px;z-index:200;box-shadow:var(--shadow);max-width:80vw;text-align:center;}
+    padding:12px 22px;border-radius:999px;font-size:13.5px;z-index:200;box-shadow:var(--shadow);}
   .empty-state{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
   .field-row-flex{display:flex;gap:10px;align-items:flex-end;}
   .thumb-preview{width:70px;height:70px;border-radius:10px;object-fit:cover;border:1px solid var(--line);}
@@ -219,23 +223,19 @@
       <h3>Reservar cita</h3>
       <p class="modal-sub">Completa tus datos y elige el servicio.</p>
       <form id="bookingForm">
-        <div class="field"><label>Nombre completo</label><input type="text" id="bkName" required></div>
+        <div class="grid-2">
+          <div class="field"><label>Nombres</label><input type="text" id="bkNombres" required></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="bkApellidos" required></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="bkDoi" required></div>
+          <div class="field"><label>Fecha de nacimiento</label><input type="date" id="bkBirthdate" required></div>
+        </div>
         <div class="field"><label>Teléfono</label><input type="tel" id="bkPhone" required></div>
         <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
         <div class="grid-2">
           <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
           <div class="field"><label>Hora</label><input type="time" id="bkTime" required></div>
-        </div>
-        <div class="field">
-          <label>Método de pago</label>
-          <select id="bkPaymentMethod">
-            <option value="Efectivo">Efectivo</option>
-            <option value="Yape">Yape</option>
-          </select>
-        </div>
-        <div class="field hidden" id="bkYapeFieldWrap">
-          <label>Código de operación Yape</label>
-          <input type="text" id="bkYapeCode" placeholder="Ej. 123456">
         </div>
         <div class="field"><label>Notas (opcional)</label><textarea id="bkNotes" placeholder="Ej. corte con degradado, alergias, etc."></textarea></div>
         <div class="modal-actions">
@@ -247,7 +247,7 @@
     <div id="bookingConfirmWrap" class="hidden confirm-box">
       <div class="check">✓</div>
       <h3>¡Reserva recibida!</h3>
-      <p class="modal-sub" id="bookingConfirmText">Te esperamos. El negocio confirmará tu horario.</p>
+      <p class="modal-sub">Te esperamos. El negocio confirmará tu horario.</p>
       <button class="btn-gold" data-close="bookingModalBackdrop">Cerrar</button>
     </div>
   </div>
@@ -344,13 +344,18 @@
         <h3 id="clientFormTitle">Agregar cliente</h3>
         <input type="hidden" id="cliEditId">
         <div class="grid-2">
-          <div class="field"><label>Nombre</label><input type="text" id="cliName"></div>
-          <div class="field"><label>Teléfono</label><input type="text" id="cliPhone"></div>
+          <div class="field"><label>Nombres</label><input type="text" id="cliNombres"></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="cliApellidos"></div>
         </div>
         <div class="grid-2">
-          <div class="field"><label>Email (opcional)</label><input type="email" id="cliEmail"></div>
-          <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
+          <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="cliDoi"></div>
+          <div class="field"><label>Fecha de nacimiento</label><input type="date" id="cliBirthdate"></div>
         </div>
+        <div class="grid-2">
+          <div class="field"><label>Teléfono</label><input type="text" id="cliPhone"></div>
+          <div class="field"><label>Email (opcional)</label><input type="email" id="cliEmail"></div>
+        </div>
+        <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
         <div class="modal-actions" style="margin-top:6px;">
           <button class="btn-gold" id="saveClientBtn">Guardar cliente</button>
           <button class="btn-secondary hidden" id="cancelEditClientBtn">Cancelar edición</button>
@@ -359,7 +364,7 @@
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table>
-          <thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Cliente desde</th><th></th></tr></thead>
+          <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Teléfono</th><th>Cliente desde</th><th></th></tr></thead>
           <tbody id="clientsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="clientsEmpty">Aún no tienes clientes registrados.</div>
@@ -368,10 +373,7 @@
 
     <!-- TAB: PAGOS -->
     <section class="admin-tab-panel hidden" data-panel="pagos">
-      <div class="admin-panel-header">
-        <h2>Pagos y citas</h2>
-        <span class="badge" id="supabaseStatusBadge">Verificando Supabase…</span>
-      </div>
+      <div class="admin-panel-header"><h2>Pagos y citas</h2></div>
 
       <div class="stat-row">
         <div class="stat-box"><div class="label">Ingresos cobrados</div><div class="value" id="statPaid">$0.00</div></div>
@@ -380,7 +382,7 @@
       </div>
 
       <div class="admin-card">
-        <h3>Registrar cobro manual (local)</h3>
+        <h3>Registrar cobro manual</h3>
         <div class="grid-2">
           <div class="field"><label>Cliente</label><select id="payClient"></select></div>
           <div class="field"><label>Servicio</label><select id="payService"></select></div>
@@ -391,7 +393,7 @@
         </div>
         <div class="grid-2">
           <div class="field"><label>Método de pago</label>
-            <select id="payMethod"><option>Efectivo</option><option>Yape</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select>
+            <select id="payMethod"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select>
           </div>
           <div class="field"><label>Estado</label>
             <select id="payStatus"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
@@ -407,20 +409,6 @@
         </table>
         <div class="empty-state hidden" id="paymentsEmpty">No hay registros de pago todavía.</div>
       </div>
-
-      <div class="admin-card">
-        <h3>Citas registradas en Supabase (reservas del sitio)</h3>
-        <p class="modal-sub" style="margin-bottom:14px;">Estas son las reservas que los clientes hicieron desde el sitio público y que se enviaron a la base de datos en la nube.</p>
-        <div class="modal-actions" style="margin-top:0;margin-bottom:14px;">
-          <button class="btn-gold" id="refreshSupabaseBtn">Actualizar desde Supabase</button>
-        </div>
-        <div style="overflow-x:auto;">
-          <table>
-            <thead><tr><th>Cliente</th><th>Servicio</th><th>Hora</th><th>Método</th><th>Código Yape</th></tr></thead>
-            <tbody id="supabaseCitasBody"><tr><td colspan="5" class="empty-state">Presiona "Actualizar" para cargar.</td></tr></tbody>
-          </table>
-        </div>
-      </div>
     </section>
 
     <!-- TAB: AJUSTES -->
@@ -435,7 +423,7 @@
 
       <div class="admin-card">
         <h3>Respaldo de datos</h3>
-        <p class="modal-sub" style="margin-bottom:14px;">Este sitio guarda la configuración, servicios, clientes y pagos locales en el navegador donde lo abras. Las reservas del público también se envían a Supabase. Descarga un respaldo local regularmente y guárdalo en un lugar seguro.</p>
+        <p class="modal-sub" style="margin-bottom:14px;">Este sitio guarda todo (clientes, servicios, pagos) en el navegador donde lo abras. Descarga un respaldo regularmente y guárdalo en un lugar seguro.</p>
         <div class="modal-actions" style="margin-top:0;">
           <button class="btn-gold" id="exportBackupBtn">Descargar respaldo (.json)</button>
           <label class="btn-secondary" style="display:inline-flex;align-items:center;">Restaurar respaldo
@@ -446,115 +434,14 @@
 
       <div class="admin-card">
         <h3>Zona de riesgo</h3>
-        <p class="modal-sub" style="margin-bottom:14px;">Esto borra todos los clientes, pagos y servicios personalizados de este navegador. No afecta lo ya guardado en Supabase.</p>
-        <button class="btn-danger" id="resetAllBtn">Borrar todos los datos locales</button>
+        <p class="modal-sub" style="margin-bottom:14px;">Esto borra todos los clientes, pagos y servicios personalizados de este navegador.</p>
+        <button class="btn-danger" id="resetAllBtn">Borrar todos los datos</button>
       </div>
     </section>
   </main>
 </div>
 
 <script>
-/* ============================================================
-   SUPABASE — conexión con la base de datos en la nube
-   ============================================================ */
-const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
-
-let supabaseClient = null;
-try{
-  if(window.supabase && typeof window.supabase.createClient === "function"){
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  } else {
-    console.error("La librería de Supabase no cargó correctamente.");
-  }
-}catch(e){
-  console.error("No se pudo inicializar Supabase:", e);
-  supabaseClient = null;
-}
-
-// Guarda una nueva cita en la tabla "citas" de Supabase.
-// Devuelve {ok:true} o {ok:false, error}. Nunca lanza (throw) hacia quien la llama.
-async function insertarCitaSupabase(cita){
-  if(!supabaseClient){
-    return {ok:false, error:"Supabase no está disponible en este momento."};
-  }
-  try{
-    const { error } = await supabaseClient.from('citas').insert([cita]);
-    if(error){
-      console.error("Error al insertar cita en Supabase:", error);
-      return {ok:false, error: error.message || "Error desconocido de Supabase."};
-    }
-    return {ok:true};
-  }catch(err){
-    console.error("Error de conexión con Supabase:", err);
-    return {ok:false, error: (err && err.message) ? err.message : "Error de conexión."};
-  }
-}
-
-// Carga las citas guardadas en Supabase y las pinta en la tabla del panel admin.
-async function cargarCitasSupabase(){
-  const tbody = document.getElementById("supabaseCitasBody");
-  if(!tbody) return;
-  if(!supabaseClient){
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Supabase no está configurado o no cargó. Revisa tu conexión a internet.</td></tr>`;
-    return;
-  }
-  tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Cargando citas…</td></tr>`;
-  try{
-    const { data, error } = await supabaseClient.from('citas').select('*').order('id', {ascending:false});
-    if(error){
-      console.error("Error al leer citas de Supabase:", error);
-      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error al cargar: ${escapeHtml(error.message)}</td></tr>`;
-      showToast("No se pudieron cargar las citas de Supabase.");
-      return;
-    }
-    if(!data || data.length === 0){
-      tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Aún no hay citas registradas en Supabase.</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = "";
-    data.forEach(item=>{
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(item.cliente_nombre || "—")}</td>
-        <td>${escapeHtml(item.servicio || "—")}</td>
-        <td>${escapeHtml(item.hora || "—")}</td>
-        <td>${escapeHtml(item.metodo_pago || "—")}</td>
-        <td>${escapeHtml(item.codigo_yape || "—")}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }catch(err){
-    console.error("Error de conexión al cargar citas:", err);
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error de conexión: ${escapeHtml(err.message||"desconocido")}</td></tr>`;
-    showToast("Error de conexión con Supabase.");
-  }
-}
-
-// Revisa si la conexión con Supabase responde, para mostrar el estado en el panel.
-async function verificarEstadoSupabase(){
-  const badge = document.getElementById("supabaseStatusBadge");
-  if(!badge) return;
-  if(!supabaseClient){
-    badge.textContent = "Supabase desconectado";
-    badge.className = "badge desconectado";
-    return;
-  }
-  try{
-    const { error } = await supabaseClient.from('citas').select('id', {count:'exact', head:true});
-    if(error){
-      badge.textContent = "Supabase con errores";
-      badge.className = "badge desconectado";
-    } else {
-      badge.textContent = "Supabase conectado";
-      badge.className = "badge conectado";
-    }
-  }catch(err){
-    badge.textContent = "Supabase desconectado";
-    badge.className = "badge desconectado";
-  }
-}
-
 /* ============================================================
    ICON LIBRARY (inline SVG, line-style, currentColor)
    ============================================================ */
@@ -576,7 +463,7 @@ const ICONS = {
 };
 
 /* ============================================================
-   DEFAULT DATA (configuración local: sitio, servicios, clientes, pagos)
+   DEFAULT DATA
    ============================================================ */
 function defaultData(){
   return {
@@ -612,9 +499,9 @@ function loadData(){
     if(raw){ DATA = JSON.parse(raw); }
     else { DATA = defaultData(); }
   }catch(e){
-    console.error("Error al leer datos locales:", e);
     DATA = defaultData();
   }
+  // backfill in case of older backups missing fields
   const d = defaultData();
   DATA.site = Object.assign({}, d.site, DATA.site||{});
   if(!Array.isArray(DATA.services)) DATA.services = d.services;
@@ -627,8 +514,7 @@ function saveData(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
   }catch(e){
-    console.error("Error al guardar datos locales:", e);
-    showToast("No se pudo guardar localmente (almacenamiento no disponible).");
+    showToast("No se pudo guardar (almacenamiento no disponible en esta vista previa).");
   }
 }
 
@@ -639,19 +525,13 @@ function showToast(msg){
   el.className = "toast";
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(()=> el.remove(), 3200);
+  setTimeout(()=> el.remove(), 2400);
 }
 
 function money(n){
   const num = parseFloat(n);
   if(isNaN(num)) return "$0.00";
   return "$" + num.toFixed(2);
-}
-
-function escapeHtml(str){
-  const div = document.createElement("div");
-  div.textContent = str == null ? "" : String(str);
-  return div.innerHTML;
 }
 
 /* ============================================================
@@ -701,24 +581,24 @@ function renderPublicSite(){
     });
   });
 
+  // keep booking service select in sync
   const bkService = document.getElementById("bkService");
   bkService.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
+}
+
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
 }
 
 /* ============================================================
    BOOKING MODAL
    ============================================================ */
-function toggleYapeField(selectEl){
-  const val = selectEl.value;
-  document.getElementById("bkYapeFieldWrap").classList.toggle("hidden", val !== "Yape");
-}
-document.getElementById("bkPaymentMethod").addEventListener("change", (e)=> toggleYapeField(e.target));
-
 function openBookingModal(serviceId){
   document.getElementById("bookingFormWrap").classList.remove("hidden");
   document.getElementById("bookingConfirmWrap").classList.add("hidden");
   document.getElementById("bookingForm").reset();
-  document.getElementById("bkYapeFieldWrap").classList.add("hidden");
   if(serviceId){ document.getElementById("bkService").value = serviceId; }
   document.getElementById("bookingModalBackdrop").classList.remove("hidden");
 }
@@ -730,33 +610,33 @@ document.querySelectorAll("[data-close]").forEach(btn=>{
   });
 });
 
-document.getElementById("bookingForm").addEventListener("submit", async (e)=>{
+document.getElementById("bookingForm").addEventListener("submit", (e)=>{
   e.preventDefault();
-  const name = document.getElementById("bkName").value.trim();
+  const nombres = document.getElementById("bkNombres").value.trim();
+  const apellidos = document.getElementById("bkApellidos").value.trim();
+  const doi = document.getElementById("bkDoi").value.trim();
+  const birthDate = document.getElementById("bkBirthdate").value;
   const phone = document.getElementById("bkPhone").value.trim();
   const serviceId = document.getElementById("bkService").value;
   const date = document.getElementById("bkDate").value;
   const time = document.getElementById("bkTime").value;
   const notes = document.getElementById("bkNotes").value.trim();
-  const metodoPago = document.getElementById("bkPaymentMethod").value;
-  const codigoYape = document.getElementById("bkYapeCode").value.trim();
+  const fullName = (nombres + " " + apellidos).trim();
 
-  if(metodoPago === "Yape" && !codigoYape){
-    showToast("Ingresa el código de operación de Yape para continuar.");
-    return;
+  // find or create client by DOI (unique identifier)
+  let client = DATA.clients.find(c => c.doi === doi);
+  if(!client){
+    client = {id: uid("c"), nombres, apellidos, name: fullName, doi, birthDate, phone, email:"", notes:"", createdAt: new Date().toISOString().slice(0,10)};
+    DATA.clients.push(client);
+  } else {
+    client.nombres = nombres || client.nombres;
+    client.apellidos = apellidos || client.apellidos;
+    client.name = fullName || client.name;
+    client.birthDate = birthDate || client.birthDate;
+    client.phone = phone || client.phone;
   }
 
   const service = DATA.services.find(s=>s.id===serviceId);
-
-  // 1) Guardar localmente (cliente + registro de pago/cita), como respaldo inmediato.
-  let client = DATA.clients.find(c => c.phone === phone);
-  if(!client){
-    client = {id: uid("c"), name, phone, email:"", notes:"", createdAt: new Date().toISOString().slice(0,10)};
-    DATA.clients.push(client);
-  } else {
-    client.name = name || client.name;
-  }
-
   DATA.payments.push({
     id: uid("p"),
     clientId: client.id,
@@ -766,36 +646,14 @@ document.getElementById("bookingForm").addEventListener("submit", async (e)=>{
     date: date,
     time: time,
     amount: service && service.price ? service.price : "",
-    method: metodoPago,
+    method: "",
     status: "pendiente",
-    notes: notes + (metodoPago === "Yape" ? ` (Código Yape: ${codigoYape})` : ""),
+    notes: notes,
   });
   saveData();
 
-  // 2) Intentar sincronizar con Supabase (tabla "citas").
-  const submitBtn = e.target.querySelector('button[type="submit"]');
-  if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = "Guardando…"; }
-
-  const resultado = await insertarCitaSupabase({
-    cliente_nombre: name,
-    servicio: service ? service.title : "",
-    metodo_pago: metodoPago,
-    codigo_yape: metodoPago === "Yape" ? codigoYape : "",
-    hora: time
-  });
-
-  if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = "Confirmar reserva"; }
-
   document.getElementById("bookingFormWrap").classList.add("hidden");
   document.getElementById("bookingConfirmWrap").classList.remove("hidden");
-
-  if(resultado.ok){
-    document.getElementById("bookingConfirmText").textContent = "Te esperamos. El negocio confirmará tu horario.";
-  } else {
-    document.getElementById("bookingConfirmText").textContent =
-      "Tu reserva quedó guardada en este dispositivo, pero no se pudo enviar al servidor. El negocio la verá al sincronizar.";
-    console.error("Fallo de sincronización con Supabase:", resultado.error);
-  }
 });
 
 /* ============================================================
@@ -828,7 +686,6 @@ function enterAdmin(){
   renderAdminServices();
   renderAdminClients();
   renderAdminPayments();
-  verificarEstadoSupabase();
   switchTab("sitio");
 }
 
@@ -884,7 +741,6 @@ function fileToDataUrl(file, cb){
   if(file.size > 3.5*1024*1024){ showToast("Imagen muy pesada, usa una menor a 3.5MB."); return; }
   const reader = new FileReader();
   reader.onload = ()=> cb(reader.result);
-  reader.onerror = ()=> showToast("No se pudo leer la imagen.");
   reader.readAsDataURL(file);
 }
 
@@ -995,15 +851,16 @@ function renderAdminClients(filter){
   const tbody = document.getElementById("clientsTableBody");
   tbody.innerHTML = "";
   const f = (filter||"").toLowerCase();
-  const list = DATA.clients.filter(c => !f || c.name.toLowerCase().includes(f) || (c.phone||"").includes(f));
+  const list = DATA.clients.filter(c => !f || (c.name||"").toLowerCase().includes(f) || (c.phone||"").includes(f) || (c.doi||"").toLowerCase().includes(f));
   document.getElementById("clientsEmpty").classList.toggle("hidden", list.length>0);
 
   list.slice().reverse().forEach(c=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${escapeHtml(c.name)}</td>
+      <td>${escapeHtml(c.doi||"—")}</td>
+      <td>${escapeHtml(c.birthDate||"—")}</td>
       <td>${escapeHtml(c.phone)}</td>
-      <td>${escapeHtml(c.email||"—")}</td>
       <td>${escapeHtml(c.createdAt||"—")}</td>
       <td style="white-space:nowrap;">
         <button class="btn-link" data-edit-client="${c.id}">Editar</button>
@@ -1032,7 +889,10 @@ function loadClientForEdit(id){
   if(!c) return;
   document.getElementById("clientFormTitle").textContent = "Editar cliente";
   document.getElementById("cliEditId").value = c.id;
-  document.getElementById("cliName").value = c.name;
+  document.getElementById("cliNombres").value = c.nombres||c.name||"";
+  document.getElementById("cliApellidos").value = c.apellidos||"";
+  document.getElementById("cliDoi").value = c.doi||"";
+  document.getElementById("cliBirthdate").value = c.birthDate||"";
   document.getElementById("cliPhone").value = c.phone;
   document.getElementById("cliEmail").value = c.email||"";
   document.getElementById("cliNotes").value = c.notes||"";
@@ -1044,23 +904,27 @@ document.getElementById("cancelEditClientBtn").addEventListener("click", resetCl
 function resetClientForm(){
   document.getElementById("clientFormTitle").textContent = "Agregar cliente";
   document.getElementById("cliEditId").value = "";
-  ["cliName","cliPhone","cliEmail","cliNotes"].forEach(id=> document.getElementById(id).value="");
+  ["cliNombres","cliApellidos","cliDoi","cliBirthdate","cliPhone","cliEmail","cliNotes"].forEach(id=> document.getElementById(id).value="");
   document.getElementById("cancelEditClientBtn").classList.add("hidden");
 }
 
 document.getElementById("saveClientBtn").addEventListener("click", ()=>{
-  const name = document.getElementById("cliName").value.trim();
+  const nombres = document.getElementById("cliNombres").value.trim();
+  const apellidos = document.getElementById("cliApellidos").value.trim();
   const phone = document.getElementById("cliPhone").value.trim();
-  if(!name || !phone){ showToast("Nombre y teléfono son obligatorios."); return; }
+  if(!nombres || !apellidos || !phone){ showToast("Nombres, apellidos y teléfono son obligatorios."); return; }
+  const doi = document.getElementById("cliDoi").value.trim();
+  const birthDate = document.getElementById("cliBirthdate").value;
   const email = document.getElementById("cliEmail").value.trim();
   const notes = document.getElementById("cliNotes").value.trim();
   const editId = document.getElementById("cliEditId").value;
+  const name = (nombres + " " + apellidos).trim();
 
   if(editId){
     const c = DATA.clients.find(c=>c.id===editId);
-    c.name=name; c.phone=phone; c.email=email; c.notes=notes;
+    c.nombres=nombres; c.apellidos=apellidos; c.name=name; c.doi=doi; c.birthDate=birthDate; c.phone=phone; c.email=email; c.notes=notes;
   } else {
-    DATA.clients.push({id: uid("c"), name, phone, email, notes, createdAt: new Date().toISOString().slice(0,10)});
+    DATA.clients.push({id: uid("c"), nombres, apellidos, name, doi, birthDate, phone, email, notes, createdAt: new Date().toISOString().slice(0,10)});
   }
   saveData();
   resetClientForm();
@@ -1152,11 +1016,6 @@ function renderAdminPayments(){
   });
 }
 
-document.getElementById("refreshSupabaseBtn").addEventListener("click", ()=>{
-  cargarCitasSupabase();
-  verificarEstadoSupabase();
-});
-
 /* ============================================================
    ADMIN: TAB AJUSTES
    ============================================================ */
@@ -1191,20 +1050,18 @@ document.getElementById("importBackupFile").addEventListener("change", (e)=>{
       renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
       showToast("Respaldo restaurado.");
     }catch(err){
-      console.error("Error al restaurar respaldo:", err);
-      showToast("Archivo inválido, no se pudo restaurar.");
+      showToast("Archivo inválido.");
     }
   };
-  reader.onerror = ()=> showToast("No se pudo leer el archivo de respaldo.");
   reader.readAsText(file);
 });
 
 document.getElementById("resetAllBtn").addEventListener("click", ()=>{
-  if(confirm("Esta acción no se puede deshacer. ¿Borrar todos los datos locales?")){
+  if(confirm("Esta acción no se puede deshacer. ¿Borrar todos los datos?")){
     DATA = defaultData();
     saveData();
     renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
-    showToast("Datos locales restablecidos.");
+    showToast("Datos restablecidos.");
   }
 });
 
