@@ -33,7 +33,7 @@
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--cream);}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:linear-gradient(180deg, #f7f8ff 0%, #eef2fb 100%);}
   h1,h2,h3{font-family:var(--font-display);margin:0;}
   p{margin:0;}
   button{font-family:inherit;cursor:pointer;}
@@ -2139,7 +2139,6 @@ function renderWorkerCitas(){
       </div>
       <div class="cita-card-actions" style="flex-direction:column;align-items:flex-start;gap:10px;">
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;width:100%;">
-          ${client && client.phone ? `<a class="btn-call" href="tel:${escapeHtml(client.phone)}" title="Llamar">📞</a>` : ""}
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
             <span>Método</span>
             <select class="table-select" data-method-for="${p.id}">
@@ -2153,7 +2152,7 @@ function renderWorkerCitas(){
           <input type="text" class="cita-amount-input" data-yape-code-for="${p.id}" placeholder="Código Yape" value="${escapeHtml(p.yape_code || "")}" style="width:170px;">
           <input type="time" class="cita-amount-input" data-yape-time-for="${p.id}" value="${escapeHtml(p.time || "")}" style="width:140px;">
         </div>
-        <button class="btn-check" data-worker-mark-done="${p.id}" title="Registrar pago">✓ Registrar pago</button>
+        <button class="btn-check" data-worker-mark-done="${p.id}" title="Registrar pago">💳 Pagar</button>
       </div>`;
     wrap.appendChild(card);
   });
