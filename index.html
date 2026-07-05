@@ -1270,7 +1270,12 @@ async function actualizarPagoSupabase(id, datos) {
         amount: datos.amount,
         method: datos.method,
         workerid: datos.workerid,
-        workername: datos.workername
+        workername: datos.workername,
+        yape_code: datos.yape_code,
+        date: datos.date,
+        time: datos.time,
+        finished_at: datos.finished_at,
+        duration_minutes: datos.duration_minutes
       })
       .eq('id', id);
 
