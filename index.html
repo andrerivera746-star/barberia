@@ -27,6 +27,9 @@
     --shadow: 0 16px 36px rgba(28,23,18,0.16);
     --font-display: 'Fraunces', serif;
     --font-body: 'Inter', sans-serif;
+    --brand-indigo:#2e3192;
+    --brand-indigo-light:#4d50c4;
+    --brand-bg:#f4f5fb;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -82,70 +85,7 @@
   .connection-bar .btn-test:hover { background: var(--gold-light); transform: scale(1.05); }
   .connection-bar .btn-test:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  /* ---------- Signature razor-stroke divider ---------- */
-  .razor-divider{width:86px;height:18px;margin:18px auto 0;opacity:.85;}
-  .razor-divider path{stroke:var(--gold-light);stroke-width:1.6;fill:none;stroke-linecap:round;}
-  .razor-divider circle{fill:var(--gold-light);}
-  .section-eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;}
-
-  /* ---------- Header ---------- */
-  .site-header{position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;
-    padding:16px 5%;background:rgba(28,23,18,.92);backdrop-filter:blur(6px);color:var(--cream);}
-  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.02em;}
-  .logo img{height:34px;width:auto;border-radius:6px;}
-  .site-nav{display:flex;gap:28px;font-size:14px;letter-spacing:.03em;}
-  .site-nav a{text-decoration:none;color:var(--cream);opacity:.85;transition:opacity .2s;}
-  .site-nav a:hover{opacity:1;}
-  .admin-entry{background:transparent;border:1px solid rgba(247,242,231,.35);color:var(--cream);
-    width:38px;height:38px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;
-    transition:background .2s;}
-  .admin-entry:hover{background:rgba(247,242,231,.15);}
-
-  /* ---------- Hero ---------- */
-  .hero{position:relative;min-height:78vh;display:flex;align-items:center;justify-content:center;
-    background-size:cover;background-position:center;text-align:center;color:var(--cream);}
-  .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(20,16,12,.55), rgba(20,16,12,.72));}
-  .hero-content{position:relative;z-index:2;max-width:720px;padding:0 24px;}
-  .hero-content h1{font-size:clamp(34px,5.4vw,58px);font-weight:700;line-height:1.08;}
-  .hero-content p{margin-top:16px;font-size:16px;color:rgba(247,242,231,.82);}
-  .btn-primary{display:inline-block;margin-top:30px;background:var(--gold);color:var(--ink);
-    padding:14px 30px;border-radius:999px;font-weight:600;font-size:14px;letter-spacing:.03em;text-decoration:none;
-    border:none;transition:transform .15s, background .2s;}
-  .btn-primary:hover{background:var(--gold-light);transform:translateY(-1px);}
-  .btn-ghost{display:inline-block;background:transparent;border:1px solid var(--ink);color:var(--ink);
-    padding:12px 26px;border-radius:999px;font-weight:600;font-size:14px;}
-
-  /* ---------- Services ---------- */
-  .services{padding:90px 6% 60px;text-align:center;}
-  .services h2{font-size:clamp(26px,3.4vw,36px);margin-top:10px;}
-  .services-grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;text-align:left;}
-  @media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr);}}
-  @media(max-width:600px){.services-grid{grid-template-columns:1fr;}}
-  .service-card{background:#fff;border-radius:var(--radius);padding:34px 26px;box-shadow:var(--shadow);
-    display:flex;flex-direction:column;gap:16px;position:relative;border:1px solid var(--line);}
-  .service-icon{width:46px;height:46px;color:var(--gold);}
-  .service-icon svg{width:100%;height:100%;}
-  .service-card h3{font-size:19px;font-weight:700;font-family:var(--font-body);text-transform:capitalize;}
-  .service-price{font-size:13px;color:var(--muted);font-weight:600;}
-  .service-book-btn{margin-top:auto;align-self:flex-start;background:none;border:none;color:var(--gold);
-    font-weight:600;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;}
-
-  /* ---------- CTA / Booking section ---------- */
-  .cta-book{background:var(--ink);color:var(--cream);text-align:center;padding:80px 6%;margin-top:40px;}
-  .cta-book h2{font-size:clamp(24px,3vw,32px);}
-  .cta-book p{color:rgba(247,242,231,.75);margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;}
-
-  /* ---------- Footer ---------- */
-  footer{padding:34px 6%;text-align:center;font-size:13px;color:var(--muted);border-top:1px solid var(--line);}
-  footer a{color:var(--gold);text-decoration:none;}
-
-  /* ---------- Modals ---------- */
-  .modal-backdrop{position:fixed;inset:0;background:rgba(20,16,12,.6);z-index:100;display:flex;
-    align-items:center;justify-content:center;padding:20px;}
-  .modal-box{background:#fff;border-radius:var(--radius);max-width:460px;width:100%;padding:32px;
-    box-shadow:var(--shadow);max-height:88vh;overflow-y:auto;}
-  .modal-box h3{font-size:22px;margin-bottom:6px;}
-  .modal-box .modal-sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
+  /* ---------- Formularios compartidos ---------- */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
     color:var(--muted);margin-bottom:6px;}
@@ -156,11 +96,31 @@
   .modal-actions{display:flex;gap:10px;margin-top:22px;}
   .btn-secondary{background:var(--cream-dark);border:none;padding:12px 20px;border-radius:999px;font-weight:600;
     font-size:14px;color:var(--ink);}
-  .close-x{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;color:var(--muted);}
-  .modal-box{position:relative;}
-  .confirm-box{text-align:center;padding:10px 0;}
-  .confirm-box .check{width:52px;height:52px;border-radius:50%;background:#e9f3ea;color:var(--success);
-    display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;}
+
+  /* ---------- LOGIN GATE (branding tipo Cignifi) ---------- */
+  #loginGate{min-height:100vh;background:var(--brand-bg);}
+  .login-splash{position:fixed;inset:0;background:var(--brand-indigo);display:flex;align-items:center;
+    justify-content:center;z-index:500;animation:splashFade 2s ease forwards;}
+  .login-splash-logo{font-family:var(--font-display);font-weight:700;font-size:30px;color:#fff;letter-spacing:.02em;}
+  @keyframes splashFade{
+    0%{opacity:1;}
+    60%{opacity:1;}
+    100%{opacity:0;visibility:hidden;pointer-events:none;}
+  }
+  .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .login-card{width:100%;max-width:380px;}
+  .login-brand{font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--brand-indigo);
+    text-align:center;margin-bottom:28px;letter-spacing:.02em;}
+  .login-title{font-size:20px;font-weight:700;margin-bottom:22px;color:var(--ink);text-align:center;}
+  .login-error{color:var(--danger);font-size:13px;margin-bottom:10px;}
+  #loginGate .role-tabs{background:#eceefa;}
+  #loginGate .role-tab-btn.active{background:#fff;color:var(--brand-indigo);}
+  #loginGate .field input{background:var(--brand-bg);border:1px solid transparent;border-radius:12px;
+    padding:14px 16px;font-size:14px;}
+  #loginGate .field input:focus{outline:none;border-color:var(--brand-indigo-light);background:#fff;}
+  .btn-login{width:100%;background:var(--brand-indigo);color:#fff;border:none;padding:15px;border-radius:12px;
+    font-weight:700;font-size:14.5px;margin-top:6px;transition:background .2s;}
+  .btn-login:hover{background:var(--brand-indigo-light);}
 
   /* ---------- LOGIN ROLE TABS ---------- */
   .role-tabs{display:flex;gap:6px;background:var(--cream-dark);padding:4px;border-radius:12px;margin-bottom:20px;}
@@ -215,6 +175,7 @@
   .icon-picker label:has(input:checked){border-color:var(--gold);background:var(--cream);}
   .icon-picker svg{width:20px;height:20px;}
   .services-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+  .service-icon svg{width:100%;height:100%;}
   .service-admin-card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--cream);}
   .service-admin-card .top{display:flex;justify-content:space-between;align-items:flex-start;}
   .service-admin-card .service-icon{width:30px;height:30px;margin-bottom:8px;}
@@ -329,110 +290,35 @@
 </head>
 <body>
 
-<!-- ================= PUBLIC SITE ================= -->
-<div id="publicSite">
-  <header class="site-header">
-    <div class="logo" id="logoDisplay"></div>
-    <nav class="site-nav">
-      <a href="#servicios">Servicios</a>
-      <a href="#reservar">Reservar</a>
-      <a href="#contacto">Contacto</a>
-    </nav>
-    <button class="admin-entry" id="adminEntryBtn" title="Panel de administración">⚙</button>
-  </header>
+<!-- ================= LOGIN GATE ================= -->
+<div id="loginGate">
+  <div class="login-splash" id="loginSplash">
+    <div class="login-splash-logo" id="splashLogoDisplay">✂ Barbería</div>
+  </div>
 
-  <section class="hero" id="heroSection">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-      <p class="section-eyebrow" style="color:var(--gold-light)">Barbería tradicional</p>
-      <h1 id="heroTitle">Servicios de barbería</h1>
-      <p id="heroSubtitle">Cortes, afeitado clásico y cuidado de barba con oficio de barrio.</p>
-      <svg class="razor-divider" viewBox="0 0 86 18"><path d="M2 9 C 20 2, 30 16, 48 9 S 74 2, 84 9"/><circle cx="84" cy="9" r="2.2"/></svg>
-      <div><a href="#reservar" class="btn-primary">Reservar una cita</a></div>
-    </div>
-  </section>
+  <div class="login-screen">
+    <div class="login-card">
+      <div class="login-brand" id="loginBrandDisplay">✂ Barbería</div>
+      <h3 class="login-title">Iniciar sesión</h3>
 
-  <section class="services" id="servicios">
-    <p class="section-eyebrow">Lo que hacemos</p>
-    <h2 id="servicesTitle">Nuestros servicios</h2>
-    <div class="services-grid" id="servicesGrid"></div>
-  </section>
+      <div class="role-tabs">
+        <button type="button" class="role-tab-btn active" data-role-tab="admin">Administrador</button>
+        <button type="button" class="role-tab-btn" data-role-tab="worker">Trabajador</button>
+      </div>
 
-  <section class="cta-book" id="reservar">
-    <p class="section-eyebrow" style="color:var(--gold-light)">Sin filas, sin llamadas</p>
-    <h2>Agenda tu cita en un minuto</h2>
-    <p>Elige tu servicio, deja tus datos y te confirmamos por celular.</p>
-    <div style="margin-top:26px;"><button class="btn-primary" id="openBookingBtn">Reservar ahora</button></div>
-  </section>
+      <form id="loginForm" data-role-form="admin">
+        <div class="field"><input type="password" id="loginPassword" placeholder="Contraseña" required></div>
+        <p id="loginError" class="hidden login-error">Contraseña incorrecta.</p>
+        <button type="submit" class="btn-login">Entrar</button>
+      </form>
 
-  <footer id="contacto">
-    <p id="footerText">Barbería — hecho con cuidado, corte a corte.</p>
-    <p style="margin-top:8px;">Panel de administración: <a href="#" id="adminEntryLink">acceder</a></p>
-  </footer>
-</div>
-
-<!-- ================= BOOKING MODAL ================= -->
-<div class="modal-backdrop hidden" id="bookingModalBackdrop">
-  <div class="modal-box">
-    <button class="close-x" data-close="bookingModalBackdrop">✕</button>
-    <div id="bookingFormWrap">
-      <h3>Reservar cita</h3>
-      <p class="modal-sub">Completa tus datos y elige el servicio.</p>
-      <form id="bookingForm">
-        <div class="grid-2">
-          <div class="field"><label>Nombres</label><input type="text" id="bkNombres" required></div>
-          <div class="field"><label>Apellidos</label><input type="text" id="bkApellidos" required></div>
-        </div>
-        <div class="grid-2">
-          <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="bkDoi" required></div>
-          <div class="field"><label>Fecha de nacimiento</label><input type="date" id="bkBirthdate" required></div>
-        </div>
-        <div class="field"><label>Celular</label><input type="tel" id="bkPhone" required></div>
-        <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
-        <div class="grid-2">
-          <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
-          <div class="field"><label>Hora</label><input type="time" id="bkTime" required></div>
-        </div>
-        <div class="field"><label>Notas (opcional)</label><textarea id="bkNotes" placeholder="Ej. corte con degradado, alergias, etc."></textarea></div>
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" data-close="bookingModalBackdrop">Cancelar</button>
-          <button type="submit" class="btn-gold">Confirmar reserva</button>
-        </div>
+      <form id="workerLoginForm" data-role-form="worker" class="hidden">
+        <div class="field"><input type="text" id="workerLoginUser" placeholder="Usuario" required></div>
+        <div class="field"><input type="password" id="workerLoginPassword" placeholder="Contraseña" required></div>
+        <p id="workerLoginError" class="hidden login-error">Usuario o contraseña incorrectos, o cuenta inactiva.</p>
+        <button type="submit" class="btn-login">Entrar</button>
       </form>
     </div>
-    <div id="bookingConfirmWrap" class="hidden confirm-box">
-      <div class="check">✓</div>
-      <h3>¡Reserva recibida!</h3>
-      <p class="modal-sub">Te esperamos. El negocio confirmará tu horario.</p>
-      <button class="btn-gold" data-close="bookingModalBackdrop">Cerrar</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================= ADMIN LOGIN MODAL ================= -->
-<div class="modal-backdrop hidden" id="loginModalBackdrop">
-  <div class="modal-box" style="max-width:360px;">
-    <button class="close-x" data-close="loginModalBackdrop">✕</button>
-    <h3>Acceso al panel</h3>
-    <p class="modal-sub">Elige tu rol e ingresa tus datos.</p>
-
-    <div class="role-tabs">
-      <button type="button" class="role-tab-btn active" data-role-tab="admin">Administrador</button>
-      <button type="button" class="role-tab-btn" data-role-tab="worker">Trabajador</button>
-    </div>
-
-    <form id="loginForm" data-role-form="admin">
-      <div class="field"><label>Contraseña</label><input type="password" id="loginPassword" required></div>
-      <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
-      <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
-    </form>
-
-    <form id="workerLoginForm" data-role-form="worker" class="hidden">
-      <div class="field"><label>Usuario</label><input type="text" id="workerLoginUser" required></div>
-      <div class="field"><label>Contraseña</label><input type="password" id="workerLoginPassword" required></div>
-      <p id="workerLoginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Usuario o contraseña incorrectos, o cuenta inactiva.</p>
-      <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
-    </form>
   </div>
 </div>
 
@@ -446,13 +332,13 @@
     <button class="admin-tab" data-tab="clientes">Clientes</button>
     <button class="admin-tab" data-tab="pagos">Pagos</button>
     <button class="admin-tab" data-tab="ajustes">Ajustes</button>
-    <button class="admin-back" id="backToSiteBtn">← Volver al sitio</button>
+    <button class="admin-back" id="backToSiteBtn">← Cerrar sesión</button>
   </aside>
 
   <main class="admin-main">
     <!-- TAB: SITIO -->
     <section class="admin-tab-panel" data-panel="sitio">
-      <div class="admin-panel-header"><h2>Apariencia del sitio</h2></div>
+      <div class="admin-panel-header"><h2>Marca</h2></div>
 
       <div class="admin-card">
         <h3>Logo</h3>
@@ -462,21 +348,6 @@
           <img id="logoPreview" class="thumb-preview hidden" alt="logo">
           <button type="button" class="btn-danger hidden" id="clearLogoBtn">Quitar imagen</button>
         </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>Fondo del encabezado (hero)</h3>
-        <div class="field"><label>URL de imagen</label><input type="text" id="cfgHeroUrl" placeholder="https://..."></div>
-        <div class="field"><label>O sube una imagen</label><input type="file" id="cfgHeroFile" accept="image/*"></div>
-        <img id="heroPreview" class="thumb-preview hidden" alt="fondo" style="width:120px;height:70px;">
-      </div>
-
-      <div class="admin-card">
-        <h3>Textos principales</h3>
-        <div class="field"><label>Título del encabezado</label><input type="text" id="cfgHeroTitle"></div>
-        <div class="field"><label>Subtítulo</label><input type="text" id="cfgHeroSubtitle"></div>
-        <div class="field"><label>Título de sección de servicios</label><input type="text" id="cfgServicesTitle"></div>
-        <div class="field"><label>Texto del pie de página</label><input type="text" id="cfgFooterText"></div>
       </div>
       <button class="btn-gold" id="saveSiteBtn">Guardar cambios</button>
     </section>
@@ -776,11 +647,6 @@ function defaultData(){
     site: {
       logoText: "✂ Barbería",
       logoImage: "",
-      heroUrl: "",
-      heroTitle: "Servicios de barbería",
-      heroSubtitle: "Cortes, afeitado clásico y cuidado de barba con oficio de barrio.",
-      servicesTitle: "Nuestros servicios",
-      footerText: "Barbería — hecho con cuidado, corte a corte.",
     },
     services: [
       {id: "s1", icon: "scissors", title: "Corte de pelo", price: ""},
@@ -969,7 +835,7 @@ async function cargarTodosLosDatos() {
     }
 
     saveDataLocal();
-    renderPublicSite();
+    renderLoginBrand();
     renderAdminServices();
     renderAdminClients();
     renderAdminPayments();
@@ -991,7 +857,7 @@ async function insertarClienteSupabase(cliente) {
     DATA.clients.push(cliente);
     saveDataLocal();
     renderAdminClients();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('💾 Cliente guardado localmente (sin conexión)');
     return cliente;
   }
@@ -1012,7 +878,7 @@ async function insertarClienteSupabase(cliente) {
       
       saveDataLocal();
       renderAdminClients();
-      renderPublicSite();
+      renderLoginBrand();
       showToast(`✅ Cliente "${cliente.name}" guardado en Supabase`);
       return data[0];
     }
@@ -1022,7 +888,7 @@ async function insertarClienteSupabase(cliente) {
     DATA.clients.push(cliente);
     saveDataLocal();
     renderAdminClients();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
     return cliente;
   }
@@ -1101,7 +967,7 @@ async function insertarServicioSupabase(servicio) {
     DATA.services.push(servicio);
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('💾 Servicio guardado localmente');
     return servicio;
   }
@@ -1120,7 +986,7 @@ async function insertarServicioSupabase(servicio) {
       else DATA.services.push(data[0]);
       saveDataLocal();
       renderAdminServices();
-      renderPublicSite();
+      renderLoginBrand();
       showToast(`✅ Servicio "${servicio.title}" guardado en Supabase`);
       return data[0];
     }
@@ -1129,7 +995,7 @@ async function insertarServicioSupabase(servicio) {
     DATA.services.push(servicio);
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('⚠️ Guardado localmente', 'error');
     return servicio;
   }
@@ -1142,7 +1008,7 @@ async function eliminarServicioSupabase(id) {
     DATA.services = DATA.services.filter(s => s.id !== id);
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('🗑️ Servicio eliminado localmente');
     return;
   }
@@ -1158,7 +1024,7 @@ async function eliminarServicioSupabase(id) {
     DATA.services = DATA.services.filter(s => s.id !== id);
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('✅ Servicio eliminado de Supabase');
   } catch (error) {
     console.error('Error al eliminar servicio:', error);
@@ -1172,7 +1038,7 @@ async function actualizarServicioSupabase(id, datos) {
     if (idx >= 0) DATA.services[idx] = { ...DATA.services[idx], ...datos };
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('💾 Servicio actualizado localmente');
     return;
   }
@@ -1193,7 +1059,7 @@ async function actualizarServicioSupabase(id, datos) {
     if (idx >= 0) DATA.services[idx] = { ...DATA.services[idx], ...datos };
     saveDataLocal();
     renderAdminServices();
-    renderPublicSite();
+    renderLoginBrand();
     showToast('✅ Servicio actualizado en Supabase');
   } catch (error) {
     console.error('Error al actualizar servicio:', error);
@@ -1401,149 +1267,34 @@ async function actualizarTrabajadorSupabase(id, datos) {
 }
 
 /* ============================================================
-   RENDER: PUBLIC SITE
+   RENDER: LOGIN BRAND
    ============================================================ */
-function renderPublicSite(){
+function renderLoginBrand(){
   const s = DATA.site;
-  document.getElementById("heroTitle").textContent = s.heroTitle;
-  document.getElementById("heroSubtitle").textContent = s.heroSubtitle;
-  document.getElementById("servicesTitle").textContent = s.servicesTitle;
-  document.getElementById("footerText").textContent = s.footerText;
-
-  const heroBg = s.heroImage || s.heroUrl;
-  const heroSection = document.getElementById("heroSection");
-  if(heroBg){
-    heroSection.style.backgroundImage = `url('${heroBg}')`;
-  } else {
-    heroSection.style.backgroundImage = "linear-gradient(135deg, #2a2118, #14100c)";
-  }
-
-  const logoEl = document.getElementById("logoDisplay");
-  logoEl.innerHTML = "";
-  if(s.logoImage){
-    const img = document.createElement("img");
-    img.src = s.logoImage;
-    logoEl.appendChild(img);
-  } else {
-    logoEl.textContent = s.logoText || "Barbería";
-  }
-
-  const grid = document.getElementById("servicesGrid");
-  grid.innerHTML = "";
-  DATA.services.forEach(svc => {
-    const card = document.createElement("div");
-    card.className = "service-card";
-    card.innerHTML = `
-      <div class="service-icon">${ICONS[svc.icon] || ICONS.star}</div>
-      <h3>${escapeHtml(svc.title)}</h3>
-      ${svc.price ? `<div class="service-price">${money(svc.price)}</div>` : ""}
-      <button class="service-book-btn" data-service-id="${svc.id}">Reservar este servicio →</button>
-    `;
-    grid.appendChild(card);
+  [document.getElementById("splashLogoDisplay"), document.getElementById("loginBrandDisplay")].forEach(el=>{
+    el.innerHTML = "";
+    if(s.logoImage){
+      const img = document.createElement("img");
+      img.src = s.logoImage;
+      img.style.height = "34px";
+      img.style.borderRadius = "6px";
+      el.appendChild(img);
+    } else {
+      el.textContent = s.logoText || "Barbería";
+    }
   });
-  grid.querySelectorAll(".service-book-btn").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      openBookingModal(btn.dataset.serviceId);
-    });
-  });
-
-  const bkService = document.getElementById("bkService");
-  bkService.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
 }
-
-/* ============================================================
-   BOOKING MODAL
-   ============================================================ */
-function openBookingModal(serviceId){
-  document.getElementById("bookingFormWrap").classList.remove("hidden");
-  document.getElementById("bookingConfirmWrap").classList.add("hidden");
-  document.getElementById("bookingForm").reset();
-  if(serviceId){ document.getElementById("bkService").value = serviceId; }
-  document.getElementById("bookingModalBackdrop").classList.remove("hidden");
-}
-
-document.getElementById("openBookingBtn").addEventListener("click", ()=> openBookingModal());
-document.querySelectorAll("[data-close]").forEach(btn=>{
-  btn.addEventListener("click", ()=>{
-    document.getElementById(btn.dataset.close).classList.add("hidden");
-  });
-});
-
-document.getElementById("bookingForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const nombres = document.getElementById("bkNombres").value.trim();
-  const apellidos = document.getElementById("bkApellidos").value.trim();
-  const doi = document.getElementById("bkDoi").value.trim();
-  const birthDate = document.getElementById("bkBirthdate").value;
-  const phone = document.getElementById("bkPhone").value.trim();
-  const serviceId = document.getElementById("bkService").value;
-  const date = document.getElementById("bkDate").value;
-  const time = document.getElementById("bkTime").value;
-  const notes = document.getElementById("bkNotes").value.trim();
-  const fullName = (nombres + " " + apellidos).trim();
-
-  let client = DATA.clients.find(c => c.doi === doi);
-  if(!client){
-    client = {
-      id: uid("c"), 
-      nombres, 
-      apellidos, 
-      name: fullName, 
-      doi, 
-      birthdate: birthDate, 
-      phone, 
-      email: "", 
-      notes: "", 
-      created_at: new Date().toISOString()
-    };
-    // Insertar en Supabase o local
-    await insertarClienteSupabase(client);
-  } else {
-    client.nombres = nombres || client.nombres;
-    client.apellidos = apellidos || client.apellidos;
-    client.name = fullName || client.name;
-    client.birthdate = birthDate || client.birthdate;
-    client.phone = phone || client.phone;
-    await actualizarClienteSupabase(client.id, client);
-  }
-
-  const service = DATA.services.find(s=>s.id===serviceId);
-  const pago = {
-    id: uid("p"),
-    clientid: client.id,
-    clientname: client.name,
-    serviceid: serviceId,
-    servicetitle: service ? service.title : "",
-    date: date,
-    time: time,
-    amount: service && service.price ? service.price : "",
-    method: "",
-    status: "pendiente",
-    workerid: null,
-    workername: "",
-    notes: notes,
-    created_at: new Date().toISOString()
-  };
-
-  await insertarPagoSupabase(pago);
-
-  document.getElementById("bookingFormWrap").classList.add("hidden");
-  document.getElementById("bookingConfirmWrap").classList.remove("hidden");
-});
 
 /* ============================================================
    ADMIN: LOGIN / NAVIGATION
    ============================================================ */
-document.getElementById("adminEntryBtn").addEventListener("click", ()=> openLogin());
-document.getElementById("adminEntryLink").addEventListener("click", (e)=>{ e.preventDefault(); openLogin(); });
-
-function openLogin(){
+function resetLoginForms(){
   document.getElementById("loginError").classList.add("hidden");
   document.getElementById("workerLoginError").classList.add("hidden");
   document.getElementById("loginForm").reset();
   document.getElementById("workerLoginForm").reset();
   setLoginRoleTab("admin");
-  document.getElementById("loginModalBackdrop").classList.remove("hidden");
+  document.getElementById("loginGate").classList.remove("hidden");
 }
 
 function setLoginRoleTab(role){
@@ -1562,7 +1313,7 @@ document.getElementById("loginForm").addEventListener("submit", (e)=>{
   e.preventDefault();
   const pw = document.getElementById("loginPassword").value;
   if(pw === DATA.adminPassword){
-    document.getElementById("loginModalBackdrop").classList.add("hidden");
+    document.getElementById("loginGate").classList.add("hidden");
     enterAdmin();
   } else {
     document.getElementById("loginError").classList.remove("hidden");
@@ -1576,7 +1327,7 @@ document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
   const worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
   if(worker){
     currentWorker = worker;
-    document.getElementById("loginModalBackdrop").classList.add("hidden");
+    document.getElementById("loginGate").classList.add("hidden");
     enterWorker();
   } else {
     document.getElementById("workerLoginError").classList.remove("hidden");
@@ -1584,7 +1335,6 @@ document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
 });
 
 function enterAdmin(){
-  document.getElementById("publicSite").classList.add("hidden");
   document.getElementById("adminPanel").classList.remove("hidden");
   renderAdminSiteForm();
   renderAdminServices();
@@ -1596,15 +1346,13 @@ function enterAdmin(){
 
 document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
   document.getElementById("adminPanel").classList.add("hidden");
-  document.getElementById("publicSite").classList.remove("hidden");
-  renderPublicSite();
+  resetLoginForms();
 });
 
 /* ============================================================
    WORKER: LOGIN / NAVIGATION
    ============================================================ */
 function enterWorker(){
-  document.getElementById("publicSite").classList.add("hidden");
   document.getElementById("workerPanel").classList.remove("hidden");
   document.getElementById("workerBrandName").textContent = currentWorker.name;
   document.getElementById("workerAvatar").textContent = (currentWorker.name||"?").trim().charAt(0).toUpperCase();
@@ -1618,8 +1366,7 @@ function enterWorker(){
 document.getElementById("workerLogoutBtn").addEventListener("click", ()=>{
   currentWorker = null;
   document.getElementById("workerPanel").classList.add("hidden");
-  document.getElementById("publicSite").classList.remove("hidden");
-  renderPublicSite();
+  resetLoginForms();
 });
 
 document.querySelectorAll("[data-worker-tab]").forEach(tab=>{
@@ -1650,31 +1397,18 @@ function switchTab(name){
 function renderAdminSiteForm(){
   const s = DATA.site;
   document.getElementById("cfgLogoText").value = s.logoText || "";
-  document.getElementById("cfgHeroUrl").value = s.heroUrl || "";
-  document.getElementById("cfgHeroTitle").value = s.heroTitle || "";
-  document.getElementById("cfgHeroSubtitle").value = s.heroSubtitle || "";
-  document.getElementById("cfgServicesTitle").value = s.servicesTitle || "";
-  document.getElementById("cfgFooterText").value = s.footerText || "";
 
   const logoPreview = document.getElementById("logoPreview");
   const clearLogoBtn = document.getElementById("clearLogoBtn");
   if(s.logoImage){ logoPreview.src = s.logoImage; logoPreview.classList.remove("hidden"); clearLogoBtn.classList.remove("hidden"); }
   else { logoPreview.classList.add("hidden"); clearLogoBtn.classList.add("hidden"); }
-
-  const heroPreview = document.getElementById("heroPreview");
-  const heroImg = s.heroImage || s.heroUrl;
-  if(heroImg){ heroPreview.src = heroImg; heroPreview.classList.remove("hidden"); }
-  else { heroPreview.classList.add("hidden"); }
 }
 
 document.getElementById("cfgLogoFile").addEventListener("change", (e)=>{
-  fileToDataUrl(e.target.files[0], (url)=>{ DATA.site.logoImage = url; saveDataLocal(); renderAdminSiteForm(); renderPublicSite(); });
+  fileToDataUrl(e.target.files[0], (url)=>{ DATA.site.logoImage = url; saveDataLocal(); renderAdminSiteForm(); renderLoginBrand(); });
 });
 document.getElementById("clearLogoBtn").addEventListener("click", ()=>{
-  DATA.site.logoImage = ""; document.getElementById("cfgLogoFile").value = ""; saveDataLocal(); renderAdminSiteForm(); renderPublicSite();
-});
-document.getElementById("cfgHeroFile").addEventListener("change", (e)=>{
-  fileToDataUrl(e.target.files[0], (url)=>{ DATA.site.heroImage = url; saveDataLocal(); renderAdminSiteForm(); renderPublicSite(); });
+  DATA.site.logoImage = ""; document.getElementById("cfgLogoFile").value = ""; saveDataLocal(); renderAdminSiteForm(); renderLoginBrand();
 });
 
 function fileToDataUrl(file, cb){
@@ -1687,13 +1421,8 @@ function fileToDataUrl(file, cb){
 
 document.getElementById("saveSiteBtn").addEventListener("click", ()=>{
   DATA.site.logoText = document.getElementById("cfgLogoText").value.trim();
-  DATA.site.heroUrl = document.getElementById("cfgHeroUrl").value.trim();
-  DATA.site.heroTitle = document.getElementById("cfgHeroTitle").value.trim();
-  DATA.site.heroSubtitle = document.getElementById("cfgHeroSubtitle").value.trim();
-  DATA.site.servicesTitle = document.getElementById("cfgServicesTitle").value.trim();
-  DATA.site.footerText = document.getElementById("cfgFooterText").value.trim();
   saveDataLocal();
-  renderPublicSite();
+  renderLoginBrand();
   showToast("Cambios guardados.");
 });
 
@@ -2097,7 +1826,7 @@ document.getElementById("importBackupFile").addEventListener("change", (e)=>{
       DATA = parsed;
       if(!Array.isArray(DATA.workers)) DATA.workers = [];
       saveDataLocal();
-      renderAdminSiteForm(); renderAdminServices(); renderAdminWorkers(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
+      renderAdminSiteForm(); renderAdminServices(); renderAdminWorkers(); renderAdminClients(); renderAdminPayments(); renderLoginBrand();
       showToast("Respaldo restaurado.");
     }catch(err){
       showToast("Archivo inválido.", "error");
@@ -2110,7 +1839,7 @@ document.getElementById("resetAllBtn").addEventListener("click", ()=>{
   if(confirm("Esta acción no se puede deshacer. ¿Borrar todos los datos?")){
     DATA = defaultData();
     saveDataLocal();
-    renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
+    renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderLoginBrand();
     showToast("Datos restablecidos.");
   }
 });
@@ -2354,7 +2083,7 @@ document.getElementById('testBtn').addEventListener('click', conectarSupabase);
    INICIALIZACIÓN
    ============================================================ */
 loadData();
-renderPublicSite();
+renderLoginBrand();
 
 // Intentar conectar automáticamente al cargar
 setTimeout(() => {
