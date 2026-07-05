@@ -451,6 +451,13 @@
             border-radius: 8px;
             width: 100%;
         }
+        .btn-secondary {
+            background: var(--cream);
+            border: 1px solid var(--line);
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -560,7 +567,7 @@
                     </div>
                     <div class="field"><label>Email</label><input type="email" id="cliEmail"></div>
                     <button class="btn-gold" id="saveClientBtn">💾 Guardar en Supabase</button>
-                    <button class="btn-secondary hidden" id="cancelEdit" style="margin-left:10px;padding:10px 20px;border:none;border-radius:999px;font-weight:600;">Cancelar</button>
+                    <button class="btn-secondary hidden" id="cancelEdit" style="margin-left:10px;">Cancelar</button>
                 </div>
 
                 <div class="admin-card" style="padding:0;overflow-x:auto;">
@@ -599,33 +606,33 @@
 
     <script>
         // ============================================================
-        //  🔴 CONFIGURACIÓN 🔴
+        //  CONFIGURACIÓN DE SUPABASE
         // ============================================================
         const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
         // ============================================================
-        //  VARIABLES GLOBALES
+        //  VARIABLES GLOBALES (SIN DUPLICADOS)
         // ============================================================
-        let supabase = null;
-        let clientesCache = [];
-        let isConnected = false;
+        let _supabase = null;
+        let _clientesCache = [];
+        let _isConnected = false;
 
         // ============================================================
         //  DOM ELEMENTS
         // ============================================================
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const clientCount = document.getElementById('clientCount');
-        const testBtn = document.getElementById('testBtn');
-        const adminBtn = document.getElementById('adminBtn');
-        const noticeEl = document.getElementById('notice');
-        const noticeIcon = document.getElementById('noticeIcon');
-        const noticeText = document.getElementById('noticeText');
-        const clientsBody = document.getElementById('clientsBody');
-        const emptyState = document.getElementById('emptyState');
-        const searchInput = document.getElementById('clientSearch');
-        const saveClientBtn = document.getElementById('saveClientBtn');
+        const _statusDot = document.getElementById('statusDot');
+        const _statusText = document.getElementById('statusText');
+        const _clientCount = document.getElementById('clientCount');
+        const _testBtn = document.getElementById('testBtn');
+        const _adminBtn = document.getElementById('adminBtn');
+        const _noticeEl = document.getElementById('notice');
+        const _noticeIcon = document.getElementById('noticeIcon');
+        const _noticeText = document.getElementById('noticeText');
+        const _clientsBody = document.getElementById('clientsBody');
+        const _emptyState = document.getElementById('emptyState');
+        const _searchInput = document.getElementById('clientSearch');
+        const _saveClientBtn = document.getElementById('saveClientBtn');
 
         // ============================================================
         //  FUNCIONES DE UTILIDAD
@@ -642,11 +649,11 @@
         }
 
         function updateStatus(online, msg) {
-            isConnected = online;
-            statusDot.className = `dot ${online ? 'online' : 'offline'}`;
-            statusText.textContent = online ? '✅ Conectado' : '🔴 Desconectado';
-            if (msg) statusText.textContent = msg;
-            clientCount.textContent = `(${clientesCache.length} clientes)`;
+            _isConnected = online;
+            _statusDot.className = `dot ${online ? 'online' : 'offline'}`;
+            _statusText.textContent = online ? '✅ Conectado' : '🔴 Desconectado';
+            if (msg) _statusText.textContent = msg;
+            _clientCount.textContent = `(${_clientesCache.length} clientes)`;
         }
 
         function updateNotice(type, msg) {
@@ -656,10 +663,10 @@
                 'error': '❌',
                 'info': 'ℹ️'
             };
-            noticeIcon.textContent = icons[type] || 'ℹ️';
-            noticeText.textContent = msg;
-            noticeEl.style.borderColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#ff9800';
-            noticeEl.style.background = type === 'error' ? '#ffebee' : type === 'success' ? '#e8f5e9' : '#fff3e0';
+            _noticeIcon.textContent = icons[type] || 'ℹ️';
+            _noticeText.textContent = msg;
+            _noticeEl.style.borderColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#ff9800';
+            _noticeEl.style.background = type === 'error' ? '#ffebee' : type === 'success' ? '#e8f5e9' : '#fff3e0';
         }
 
         function escapeHtml(str) {
@@ -670,27 +677,26 @@
         }
 
         // ============================================================
-        //  CONEXIÓN A SUPABASE (¡AHORA FUNCIONA!)
+        //  CONEXIÓN A SUPABASE
         // ============================================================
         async function probarConexion() {
             console.log('🔄 Probando conexión a Supabase...');
-            testBtn.disabled = true;
-            testBtn.textContent = '⏳ Probando...';
+            _testBtn.disabled = true;
+            _testBtn.textContent = '⏳ Probando...';
             updateStatus(false, '⏳ Probando...');
             updateNotice('loading', 'Conectando a Supabase...');
 
             try {
                 // Crear cliente de Supabase
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 console.log('✅ Cliente Supabase creado');
 
-                // Probar conexión intentando leer la tabla clientes
-                const { data, error, count } = await supabase
+                // Probar conexión
+                const { data, error } = await _supabase
                     .from('clientes')
                     .select('*', { count: 'exact', head: true });
 
                 if (error) {
-                    // Si el error es que la tabla no existe
                     if (error.code === '42P01') {
                         console.warn('⚠️ La tabla "clientes" no existe');
                         updateStatus(false, '⚠️ Tabla no existe');
@@ -712,8 +718,8 @@
                             'CREATE POLICY "Enable all" ON clientes FOR ALL USING (true);'
                         );
                         showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
-                        testBtn.disabled = false;
-                        testBtn.textContent = '🔌 Probar Conexión';
+                        _testBtn.disabled = false;
+                        _testBtn.textContent = '🔌 Probar Conexión';
                         return;
                     }
                     throw error;
@@ -735,21 +741,21 @@
                 showToast(`❌ Error: ${error.message}`, 'error');
             }
 
-            testBtn.disabled = false;
-            testBtn.textContent = '🔌 Probar Conexión';
+            _testBtn.disabled = false;
+            _testBtn.textContent = '🔌 Probar Conexión';
         }
 
         // ============================================================
         //  CARGAR CLIENTES
         // ============================================================
         async function cargarClientes(filter = '') {
-            if (!supabase) {
+            if (!_supabase) {
                 updateNotice('info', '🔌 Conecta a Supabase primero');
                 return;
             }
 
             try {
-                let query = supabase
+                let query = _supabase
                     .from('clientes')
                     .select('*')
                     .order('created_at', { ascending: false });
@@ -762,18 +768,18 @@
                 const { data, error } = await query;
                 if (error) throw error;
 
-                clientesCache = data || [];
-                clientCount.textContent = `(${clientesCache.length} clientes)`;
+                _clientesCache = data || [];
+                _clientCount.textContent = `(${_clientesCache.length} clientes)`;
 
                 // Renderizar tabla
-                clientsBody.innerHTML = '';
-                if (clientesCache.length === 0) {
-                    emptyState.classList.remove('hidden');
+                _clientsBody.innerHTML = '';
+                if (_clientesCache.length === 0) {
+                    _emptyState.classList.remove('hidden');
                     return;
                 }
-                emptyState.classList.add('hidden');
+                _emptyState.classList.add('hidden');
 
-                clientesCache.forEach(cli => {
+                _clientesCache.forEach(cli => {
                     const nombre = cli.name || cli.nombres + ' ' + cli.apellidos;
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -786,10 +792,10 @@
                             <button class="btn-danger" onclick="eliminarCliente('${cli.id}')">Eliminar</button>
                         </td>
                     `;
-                    clientsBody.appendChild(tr);
+                    _clientsBody.appendChild(tr);
                 });
 
-                updateNotice('success', `✅ ${clientesCache.length} clientes en Supabase`);
+                updateNotice('success', `✅ ${_clientesCache.length} clientes en Supabase`);
 
             } catch (error) {
                 console.error('Error al cargar clientes:', error);
@@ -801,7 +807,7 @@
         //  INSERTAR CLIENTE
         // ============================================================
         async function insertarCliente(datos) {
-            if (!supabase) {
+            if (!_supabase) {
                 showToast('⚠️ Conecta a Supabase primero', 'error');
                 return null;
             }
@@ -822,7 +828,7 @@
                     created_at: new Date().toISOString()
                 };
 
-                const { data, error } = await supabase
+                const { data, error } = await _supabase
                     .from('clientes')
                     .insert([nuevo])
                     .select();
@@ -832,7 +838,7 @@
                 showToast(`✅ "${nuevo.name}" registrado en Supabase`);
                 updateNotice('success', `✅ "${nuevo.name}" guardado`);
 
-                await cargarClientes(searchInput.value);
+                await cargarClientes(_searchInput.value);
                 return data[0];
 
             } catch (error) {
@@ -849,7 +855,7 @@
         //  EDITAR CLIENTE
         // ============================================================
         function editarCliente(id) {
-            const cli = clientesCache.find(c => c.id === id);
+            const cli = _clientesCache.find(c => c.id === id);
             if (!cli) return;
 
             document.getElementById('formTitle').textContent = 'Editar cliente';
@@ -870,7 +876,7 @@
             if (!confirm('¿Eliminar este cliente de Supabase?')) return;
 
             try {
-                const { error } = await supabase
+                const { error } = await _supabase
                     .from('clientes')
                     .delete()
                     .eq('id', id);
@@ -878,7 +884,7 @@
                 if (error) throw error;
 
                 showToast('✅ Cliente eliminado');
-                await cargarClientes(searchInput.value);
+                await cargarClientes(_searchInput.value);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`, 'error');
@@ -892,7 +898,7 @@
             try {
                 updateNotice('loading', 'Actualizando...');
 
-                const { error } = await supabase
+                const { error } = await _supabase
                     .from('clientes')
                     .update({
                         nombres: datos.nombres,
@@ -911,7 +917,7 @@
                 showToast('✅ Cliente actualizado');
                 updateNotice('success', '✅ Actualizado');
                 resetForm();
-                await cargarClientes(searchInput.value);
+                await cargarClientes(_searchInput.value);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`, 'error');
@@ -936,7 +942,7 @@
         // ============================================================
         //  EVENTOS DEL FORMULARIO
         // ============================================================
-        saveClientBtn.addEventListener('click', async () => {
+        _saveClientBtn.addEventListener('click', async () => {
             const editId = document.getElementById('editId').value;
             const nombres = document.getElementById('cliNombres').value.trim();
             const apellidos = document.getElementById('cliApellidos').value.trim();
@@ -966,12 +972,12 @@
         });
 
         document.getElementById('cancelEdit').addEventListener('click', resetForm);
-        searchInput.addEventListener('input', (e) => cargarClientes(e.target.value));
+        _searchInput.addEventListener('input', (e) => cargarClientes(e.target.value));
 
         // ============================================================
         //  ADMIN - LOGIN
         // ============================================================
-        adminBtn.addEventListener('click', () => {
+        _adminBtn.addEventListener('click', () => {
             document.getElementById('loginModal').classList.remove('hidden');
         });
 
@@ -986,7 +992,7 @@
                 document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('publicSite').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
-                if (supabase) cargarClientes();
+                if (_supabase) cargarClientes();
                 else updateNotice('info', '🔌 Conecta a Supabase primero');
             } else {
                 document.getElementById('loginError').classList.remove('hidden');
@@ -1007,16 +1013,16 @@
                 tab.classList.add('active');
                 document.querySelectorAll('[data-panel]').forEach(p => p.classList.add('hidden'));
                 document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.remove('hidden');
-                if (tab.dataset.tab === 'clientes' && supabase) {
-                    cargarClientes(searchInput.value);
+                if (tab.dataset.tab === 'clientes' && _supabase) {
+                    cargarClientes(_searchInput.value);
                 }
             });
         });
 
         // ============================================================
-        //  BOTÓN DE PRUEBA - ASIGNAR EVENTO CORRECTAMENTE
+        //  BOTÓN DE PRUEBA
         // ============================================================
-        testBtn.addEventListener('click', probarConexion);
+        _testBtn.addEventListener('click', probarConexion);
 
         // ============================================================
         //  INICIALIZACIÓN
@@ -1028,7 +1034,7 @@
         });
 
         // ============================================================
-        //  FUNCIONES GLOBALES (para usar desde consola)
+        //  FUNCIONES GLOBALES
         // ============================================================
         window.probarConexion = probarConexion;
         window.cargarClientes = cargarClientes;
