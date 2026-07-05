@@ -166,8 +166,14 @@
   .confirm-box .check{width:52px;height:52px;border-radius:50%;background:#e9f3ea;color:var(--success);
     display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;}
 
-  /* ---------- ADMIN ---------- */
-  #adminPanel{min-height:100vh;background:var(--cream);display:flex;}
+  /* ---------- LOGIN ROLE TABS ---------- */
+  .role-tabs{display:flex;gap:6px;background:var(--cream-dark);padding:4px;border-radius:12px;margin-bottom:20px;}
+  .role-tab-btn{flex:1;background:none;border:none;padding:9px 0;border-radius:9px;font-size:13px;font-weight:600;
+    color:var(--muted);transition:background .15s,color .15s;}
+  .role-tab-btn.active{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(28,23,18,.08);}
+
+  /* ---------- ADMIN / WORKER ---------- */
+  #adminPanel, #workerPanel{min-height:100vh;background:var(--cream);display:flex;}
   .admin-sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:26px 18px;
     display:flex;flex-direction:column;gap:6px;position:sticky;top:36px;height:calc(100vh - 36px);}
   .admin-brand{font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:20px;
@@ -201,6 +207,9 @@
   .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
   .badge.pendiente{background:#fbe9d7;color:#a55b1f;}
   .badge.pagado{background:#e2f0e3;color:var(--success);}
+  .badge.inactivo{background:#f1ede2;color:var(--muted);}
+  .table-select{padding:6px 8px;border-radius:8px;border:1px solid var(--line);font-size:12.5px;
+    font-family:inherit;background:#fff;color:var(--ink);}
   .icon-picker{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
   .icon-picker label{border:1px solid var(--line);border-radius:10px;padding:8px 0;display:flex;
     align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
@@ -338,14 +347,27 @@
 <div class="modal-backdrop hidden" id="loginModalBackdrop">
   <div class="modal-box" style="max-width:360px;">
     <button class="close-x" data-close="loginModalBackdrop">✕</button>
-    <h3>Acceso administrador</h3>
-    <p class="modal-sub">Ingresa la contraseña del panel.</p>
-    <form id="loginForm">
+    <h3>Acceso al panel</h3>
+    <p class="modal-sub">Elige tu rol e ingresa tus datos.</p>
+
+    <div class="role-tabs">
+      <button type="button" class="role-tab-btn active" data-role-tab="admin">Administrador</button>
+      <button type="button" class="role-tab-btn" data-role-tab="worker">Trabajador</button>
+    </div>
+
+    <form id="loginForm" data-role-form="admin">
       <div class="field"><label>Contraseña</label><input type="password" id="loginPassword" required></div>
       <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
       <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
     </form>
-    <p style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña de fábrica: <b>barberia2026</b> — cámbiala en Ajustes.</p>
+    <p id="adminLoginHint" style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña de fábrica: <b>barberia2026</b> — cámbiala en Ajustes.</p>
+
+    <form id="workerLoginForm" data-role-form="worker" class="hidden">
+      <div class="field"><label>Usuario</label><input type="text" id="workerLoginUser" required></div>
+      <div class="field"><label>Contraseña</label><input type="password" id="workerLoginPassword" required></div>
+      <p id="workerLoginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Usuario o contraseña incorrectos, o cuenta inactiva.</p>
+      <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
+    </form>
   </div>
 </div>
 
@@ -355,6 +377,7 @@
     <div class="admin-brand"><span class="stripe"></span> Panel</div>
     <button class="admin-tab" data-tab="sitio">Sitio</button>
     <button class="admin-tab" data-tab="servicios">Servicios</button>
+    <button class="admin-tab" data-tab="trabajadores">Trabajadores</button>
     <button class="admin-tab" data-tab="clientes">Clientes</button>
     <button class="admin-tab" data-tab="pagos">Pagos</button>
     <button class="admin-tab" data-tab="ajustes">Ajustes</button>
@@ -412,6 +435,39 @@
       </div>
 
       <div class="services-admin-grid" id="servicesAdminGrid"></div>
+    </section>
+
+    <!-- TAB: TRABAJADORES -->
+    <section class="admin-tab-panel hidden" data-panel="trabajadores">
+      <div class="admin-panel-header"><h2>Trabajadores</h2></div>
+
+      <div class="admin-card">
+        <h3 id="workerFormTitle">Agregar trabajador</h3>
+        <input type="hidden" id="wkrEditId">
+        <div class="grid-2">
+          <div class="field"><label>Nombre completo</label><input type="text" id="wkrName" placeholder="Ej. Carlos Beltrán"></div>
+          <div class="field"><label>Usuario</label><input type="text" id="wkrUsername" placeholder="Ej. carlos.b"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Contraseña</label><input type="text" id="wkrPassword" placeholder="Mínimo 4 caracteres"></div>
+          <div class="field">
+            <label>Estado</label>
+            <select id="wkrActive"><option value="true">Activo</option><option value="false">Inactivo</option></select>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveWorkerBtn">Guardar trabajador</button>
+          <button class="btn-secondary hidden" id="cancelEditWorkerBtn">Cancelar edición</button>
+        </div>
+      </div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Nombre</th><th>Usuario</th><th>Estado</th><th>Cortes atendidos</th><th></th></tr></thead>
+          <tbody id="workersTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="workersEmpty">Aún no tienes trabajadores registrados.</div>
+      </div>
     </section>
 
     <!-- TAB: CLIENTES -->
@@ -480,12 +536,13 @@
             <select id="payStatus"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
           </div>
         </div>
+        <div class="field"><label>Atendido por (opcional)</label><select id="payWorker"><option value="">Sin asignar</option></select></div>
         <button class="btn-gold" id="addPaymentBtn">Agregar registro</button>
       </div>
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table>
-          <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th><th></th></tr></thead>
+          <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Atendido por</th><th>Estado</th><th></th></tr></thead>
           <tbody id="paymentsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="paymentsEmpty">No hay registros de pago todavía.</div>
@@ -517,6 +574,82 @@
         <h3>Zona de riesgo</h3>
         <p class="modal-sub" style="margin-bottom:14px;">Esto borra todos los clientes, pagos y servicios personalizados de este navegador.</p>
         <button class="btn-danger" id="resetAllBtn">Borrar todos los datos</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= WORKER PANEL ================= -->
+<div id="workerPanel" class="hidden">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><span class="stripe"></span> <span id="workerBrandName">Panel</span></div>
+    <button class="admin-tab" data-worker-tab="citas">Mis citas</button>
+    <button class="admin-tab" data-worker-tab="atender">Atender cliente</button>
+    <button class="admin-tab" data-worker-tab="historial">Mi historial</button>
+    <button class="admin-back" id="workerLogoutBtn">← Cerrar sesión</button>
+  </aside>
+
+  <main class="admin-main">
+    <!-- TAB: MIS CITAS -->
+    <section class="worker-tab-panel" data-worker-panel="citas">
+      <div class="admin-panel-header"><h2>Mis citas asignadas</h2></div>
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Hora</th><th></th></tr></thead>
+          <tbody id="workerCitasTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="workerCitasEmpty">No tienes citas asignadas pendientes.</div>
+      </div>
+    </section>
+
+    <!-- TAB: ATENDER CLIENTE -->
+    <section class="worker-tab-panel hidden" data-worker-panel="atender">
+      <div class="admin-panel-header"><h2>Atender cliente sin cita</h2></div>
+
+      <div class="admin-card">
+        <h3>Buscar cliente existente</h3>
+        <div class="field"><label>Cliente</label>
+          <select id="wkAttendClientSelect"><option value="">— Cliente nuevo —</option></select>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Datos del cliente (si es nuevo)</h3>
+        <div class="grid-2">
+          <div class="field"><label>Nombres</label><input type="text" id="wkAttendNombres"></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="wkAttendApellidos"></div>
+        </div>
+        <div class="field"><label>Teléfono</label><input type="text" id="wkAttendPhone"></div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Servicio realizado</h3>
+        <div class="grid-2">
+          <div class="field"><label>Servicio</label><select id="wkAttendService"></select></div>
+          <div class="field"><label>Monto cobrado</label><input type="text" id="wkAttendAmount" placeholder="Ej. 15.00"></div>
+        </div>
+        <div class="field"><label>Método de pago</label>
+          <select id="wkAttendMethod"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select>
+        </div>
+        <button class="btn-gold" id="wkAttendSaveBtn">Registrar atención</button>
+      </div>
+    </section>
+
+    <!-- TAB: MI HISTORIAL -->
+    <section class="worker-tab-panel hidden" data-worker-panel="historial">
+      <div class="admin-panel-header"><h2>Mi historial de cortes</h2></div>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="label">Cortes atendidos</div><div class="value" id="workerStatCount">0</div></div>
+        <div class="stat-box"><div class="label">Total cobrado</div><div class="value" id="workerStatTotal">$0.00</div></div>
+      </div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Método</th></tr></thead>
+          <tbody id="workerHistoryTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="workerHistoryEmpty">Aún no has registrado atenciones.</div>
       </div>
     </section>
   </main>
@@ -573,6 +706,7 @@ function defaultData(){
     ],
     clients: [],
     payments: [],
+    workers: [],
     adminPassword: "barberia2026",
   };
 }
@@ -586,6 +720,7 @@ let isConnected = false;
 let clientesCache = [];
 let serviciosCache = [];
 let pagosCache = [];
+let currentWorker = null;
 const STORAGE_KEY = "barberia_app_data_v1";
 
 /* ============================================================
@@ -631,6 +766,7 @@ function loadData(){
   if(!Array.isArray(DATA.services)) DATA.services = d.services;
   if(!Array.isArray(DATA.clients)) DATA.clients = [];
   if(!Array.isArray(DATA.payments)) DATA.payments = [];
+  if(!Array.isArray(DATA.workers)) DATA.workers = [];
   if(!DATA.adminPassword) DATA.adminPassword = d.adminPassword;
 }
 
@@ -736,11 +872,22 @@ async function cargarTodosLosDatos() {
       DATA.payments = pagos;
     }
 
+    // Cargar trabajadores
+    const { data: trabajadores, error: errTrabajadores } = await supabaseClient
+      .from('trabajadores')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (!errTrabajadores && trabajadores) {
+      DATA.workers = trabajadores;
+    }
+
     saveDataLocal();
     renderPublicSite();
     renderAdminServices();
     renderAdminClients();
     renderAdminPayments();
+    renderAdminWorkers();
 
   } catch (error) {
     console.error('Error al cargar datos:', error);
@@ -1048,7 +1195,9 @@ async function actualizarPagoSupabase(id, datos) {
       .update({
         status: datos.status,
         amount: datos.amount,
-        method: datos.method
+        method: datos.method,
+        workerid: datos.workerid,
+        workername: datos.workername
       })
       .eq('id', id);
 
@@ -1061,6 +1210,106 @@ async function actualizarPagoSupabase(id, datos) {
     showToast('✅ Pago actualizado en Supabase');
   } catch (error) {
     console.error('Error al actualizar pago:', error);
+    showToast('❌ Error al actualizar: ' + error.message, 'error');
+  }
+}
+
+// TRABAJADORES
+async function insertarTrabajadorSupabase(trabajador) {
+  if (!supabaseClient || !isConnected) {
+    DATA.workers.push(trabajador);
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('💾 Trabajador guardado localmente (sin conexión)');
+    return trabajador;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('trabajadores')
+      .insert([trabajador])
+      .select();
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      const idx = DATA.workers.findIndex(w => w.id === trabajador.id);
+      if (idx >= 0) DATA.workers[idx] = data[0];
+      else DATA.workers.push(data[0]);
+      saveDataLocal();
+      renderAdminWorkers();
+      showToast(`✅ Trabajador "${trabajador.name}" guardado en Supabase`);
+      return data[0];
+    }
+  } catch (error) {
+    console.error('Error al insertar trabajador:', error);
+    DATA.workers.push(trabajador);
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
+    return trabajador;
+  }
+}
+
+async function eliminarTrabajadorSupabase(id) {
+  if (!confirm('¿Eliminar este trabajador? Sus cortes registrados no se eliminarán.')) return;
+
+  if (!supabaseClient || !isConnected) {
+    DATA.workers = DATA.workers.filter(w => w.id !== id);
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('🗑️ Trabajador eliminado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('trabajadores')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    DATA.workers = DATA.workers.filter(w => w.id !== id);
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('✅ Trabajador eliminado de Supabase');
+  } catch (error) {
+    console.error('Error al eliminar trabajador:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+async function actualizarTrabajadorSupabase(id, datos) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.workers.findIndex(w => w.id === id);
+    if (idx >= 0) DATA.workers[idx] = { ...DATA.workers[idx], ...datos };
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('💾 Trabajador actualizado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('trabajadores')
+      .update({
+        name: datos.name,
+        username: datos.username,
+        password: datos.password,
+        active: datos.active
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const idx = DATA.workers.findIndex(w => w.id === id);
+    if (idx >= 0) DATA.workers[idx] = { ...DATA.workers[idx], ...datos };
+    saveDataLocal();
+    renderAdminWorkers();
+    showToast('✅ Trabajador actualizado en Supabase');
+  } catch (error) {
+    console.error('Error al actualizar trabajador:', error);
     showToast('❌ Error al actualizar: ' + error.message, 'error');
   }
 }
@@ -1184,10 +1433,12 @@ document.getElementById("bookingForm").addEventListener("submit", async (e)=>{
     amount: service && service.price ? service.price : "",
     method: "",
     status: "pendiente",
+    workerid: null,
+    workername: "",
     notes: notes,
     created_at: new Date().toISOString()
   };
-  
+
   await insertarPagoSupabase(pago);
 
   document.getElementById("bookingFormWrap").classList.add("hidden");
@@ -1202,9 +1453,25 @@ document.getElementById("adminEntryLink").addEventListener("click", (e)=>{ e.pre
 
 function openLogin(){
   document.getElementById("loginError").classList.add("hidden");
+  document.getElementById("workerLoginError").classList.add("hidden");
   document.getElementById("loginForm").reset();
+  document.getElementById("workerLoginForm").reset();
+  setLoginRoleTab("admin");
   document.getElementById("loginModalBackdrop").classList.remove("hidden");
 }
+
+function setLoginRoleTab(role){
+  document.querySelectorAll("[data-role-tab]").forEach(btn=>{
+    btn.classList.toggle("active", btn.dataset.roleTab === role);
+  });
+  document.getElementById("loginForm").classList.toggle("hidden", role !== "admin");
+  document.getElementById("adminLoginHint").classList.toggle("hidden", role !== "admin");
+  document.getElementById("workerLoginForm").classList.toggle("hidden", role !== "worker");
+}
+
+document.querySelectorAll("[data-role-tab]").forEach(btn=>{
+  btn.addEventListener("click", ()=> setLoginRoleTab(btn.dataset.roleTab));
+});
 
 document.getElementById("loginForm").addEventListener("submit", (e)=>{
   e.preventDefault();
@@ -1217,11 +1484,26 @@ document.getElementById("loginForm").addEventListener("submit", (e)=>{
   }
 });
 
+document.getElementById("workerLoginForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const username = document.getElementById("workerLoginUser").value.trim();
+  const pw = document.getElementById("workerLoginPassword").value;
+  const worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
+  if(worker){
+    currentWorker = worker;
+    document.getElementById("loginModalBackdrop").classList.add("hidden");
+    enterWorker();
+  } else {
+    document.getElementById("workerLoginError").classList.remove("hidden");
+  }
+});
+
 function enterAdmin(){
   document.getElementById("publicSite").classList.add("hidden");
   document.getElementById("adminPanel").classList.remove("hidden");
   renderAdminSiteForm();
   renderAdminServices();
+  renderAdminWorkers();
   renderAdminClients();
   renderAdminPayments();
   switchTab("clientes");
@@ -1232,6 +1514,38 @@ document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
   document.getElementById("publicSite").classList.remove("hidden");
   renderPublicSite();
 });
+
+/* ============================================================
+   WORKER: LOGIN / NAVIGATION
+   ============================================================ */
+function enterWorker(){
+  document.getElementById("publicSite").classList.add("hidden");
+  document.getElementById("workerPanel").classList.remove("hidden");
+  document.getElementById("workerBrandName").textContent = currentWorker.name;
+  renderWorkerCitas();
+  renderWorkerAttendForm();
+  renderWorkerHistory();
+  switchWorkerTab("citas");
+}
+
+document.getElementById("workerLogoutBtn").addEventListener("click", ()=>{
+  currentWorker = null;
+  document.getElementById("workerPanel").classList.add("hidden");
+  document.getElementById("publicSite").classList.remove("hidden");
+  renderPublicSite();
+});
+
+document.querySelectorAll("[data-worker-tab]").forEach(tab=>{
+  tab.addEventListener("click", ()=> switchWorkerTab(tab.dataset.workerTab));
+});
+
+function switchWorkerTab(name){
+  document.querySelectorAll("[data-worker-tab]").forEach(t=> t.classList.toggle("active", t.dataset.workerTab===name));
+  document.querySelectorAll(".worker-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.workerPanel!==name));
+  if(name === "citas") renderWorkerCitas();
+  if(name === "atender") renderWorkerAttendForm();
+  if(name === "historial") renderWorkerHistory();
+}
 
 document.querySelectorAll(".admin-tab").forEach(tab=>{
   tab.addEventListener("click", ()=> switchTab(tab.dataset.tab));
@@ -1380,6 +1694,85 @@ document.getElementById("saveServiceBtn").addEventListener("click", async ()=>{
 });
 
 /* ============================================================
+   ADMIN: TAB TRABAJADORES
+   ============================================================ */
+function renderAdminWorkers(){
+  const tbody = document.getElementById("workersTableBody");
+  tbody.innerHTML = "";
+  document.getElementById("workersEmpty").classList.toggle("hidden", DATA.workers.length>0);
+
+  DATA.workers.slice().reverse().forEach(w=>{
+    const active = w.active === true || w.active === "true";
+    const cortes = DATA.payments.filter(p=>p.workerid===w.id && p.status==="pagado").length;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(w.name)}</td>
+      <td>${escapeHtml(w.username)}</td>
+      <td><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
+      <td>${cortes}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-link" data-edit-worker="${w.id}">Editar</button>
+        <button class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-edit-worker]").forEach(btn=>{
+    btn.addEventListener("click", ()=> loadWorkerForEdit(btn.dataset.editWorker));
+  });
+  tbody.querySelectorAll("[data-del-worker]").forEach(btn=>{
+    btn.addEventListener("click", ()=> eliminarTrabajadorSupabase(btn.dataset.delWorker));
+  });
+
+  refreshPaymentSelectors();
+}
+
+function loadWorkerForEdit(id){
+  const w = DATA.workers.find(w=>w.id===id);
+  if(!w) return;
+  document.getElementById("workerFormTitle").textContent = "Editar trabajador";
+  document.getElementById("wkrEditId").value = w.id;
+  document.getElementById("wkrName").value = w.name || "";
+  document.getElementById("wkrUsername").value = w.username || "";
+  document.getElementById("wkrPassword").value = w.password || "";
+  document.getElementById("wkrActive").value = (w.active === true || w.active === "true") ? "true" : "false";
+  document.getElementById("cancelEditWorkerBtn").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.getElementById("cancelEditWorkerBtn").addEventListener("click", resetWorkerForm);
+function resetWorkerForm(){
+  document.getElementById("workerFormTitle").textContent = "Agregar trabajador";
+  document.getElementById("wkrEditId").value = "";
+  document.getElementById("wkrName").value = "";
+  document.getElementById("wkrUsername").value = "";
+  document.getElementById("wkrPassword").value = "";
+  document.getElementById("wkrActive").value = "true";
+  document.getElementById("cancelEditWorkerBtn").classList.add("hidden");
+}
+
+document.getElementById("saveWorkerBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("wkrName").value.trim();
+  const username = document.getElementById("wkrUsername").value.trim();
+  const password = document.getElementById("wkrPassword").value.trim();
+  if(!name || !username || !password){ showToast("Nombre, usuario y contraseña son obligatorios.", "error"); return; }
+  if(password.length < 4){ showToast("La contraseña debe tener al menos 4 caracteres.", "error"); return; }
+  const editId = document.getElementById("wkrEditId").value;
+  const active = document.getElementById("wkrActive").value === "true";
+
+  const usernameTaken = DATA.workers.some(w => w.username === username && w.id !== editId);
+  if(usernameTaken){ showToast("Ese usuario ya está en uso por otro trabajador.", "error"); return; }
+
+  if(editId){
+    await actualizarTrabajadorSupabase(editId, { name, username, password, active });
+    resetWorkerForm();
+  } else {
+    const trabajador = { id: uid("w"), name, username, password, active, created_at: new Date().toISOString() };
+    await insertarTrabajadorSupabase(trabajador);
+    resetWorkerForm();
+  }
+});
+
+/* ============================================================
    ADMIN: TAB CLIENTES
    ============================================================ */
 function renderAdminClients(filter){
@@ -1473,6 +1866,9 @@ function refreshPaymentSelectors(){
   clientSel.innerHTML = DATA.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("") || `<option value="">Sin clientes aún</option>`;
   const serviceSel = document.getElementById("payService");
   serviceSel.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
+  const workerSel = document.getElementById("payWorker");
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+  workerSel.innerHTML = `<option value="">Sin asignar</option>` + activeWorkers.map(w=>`<option value="${w.id}">${escapeHtml(w.name)}</option>`).join("");
 }
 
 document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
@@ -1485,6 +1881,8 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
   const amount = document.getElementById("payAmount").value.trim();
   const method = document.getElementById("payMethod").value;
   const status = document.getElementById("payStatus").value;
+  const workerId = document.getElementById("payWorker").value;
+  const worker = DATA.workers.find(w=>w.id===workerId);
 
   const pago = {
     id: uid("p"),
@@ -1497,6 +1895,8 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
     amount: amount,
     method: method,
     status: status,
+    workerid: workerId || null,
+    workername: worker ? worker.name : "",
     notes: "",
     created_at: new Date().toISOString()
   };
@@ -1521,20 +1921,34 @@ function renderAdminPayments(){
   document.getElementById("statPending").textContent = money(totalPending);
   document.getElementById("statCount").textContent = DATA.payments.length;
 
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+
   list.forEach(p=>{
     const tr = document.createElement("tr");
+    const workerOptions = `<option value="">Sin asignar</option>` + activeWorkers.map(w=>
+      `<option value="${w.id}" ${p.workerid===w.id?"selected":""}>${escapeHtml(w.name)}</option>`).join("");
     tr.innerHTML = `
       <td>${escapeHtml(p.clientname)}</td>
       <td>${escapeHtml(p.servicetitle)}</td>
       <td>${escapeHtml(p.date||"—")}</td>
       <td>${p.amount?money(p.amount):"—"}</td>
       <td>${escapeHtml(p.method||"—")}</td>
+      <td><select class="table-select" data-assign-payment="${p.id}">${workerOptions}</select></td>
       <td><span class="badge ${p.status}">${p.status==="pagado"?"Pagado":"Pendiente"}</span></td>
       <td style="white-space:nowrap;">
         ${p.status==="pendiente" ? `<button class="btn-link" data-mark-paid="${p.id}">Marcar pagado</button>` : ""}
         <button class="btn-danger" data-del-payment="${p.id}" style="margin-left:8px;">Eliminar</button>
       </td>`;
     tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-assign-payment]").forEach(sel=>{
+    sel.addEventListener("change", async ()=>{
+      const p = DATA.payments.find(p=>p.id===sel.dataset.assignPayment);
+      const worker = DATA.workers.find(w=>w.id===sel.value);
+      p.workerid = sel.value || null;
+      p.workername = worker ? worker.name : "";
+      await actualizarPagoSupabase(p.id, { status: p.status, amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername });
+    });
   });
   tbody.querySelectorAll("[data-mark-paid]").forEach(btn=>{
     btn.addEventListener("click", async ()=>{
@@ -1545,7 +1959,7 @@ function renderAdminPayments(){
         p.amount = amt;
       }
       p.status = "pagado";
-      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method });
+      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername });
       renderAdminPayments();
     });
   });
@@ -1586,8 +2000,9 @@ document.getElementById("importBackupFile").addEventListener("change", (e)=>{
     try{
       const parsed = JSON.parse(reader.result);
       DATA = parsed;
+      if(!Array.isArray(DATA.workers)) DATA.workers = [];
       saveDataLocal();
-      renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
+      renderAdminSiteForm(); renderAdminServices(); renderAdminWorkers(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
       showToast("Respaldo restaurado.");
     }catch(err){
       showToast("Archivo inválido.", "error");
@@ -1604,6 +2019,142 @@ document.getElementById("resetAllBtn").addEventListener("click", ()=>{
     showToast("Datos restablecidos.");
   }
 });
+
+/* ============================================================
+   WORKER: MIS CITAS
+   ============================================================ */
+function renderWorkerCitas(){
+  if(!currentWorker) return;
+  const tbody = document.getElementById("workerCitasTableBody");
+  tbody.innerHTML = "";
+  const list = DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pendiente");
+  document.getElementById("workerCitasEmpty").classList.toggle("hidden", list.length>0);
+
+  list.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(p.clientname)}</td>
+      <td>${escapeHtml(p.servicetitle)}</td>
+      <td>${escapeHtml(p.date||"—")}</td>
+      <td>${escapeHtml(p.time||"—")}</td>
+      <td><button class="btn-link" data-worker-mark-done="${p.id}">Marcar atendido</button></td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-worker-mark-done]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const p = DATA.payments.find(p=>p.id===btn.dataset.workerMarkDone);
+      if(!p.amount){
+        const amt = prompt("Monto cobrado:");
+        if(amt===null) return;
+        p.amount = amt;
+      }
+      p.status = "pagado";
+      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername });
+      renderWorkerCitas();
+      renderWorkerHistory();
+    });
+  });
+}
+
+/* ============================================================
+   WORKER: ATENDER CLIENTE SIN CITA
+   ============================================================ */
+function renderWorkerAttendForm(){
+  const clientSel = document.getElementById("wkAttendClientSelect");
+  clientSel.innerHTML = `<option value="">— Cliente nuevo —</option>` +
+    DATA.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+
+  const serviceSel = document.getElementById("wkAttendService");
+  serviceSel.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
+
+  document.getElementById("wkAttendNombres").value = "";
+  document.getElementById("wkAttendApellidos").value = "";
+  document.getElementById("wkAttendPhone").value = "";
+  document.getElementById("wkAttendAmount").value = "";
+}
+
+document.getElementById("wkAttendClientSelect").addEventListener("change", (e)=>{
+  const client = DATA.clients.find(c=>c.id===e.target.value);
+  document.getElementById("wkAttendNombres").value = client ? (client.nombres||client.name||"") : "";
+  document.getElementById("wkAttendApellidos").value = client ? (client.apellidos||"") : "";
+  document.getElementById("wkAttendPhone").value = client ? (client.phone||"") : "";
+});
+
+document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
+  if(!currentWorker) return;
+  const existingClientId = document.getElementById("wkAttendClientSelect").value;
+  const serviceId = document.getElementById("wkAttendService").value;
+  const amount = document.getElementById("wkAttendAmount").value.trim();
+  const method = document.getElementById("wkAttendMethod").value;
+  const service = DATA.services.find(s=>s.id===serviceId);
+
+  let client = DATA.clients.find(c=>c.id===existingClientId);
+  if(!client){
+    const nombres = document.getElementById("wkAttendNombres").value.trim();
+    const apellidos = document.getElementById("wkAttendApellidos").value.trim();
+    const phone = document.getElementById("wkAttendPhone").value.trim();
+    if(!nombres || !apellidos || !phone){ showToast("Completa nombres, apellidos y teléfono del cliente nuevo.", "error"); return; }
+    client = {
+      id: uid("c"),
+      nombres, apellidos,
+      name: (nombres + " " + apellidos).trim(),
+      doi: "", birthdate: "", phone, email: "", notes: "",
+      created_at: new Date().toISOString()
+    };
+    await insertarClienteSupabase(client);
+  }
+
+  if(!amount){ showToast("Ingresa el monto cobrado.", "error"); return; }
+
+  const pago = {
+    id: uid("p"),
+    clientid: client.id,
+    clientname: client.name,
+    serviceid: serviceId,
+    servicetitle: service ? service.title : "",
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    amount: amount,
+    method: method,
+    status: "pagado",
+    workerid: currentWorker.id,
+    workername: currentWorker.name,
+    notes: "",
+    created_at: new Date().toISOString()
+  };
+  await insertarPagoSupabase(pago);
+  showToast(`✅ Atención registrada para ${client.name}`);
+  renderWorkerAttendForm();
+  renderWorkerHistory();
+});
+
+/* ============================================================
+   WORKER: MI HISTORIAL
+   ============================================================ */
+function renderWorkerHistory(){
+  if(!currentWorker) return;
+  const tbody = document.getElementById("workerHistoryTableBody");
+  tbody.innerHTML = "";
+  const list = DATA.payments.filter(p => p.workerid === currentWorker.id && p.status === "pagado")
+    .slice().reverse();
+  document.getElementById("workerHistoryEmpty").classList.toggle("hidden", list.length>0);
+
+  let total = 0;
+  list.forEach(p=> total += parseFloat(p.amount)||0);
+  document.getElementById("workerStatCount").textContent = list.length;
+  document.getElementById("workerStatTotal").textContent = money(total);
+
+  list.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(p.clientname)}</td>
+      <td>${escapeHtml(p.servicetitle)}</td>
+      <td>${escapeHtml(p.date||"—")}</td>
+      <td>${p.amount?money(p.amount):"—"}</td>
+      <td>${escapeHtml(p.method||"—")}</td>`;
+    tbody.appendChild(tr);
+  });
+}
 
 /* ============================================================
    BOTÓN DE CONEXIÓN
