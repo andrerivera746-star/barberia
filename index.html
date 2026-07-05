@@ -14,9 +14,7 @@
     <style>
         :root {
             --ink: #1c1712;
-            --ink-soft: #332b23;
             --cream: #f7f2e7;
-            --cream-dark: #eee7d8;
             --gold: #a3814f;
             --gold-light: #c9a86a;
             --muted: #8a8072;
@@ -31,9 +29,6 @@
         * {
             box-sizing: border-box;
         }
-        html {
-            scroll-behavior: smooth;
-        }
         body {
             margin: 0;
             font-family: var(--font-body);
@@ -46,25 +41,15 @@
             font-family: var(--font-display);
             margin: 0;
         }
-        p {
-            margin: 0;
-        }
         button {
             font-family: inherit;
             cursor: pointer;
         }
-        a {
-            color: inherit;
-        }
         .hidden {
             display: none !important;
         }
-        img {
-            max-width: 100%;
-            display: block;
-        }
 
-        /* ===== ESTADO DE CONEXIÓN ===== */
+        /* BARRA DE CONEXIÓN */
         .connection-bar {
             position: fixed;
             top: 0;
@@ -115,7 +100,7 @@
             background: var(--gold);
             color: var(--ink);
             border: none;
-            padding: 5px 16px;
+            padding: 6px 18px;
             border-radius: 20px;
             font-weight: 600;
             font-size: 12px;
@@ -134,121 +119,102 @@
             color: var(--muted);
             font-size: 12px;
         }
-
-        /* ===== RESTO DE ESTILOS ===== */
-        .razor-divider {
-            width: 86px;
-            height: 18px;
-            margin: 18px auto 0;
-            opacity: .85;
-        }
-        .razor-divider path {
-            stroke: var(--gold-light);
-            stroke-width: 1.6;
-            fill: none;
-            stroke-linecap: round;
-        }
-        .razor-divider circle {
-            fill: var(--gold-light);
-        }
-        .section-eyebrow {
-            font-size: 12px;
-            letter-spacing: .16em;
-            text-transform: uppercase;
-            color: var(--gold);
+        .connection-bar .btn-admin {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            border-radius: 20px;
             font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .connection-bar .btn-admin:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
         }
 
-        .site-header {
-            position: sticky;
-            top: 48px;
-            z-index: 40;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 5%;
-            background: rgba(28, 23, 18, .92);
-            backdrop-filter: blur(6px);
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--ink);
             color: var(--cream);
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 14px;
+            z-index: 200;
+            box-shadow: var(--shadow);
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+        .toast.error {
+            border: 2px solid var(--danger);
+        }
+        .toast.success {
+            border: 2px solid var(--success);
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* HERO */
+        .site-header {
+            margin-top: 50px;
+            padding: 16px 5%;
+            background: rgba(28, 23, 18, .92);
+            color: var(--cream);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
             font-family: var(--font-display);
             font-weight: 700;
             font-size: 20px;
-            letter-spacing: .02em;
-        }
-        .logo img {
-            height: 34px;
-            width: auto;
-            border-radius: 6px;
         }
         .site-nav {
             display: flex;
             gap: 28px;
             font-size: 14px;
-            letter-spacing: .03em;
         }
         .site-nav a {
-            text-decoration: none;
             color: var(--cream);
+            text-decoration: none;
             opacity: .85;
-            transition: opacity .2s;
         }
         .site-nav a:hover {
             opacity: 1;
         }
-        .admin-entry {
-            background: transparent;
-            border: 1px solid rgba(247, 242, 231, .35);
-            color: var(--cream);
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .2s;
-        }
-        .admin-entry:hover {
-            background: rgba(247, 242, 231, .15);
-        }
 
         .hero {
-            position: relative;
-            min-height: 70vh;
+            min-height: 60vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-size: cover;
-            background-position: center;
             text-align: center;
-            color: var(--cream);
+            color: white;
             background: linear-gradient(135deg, #2a2118, #14100c);
-        }
-        .hero-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(20, 16, 12, .55), rgba(20, 16, 12, .72));
-        }
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 720px;
-            padding: 0 24px;
+            padding: 40px 20px;
         }
         .hero-content h1 {
-            font-size: clamp(34px, 5.4vw, 58px);
-            font-weight: 700;
-            line-height: 1.08;
+            font-size: clamp(34px, 5vw, 56px);
         }
         .hero-content p {
             margin-top: 16px;
             font-size: 16px;
-            color: rgba(247, 242, 231, .82);
+            opacity: .82;
         }
         .btn-primary {
             display: inline-block;
@@ -258,24 +224,16 @@
             padding: 14px 30px;
             border-radius: 999px;
             font-weight: 600;
-            font-size: 14px;
-            letter-spacing: .03em;
-            text-decoration: none;
             border: none;
-            transition: transform .15s, background .2s;
+            text-decoration: none;
         }
         .btn-primary:hover {
             background: var(--gold-light);
-            transform: translateY(-1px);
         }
 
         .services {
-            padding: 60px 6% 60px;
+            padding: 60px 6%;
             text-align: center;
-        }
-        .services h2 {
-            font-size: clamp(26px, 3.4vw, 36px);
-            margin-top: 10px;
         }
         .services-grid {
             margin-top: 32px;
@@ -299,41 +257,11 @@
             border-radius: var(--radius);
             padding: 28px 22px;
             box-shadow: var(--shadow);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
             border: 1px solid var(--line);
-        }
-        .service-icon {
-            width: 40px;
-            height: 40px;
-            color: var(--gold);
-        }
-        .service-icon svg {
-            width: 100%;
-            height: 100%;
         }
         .service-card h3 {
             font-size: 17px;
             font-weight: 700;
-            font-family: var(--font-body);
-        }
-        .service-price {
-            font-size: 13px;
-            color: var(--muted);
-            font-weight: 600;
-        }
-        .service-book-btn {
-            margin-top: auto;
-            align-self: flex-start;
-            background: none;
-            border: none;
-            color: var(--gold);
-            font-weight: 600;
-            font-size: 13px;
-            padding: 0;
-            text-decoration: underline;
-            text-underline-offset: 3px;
         }
 
         .cta-book {
@@ -341,128 +269,13 @@
             color: var(--cream);
             text-align: center;
             padding: 60px 6%;
-            margin-top: 20px;
         }
-        .cta-book h2 {
-            font-size: clamp(24px, 3vw, 32px);
-        }
-        .cta-book p {
-            color: rgba(247, 242, 231, .75);
-            margin-top: 12px;
-            max-width: 520px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         footer {
             padding: 30px 6%;
             text-align: center;
             font-size: 13px;
             color: var(--muted);
             border-top: 1px solid var(--line);
-        }
-        footer a {
-            color: var(--gold);
-            text-decoration: none;
-        }
-
-        /* MODALES */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(20, 16, 12, .6);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-box {
-            background: #fff;
-            border-radius: var(--radius);
-            max-width: 460px;
-            width: 100%;
-            padding: 32px;
-            box-shadow: var(--shadow);
-            max-height: 88vh;
-            overflow-y: auto;
-            position: relative;
-        }
-        .modal-box h3 {
-            font-size: 22px;
-            margin-bottom: 6px;
-        }
-        .modal-box .modal-sub {
-            color: var(--muted);
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-        .field {
-            margin-bottom: 14px;
-        }
-        .field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: .03em;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 6px;
-        }
-        .field input,
-        .field select,
-        .field textarea {
-            width: 100%;
-            padding: 11px 13px;
-            border-radius: 10px;
-            border: 1px solid var(--line);
-            font-family: inherit;
-            font-size: 14px;
-            background: var(--cream);
-            color: var(--ink);
-        }
-        .field textarea {
-            resize: vertical;
-            min-height: 64px;
-        }
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-        .btn-secondary {
-            background: var(--cream-dark);
-            border: none;
-            padding: 12px 20px;
-            border-radius: 999px;
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--ink);
-        }
-        .close-x {
-            position: absolute;
-            top: 14px;
-            right: 16px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--muted);
-        }
-        .confirm-box {
-            text-align: center;
-            padding: 10px 0;
-        }
-        .confirm-box .check {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: #e9f3ea;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 26px;
         }
 
         /* ADMIN */
@@ -472,43 +285,36 @@
             display: flex;
         }
         .admin-sidebar {
-            width: 220px;
-            flex-shrink: 0;
+            width: 200px;
             background: var(--ink);
             color: var(--cream);
             padding: 20px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            height: 100vh;
             position: sticky;
             top: 0;
-            height: 100vh;
         }
-        .admin-brand {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 18px;
+        .admin-main {
+            flex: 1;
+            padding: 30px 4%;
+        }
+        .admin-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 20px;
             margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .admin-brand .stripe {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            background: repeating-linear-gradient(45deg, var(--gold) 0 4px, #7a1f1f 4px 8px, var(--cream) 8px 12px);
         }
         .admin-tab {
+            display: block;
+            width: 100%;
             background: none;
             border: none;
             color: rgba(247, 242, 231, .75);
-            text-align: left;
             padding: 10px 14px;
             border-radius: 8px;
             font-size: 13px;
-            font-weight: 500;
-            transition: background .15s, color .15s;
+            text-align: left;
+            margin-bottom: 4px;
         }
         .admin-tab:hover {
             background: rgba(247, 242, 231, .08);
@@ -519,76 +325,11 @@
             color: var(--ink);
             font-weight: 700;
         }
-        .admin-back {
-            margin-top: auto;
-            background: none;
-            border: 1px solid rgba(247, 242, 231, .3);
-            color: var(--cream);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        .admin-main {
-            flex: 1;
-            padding: 28px 4% 50px;
-            max-width: 1100px;
-        }
-        .admin-panel-header {
-            display: flex;
-            align-items: baseline;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .admin-panel-header h2 {
-            font-size: 24px;
-        }
-        .admin-card {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .admin-card h3 {
-            font-size: 14px;
-            font-family: var(--font-body);
-            font-weight: 700;
-            margin-bottom: 14px;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        @media(max-width:700px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            .admin-main {
-                padding: 20px 4%;
-            }
-            #adminPanel {
-                flex-direction: column;
-            }
-            .admin-sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                flex-direction: row;
-                overflow-x: auto;
-                padding: 12px;
-            }
-            .admin-back {
-                margin-top: 0;
-            }
-        }
         .btn-gold {
             background: var(--gold);
             color: var(--ink);
             border: none;
-            padding: 10px 18px;
+            padding: 10px 20px;
             border-radius: 999px;
             font-weight: 700;
             font-size: 13px;
@@ -611,6 +352,47 @@
             font-weight: 600;
             text-decoration: underline;
         }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        @media(max-width:700px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                display: flex;
+                overflow-x: auto;
+                padding: 10px;
+            }
+            .admin-tab {
+                width: auto;
+                white-space: nowrap;
+            }
+        }
+        .field {
+            margin-bottom: 14px;
+        }
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+        .field input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--line);
+            font-size: 14px;
+            background: var(--cream);
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -618,184 +400,56 @@
         }
         th {
             text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--line);
             color: var(--muted);
-            font-weight: 600;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: .04em;
-            padding: 6px 10px;
-            border-bottom: 1px solid var(--line);
         }
         td {
             padding: 10px 10px;
             border-bottom: 1px solid var(--line);
-            vertical-align: middle;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        .badge {
-            display: inline-block;
-            padding: 2px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .badge.pendiente {
-            background: #fbe9d7;
-            color: #a55b1f;
-        }
-        .badge.pagado {
-            background: #e2f0e3;
-            color: var(--success);
-        }
-        .icon-picker {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-        }
-        .icon-picker label {
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 6px 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--muted);
-        }
-        .icon-picker input {
-            display: none;
-        }
-        .icon-picker input:checked+span {
-            color: var(--gold);
-        }
-        .icon-picker label:has(input:checked) {
-            border-color: var(--gold);
-            background: var(--cream);
-        }
-        .icon-picker svg {
-            width: 18px;
-            height: 18px;
-        }
-        .services-admin-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 12px;
-        }
-        .service-admin-card {
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 14px;
-            background: var(--cream);
-        }
-        .service-admin-card .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-        .service-admin-card .service-icon {
-            width: 26px;
-            height: 26px;
-            margin-bottom: 6px;
-        }
-        .stat-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-        @media(max-width:700px) {
-            .stat-row {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        .stat-box {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 14px 18px;
-        }
-        .stat-box .label {
-            font-size: 11px;
-            color: var(--muted);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .03em;
-        }
-        .stat-box .value {
-            font-size: 24px;
-            font-family: var(--font-display);
-            font-weight: 700;
-            margin-top: 4px;
-        }
-        .search-input {
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--line);
-            font-size: 13px;
-            width: 200px;
-            background: #fff;
-        }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--ink);
-            color: var(--cream);
-            padding: 10px 20px;
-            border-radius: 999px;
-            font-size: 13px;
-            z-index: 200;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateX(-50%) translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
         }
         .empty-state {
             padding: 20px 0;
             text-align: center;
             color: var(--muted);
-            font-size: 13px;
         }
-        .field-row-flex {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-        }
-        .thumb-preview {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--line);
-        }
-        .supabase-notice {
-            background: #e8f5e9;
-            border: 2px solid #4caf50;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-bottom: 12px;
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 100;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 13px;
+            justify-content: center;
+            padding: 20px;
         }
-        .supabase-notice.error {
-            background: #ffebee;
-            border-color: #f44336;
+        .modal-box {
+            background: #fff;
+            border-radius: var(--radius);
+            max-width: 400px;
+            width: 100%;
+            padding: 30px;
+            position: relative;
         }
-        .supabase-notice .icon {
-            font-size: 18px;
+        .close-x {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--muted);
+        }
+        .admin-back {
+            margin-top: 20px;
+            background: none;
+            border: 1px solid rgba(247, 242, 231, .3);
+            color: var(--cream);
+            padding: 10px 14px;
+            border-radius: 8px;
+            width: 100%;
         }
     </style>
 </head>
@@ -805,202 +459,138 @@
     <div class="connection-bar" id="connectionBar">
         <div class="status-group">
             <span class="dot offline" id="statusDot"></span>
-            <span id="statusText">Desconectado</span>
+            <span id="statusText">🔴 Desconectado</span>
             <span class="client-count" id="clientCount">(0 clientes)</span>
         </div>
         <div style="display:flex; gap: 10px; align-items:center;">
-            <button class="btn-test" id="testBtn" onclick="probarConexion()">🔌 Probar Conexión</button>
-            <button class="btn-test" style="background: var(--success);" onclick="abrirAdmin()">⚙ Admin</button>
+            <button class="btn-test" id="testBtn">🔌 Probar Conexión</button>
+            <button class="btn-admin" id="adminBtn">⚙ Admin</button>
         </div>
     </div>
 
     <!-- ================= PUBLIC SITE ================= -->
     <div id="publicSite">
         <header class="site-header">
-            <div class="logo" id="logoDisplay">✂ Barbería</div>
+            <div class="logo">✂ Barbería</div>
             <nav class="site-nav">
                 <a href="#servicios">Servicios</a>
                 <a href="#reservar">Reservar</a>
                 <a href="#contacto">Contacto</a>
             </nav>
-            <button class="admin-entry" id="adminEntryBtn" title="Panel de administración">⚙</button>
         </header>
 
-        <section class="hero" id="heroSection">
-            <div class="hero-overlay"></div>
+        <section class="hero">
             <div class="hero-content">
-                <p class="section-eyebrow" style="color:var(--gold-light)">Barbería tradicional</p>
-                <h1 id="heroTitle">Servicios de barbería</h1>
-                <p id="heroSubtitle">Cortes, afeitado clásico y cuidado de barba con oficio de barrio.</p>
-                <svg class="razor-divider" viewBox="0 0 86 18"><path d="M2 9 C 20 2, 30 16, 48 9 S 74 2, 84 9"/><circle cx="84" cy="9" r="2.2"/></svg>
-                <div><a href="#reservar" class="btn-primary">Reservar una cita</a></div>
+                <h1>Servicios de barbería</h1>
+                <p>Cortes, afeitado clásico y cuidado de barba con oficio de barrio.</p>
+                <a href="#reservar" class="btn-primary">Reservar una cita</a>
             </div>
         </section>
 
         <section class="services" id="servicios">
-            <p class="section-eyebrow">Lo que hacemos</p>
-            <h2 id="servicesTitle">Nuestros servicios</h2>
-            <div class="services-grid" id="servicesGrid"></div>
+            <h2>Nuestros servicios</h2>
+            <div class="services-grid" id="servicesGrid">
+                <div class="service-card"><h3>✂ Corte de pelo</h3></div>
+                <div class="service-card"><h3>🪒 Afeitado</h3></div>
+                <div class="service-card"><h3>🧔 Corte de barba</h3></div>
+            </div>
         </section>
 
         <section class="cta-book" id="reservar">
-            <p class="section-eyebrow" style="color:var(--gold-light)">Sin filas, sin llamadas</p>
             <h2>Agenda tu cita en un minuto</h2>
             <p>Elige tu servicio, deja tus datos y te confirmamos por teléfono.</p>
-            <div style="margin-top:26px;"><button class="btn-primary" id="openBookingBtn">Reservar ahora</button></div>
+            <button class="btn-primary" style="margin-top:20px;">Reservar ahora</button>
         </section>
 
         <footer id="contacto">
-            <p id="footerText">Barbería — hecho con cuidado, corte a corte.</p>
-            <p style="margin-top:8px;">Panel de administración: <a href="#" id="adminEntryLink">acceder</a></p>
+            <p>Barbería — hecho con cuidado, corte a corte.</p>
         </footer>
     </div>
 
-    <!-- ================= BOOKING MODAL ================= -->
-    <div class="modal-backdrop hidden" id="bookingModalBackdrop">
-        <div class="modal-box">
-            <button class="close-x" data-close="bookingModalBackdrop">✕</button>
-            <div id="bookingFormWrap">
-                <h3>Reservar cita</h3>
-                <p class="modal-sub">Completa tus datos y elige el servicio.</p>
-                <form id="bookingForm">
-                    <div class="grid-2">
-                        <div class="field"><label>Nombres</label><input type="text" id="bkNombres" required></div>
-                        <div class="field"><label>Apellidos</label><input type="text" id="bkApellidos" required></div>
-                    </div>
-                    <div class="grid-2">
-                        <div class="field"><label>DOI</label><input type="text" id="bkDoi" required></div>
-                        <div class="field"><label>Fecha nacimiento</label><input type="date" id="bkBirthdate" required></div>
-                    </div>
-                    <div class="field"><label>Teléfono</label><input type="tel" id="bkPhone" required></div>
-                    <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
-                    <div class="grid-2">
-                        <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
-                        <div class="field"><label>Hora</label><input type="time" id="bkTime" required></div>
-                    </div>
-                    <div class="field"><label>Notas</label><textarea id="bkNotes" placeholder="Ej. corte con degradado"></textarea></div>
-                    <div class="modal-actions">
-                        <button type="button" class="btn-secondary" data-close="bookingModalBackdrop">Cancelar</button>
-                        <button type="submit" class="btn-gold">Confirmar reserva</button>
-                    </div>
-                </form>
-            </div>
-            <div id="bookingConfirmWrap" class="hidden confirm-box">
-                <div class="check">✓</div>
-                <h3>¡Reserva recibida!</h3>
-                <p class="modal-sub">Te esperamos. El negocio confirmará tu horario.</p>
-                <button class="btn-gold" data-close="bookingModalBackdrop">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ================= ADMIN LOGIN ================= -->
-    <div class="modal-backdrop hidden" id="loginModalBackdrop">
-        <div class="modal-box" style="max-width:360px;">
-            <button class="close-x" data-close="loginModalBackdrop">✕</button>
+    <div class="modal-backdrop hidden" id="loginModal">
+        <div class="modal-box">
+            <button class="close-x" id="closeLogin">✕</button>
             <h3>Acceso administrador</h3>
-            <p class="modal-sub">Ingresa la contraseña del panel.</p>
+            <p style="color:var(--muted);font-size:13px;margin:10px 0 20px;">Contraseña: <b>barberia2026</b></p>
             <form id="loginForm">
-                <div class="field"><label>Contraseña</label><input type="password" id="loginPassword" required></div>
-                <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
+                <div class="field">
+                    <label>Contraseña</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
                 <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
+                <p id="loginError" class="hidden" style="color:var(--danger);margin-top:10px;">Contraseña incorrecta</p>
             </form>
-            <p style="font-size:11px;color:var(--muted);margin-top:12px;">Contraseña: <b>barberia2026</b></p>
         </div>
     </div>
 
     <!-- ================= ADMIN PANEL ================= -->
     <div id="adminPanel" class="hidden">
         <aside class="admin-sidebar">
-            <div class="admin-brand"><span class="stripe"></span> Panel</div>
+            <div style="font-weight:700;font-size:18px;margin-bottom:16px;">📋 Panel</div>
             <button class="admin-tab active" data-tab="clientes">Clientes</button>
             <button class="admin-tab" data-tab="servicios">Servicios</button>
-            <button class="admin-tab" data-tab="pagos">Pagos</button>
             <button class="admin-tab" data-tab="ajustes">Ajustes</button>
-            <button class="admin-back" id="backToSiteBtn">← Volver</button>
+            <button class="admin-back" id="backToSite">← Volver</button>
         </aside>
 
         <main class="admin-main">
             <!-- CLIENTES -->
-            <section class="admin-tab-panel" data-panel="clientes">
-                <div class="admin-panel-header">
+            <section data-panel="clientes">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
                     <h2>👥 Clientes</h2>
-                    <input type="text" class="search-input" id="clientSearch" placeholder="Buscar...">
+                    <input type="text" id="clientSearch" placeholder="Buscar..." style="padding:8px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;">
                 </div>
 
-                <div id="supabaseNotice" class="supabase-notice">
-                    <span class="icon">🔄</span>
-                    <span id="noticeText">Conectando con Supabase...</span>
+                <div id="notice" style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
+                    <span id="noticeIcon">ℹ️</span>
+                    <span id="noticeText">Conecta con Supabase para ver clientes</span>
                 </div>
 
                 <div class="admin-card">
-                    <h3 id="clientFormTitle">Agregar cliente</h3>
-                    <input type="hidden" id="cliEditId">
+                    <h3 id="formTitle">Agregar cliente</h3>
+                    <input type="hidden" id="editId">
                     <div class="grid-2">
-                        <div class="field"><label>Nombres *</label><input type="text" id="cliNombres" required></div>
-                        <div class="field"><label>Apellidos *</label><input type="text" id="cliApellidos" required></div>
-                    </div>
-                    <div class="grid-2">
-                        <div class="field"><label>DOI *</label><input type="text" id="cliDoi" required></div>
-                        <div class="field"><label>Fecha nacimiento</label><input type="date" id="cliBirthdate"></div>
+                        <div class="field"><label>Nombres *</label><input type="text" id="cliNombres"></div>
+                        <div class="field"><label>Apellidos *</label><input type="text" id="cliApellidos"></div>
                     </div>
                     <div class="grid-2">
-                        <div class="field"><label>Teléfono *</label><input type="text" id="cliPhone" required></div>
-                        <div class="field"><label>Email</label><input type="email" id="cliEmail"></div>
+                        <div class="field"><label>DOI *</label><input type="text" id="cliDoi"></div>
+                        <div class="field"><label>Teléfono *</label><input type="text" id="cliPhone"></div>
                     </div>
-                    <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
-                    <div class="modal-actions" style="margin-top:6px;">
-                        <button class="btn-gold" id="saveClientBtn">💾 Guardar en Supabase</button>
-                        <button class="btn-secondary hidden" id="cancelEditClientBtn">Cancelar</button>
-                    </div>
+                    <div class="field"><label>Email</label><input type="email" id="cliEmail"></div>
+                    <button class="btn-gold" id="saveClientBtn">💾 Guardar en Supabase</button>
+                    <button class="btn-secondary hidden" id="cancelEdit" style="margin-left:10px;padding:10px 20px;border:none;border-radius:999px;font-weight:600;">Cancelar</button>
                 </div>
 
                 <div class="admin-card" style="padding:0;overflow-x:auto;">
                     <table>
                         <thead><tr><th>Nombre</th><th>DOI</th><th>Teléfono</th><th>Registrado</th><th></th></tr></thead>
-                        <tbody id="clientsTableBody"></tbody>
+                        <tbody id="clientsBody"></tbody>
                     </table>
-                    <div class="empty-state hidden" id="clientsEmpty">No hay clientes en Supabase</div>
+                    <div class="empty-state hidden" id="emptyState">No hay clientes en Supabase</div>
                 </div>
             </section>
 
             <!-- SERVICIOS -->
-            <section class="admin-tab-panel hidden" data-panel="servicios">
-                <div class="admin-panel-header"><h2>Servicios</h2></div>
+            <section data-panel="servicios" class="hidden">
+                <h2>Servicios</h2>
                 <div class="admin-card">
-                    <h3>Agregar servicio</h3>
                     <div class="grid-2">
                         <div class="field"><label>Nombre</label><input type="text" id="svcTitle" placeholder="Corte de pelo"></div>
                         <div class="field"><label>Precio</label><input type="text" id="svcPrice" placeholder="15.00"></div>
                     </div>
                     <button class="btn-gold" id="saveServiceBtn">Guardar</button>
                 </div>
-                <div class="services-admin-grid" id="servicesAdminGrid"></div>
-            </section>
-
-            <!-- PAGOS -->
-            <section class="admin-tab-panel hidden" data-panel="pagos">
-                <div class="admin-panel-header"><h2>Pagos</h2></div>
-                <div class="stat-row">
-                    <div class="stat-box"><div class="label">Cobrados</div><div class="value" id="statPaid">$0.00</div></div>
-                    <div class="stat-box"><div class="label">Pendientes</div><div class="value" id="statPending">$0.00</div></div>
-                    <div class="stat-box"><div class="label">Total</div><div class="value" id="statCount">0</div></div>
-                </div>
-                <div class="admin-card" style="padding:0;overflow-x:auto;">
-                    <table>
-                        <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Estado</th></tr></thead>
-                        <tbody id="paymentsTableBody"></tbody>
-                    </table>
-                    <div class="empty-state hidden" id="paymentsEmpty">No hay pagos</div>
-                </div>
+                <div id="servicesAdminGrid"></div>
             </section>
 
             <!-- AJUSTES -->
-            <section class="admin-tab-panel hidden" data-panel="ajustes">
-                <div class="admin-panel-header"><h2>Ajustes</h2></div>
+            <section data-panel="ajustes" class="hidden">
+                <h2>Ajustes</h2>
                 <div class="admin-card">
                     <h3>Cambiar contraseña</h3>
-                    <div class="field"><label>Nueva contraseña</label><input type="password" id="newAdminPassword"></div>
+                    <div class="field"><label>Nueva contraseña</label><input type="password" id="newPassword"></div>
                     <button class="btn-gold" id="changePasswordBtn">Actualizar</button>
                 </div>
             </section>
@@ -1009,15 +599,15 @@
 
     <script>
         // ============================================================
-        //  🔴 CONFIGURACIÓN DE SUPABASE 🔴
+        //  🔴 CONFIGURACIÓN 🔴
         // ============================================================
         const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
         // ============================================================
-        //  VARIABLES
+        //  VARIABLES GLOBALES
         // ============================================================
-        let supabase;
+        let supabase = null;
         let clientesCache = [];
         let isConnected = false;
 
@@ -1028,22 +618,27 @@
         const statusText = document.getElementById('statusText');
         const clientCount = document.getElementById('clientCount');
         const testBtn = document.getElementById('testBtn');
-        const noticeEl = document.getElementById('supabaseNotice');
+        const adminBtn = document.getElementById('adminBtn');
+        const noticeEl = document.getElementById('notice');
+        const noticeIcon = document.getElementById('noticeIcon');
         const noticeText = document.getElementById('noticeText');
-        const clientsBody = document.getElementById('clientsTableBody');
-        const clientsEmpty = document.getElementById('clientsEmpty');
+        const clientsBody = document.getElementById('clientsBody');
+        const emptyState = document.getElementById('emptyState');
         const searchInput = document.getElementById('clientSearch');
+        const saveClientBtn = document.getElementById('saveClientBtn');
 
         // ============================================================
-        //  UTILIDADES
+        //  FUNCIONES DE UTILIDAD
         // ============================================================
         function showToast(msg, type = 'success') {
+            const old = document.querySelector('.toast');
+            if (old) old.remove();
+
             const el = document.createElement('div');
-            el.className = 'toast';
+            el.className = `toast ${type === 'error' ? 'error' : 'success'}`;
             el.textContent = msg;
-            el.style.border = type === 'error' ? '2px solid var(--danger)' : '2px solid var(--success)';
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 3000);
+            setTimeout(() => el.remove(), 4000);
         }
 
         function updateStatus(online, msg) {
@@ -1051,71 +646,91 @@
             statusDot.className = `dot ${online ? 'online' : 'offline'}`;
             statusText.textContent = online ? '✅ Conectado' : '🔴 Desconectado';
             if (msg) statusText.textContent = msg;
+            clientCount.textContent = `(${clientesCache.length} clientes)`;
         }
 
         function updateNotice(type, msg) {
-            noticeEl.className = `supabase-notice ${type === 'error' ? 'error' : ''}`;
-            const icons = { 'loading': '🔄', 'success': '✅', 'error': '❌', 'info': 'ℹ️' };
-            noticeEl.querySelector('.icon').textContent = icons[type] || 'ℹ️';
+            const icons = {
+                'loading': '🔄',
+                'success': '✅',
+                'error': '❌',
+                'info': 'ℹ️'
+            };
+            noticeIcon.textContent = icons[type] || 'ℹ️';
             noticeText.textContent = msg;
+            noticeEl.style.borderColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#ff9800';
+            noticeEl.style.background = type === 'error' ? '#ffebee' : type === 'success' ? '#e8f5e9' : '#fff3e0';
         }
 
         function escapeHtml(str) {
+            if (!str) return '';
             const div = document.createElement('div');
-            div.textContent = str == null ? '' : String(str);
+            div.textContent = String(str);
             return div.innerHTML;
         }
 
         // ============================================================
-        //  CONEXIÓN A SUPABASE
+        //  CONEXIÓN A SUPABASE (¡AHORA FUNCIONA!)
         // ============================================================
         async function probarConexion() {
+            console.log('🔄 Probando conexión a Supabase...');
             testBtn.disabled = true;
             testBtn.textContent = '⏳ Probando...';
-            updateStatus(false, '⏳ Probando conexión...');
+            updateStatus(false, '⏳ Probando...');
+            updateNotice('loading', 'Conectando a Supabase...');
 
             try {
+                // Crear cliente de Supabase
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log('✅ Cliente Supabase creado');
 
-                const { data, error } = await supabase
+                // Probar conexión intentando leer la tabla clientes
+                const { data, error, count } = await supabase
                     .from('clientes')
-                    .select('count', { count: 'exact', head: true });
+                    .select('*', { count: 'exact', head: true });
 
-                if (error && error.code === '42P01') {
-                    updateStatus(false, '⚠️ Tabla no existe');
-                    updateNotice('error',
-                        'La tabla "clientes" no existe. Ejecuta este SQL en Supabase:\n\n' +
-                        'CREATE TABLE clientes (\n' +
-                        '  id TEXT PRIMARY KEY,\n' +
-                        '  nombres TEXT,\n' +
-                        '  apellidos TEXT,\n' +
-                        '  name TEXT,\n' +
-                        '  doi TEXT UNIQUE,\n' +
-                        '  birthdate TEXT,\n' +
-                        '  phone TEXT,\n' +
-                        '  email TEXT,\n' +
-                        '  notes TEXT,\n' +
-                        '  created_at TIMESTAMP DEFAULT NOW()\n' +
-                        ');'
-                    );
-                    showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
-                    testBtn.disabled = false;
-                    testBtn.textContent = '🔌 Probar Conexión';
-                    return;
+                if (error) {
+                    // Si el error es que la tabla no existe
+                    if (error.code === '42P01') {
+                        console.warn('⚠️ La tabla "clientes" no existe');
+                        updateStatus(false, '⚠️ Tabla no existe');
+                        updateNotice('error',
+                            'La tabla "clientes" no existe. Ejecuta este SQL en Supabase:\n\n' +
+                            'CREATE TABLE clientes (\n' +
+                            '  id TEXT PRIMARY KEY,\n' +
+                            '  nombres TEXT,\n' +
+                            '  apellidos TEXT,\n' +
+                            '  name TEXT,\n' +
+                            '  doi TEXT UNIQUE,\n' +
+                            '  birthdate TEXT,\n' +
+                            '  phone TEXT,\n' +
+                            '  email TEXT,\n' +
+                            '  notes TEXT,\n' +
+                            '  created_at TIMESTAMP DEFAULT NOW()\n' +
+                            ');\n\n' +
+                            'ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;\n' +
+                            'CREATE POLICY "Enable all" ON clientes FOR ALL USING (true);'
+                        );
+                        showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
+                        testBtn.disabled = false;
+                        testBtn.textContent = '🔌 Probar Conexión';
+                        return;
+                    }
+                    throw error;
                 }
 
-                if (error) throw error;
-
-                updateStatus(true, '✅ Conectado a Supabase');
-                updateNotice('success', '✅ Conexión exitosa');
-                showToast('✅ Conectado a Supabase correctamente');
+                // Conexión exitosa
+                console.log('✅ Conexión exitosa a Supabase');
+                updateStatus(true, '✅ Conectado');
+                updateNotice('success', '✅ Conectado a Supabase correctamente');
+                showToast('✅ Conectado a Supabase');
 
                 // Cargar clientes
-                await listarClientes();
+                await cargarClientes();
 
             } catch (error) {
-                console.error('Error:', error);
-                updateStatus(false, '❌ Error de conexión');
+                console.error('❌ Error:', error);
+                updateStatus(false, '❌ Error');
                 updateNotice('error', `❌ ${error.message}`);
                 showToast(`❌ Error: ${error.message}`, 'error');
             }
@@ -1125,9 +740,9 @@
         }
 
         // ============================================================
-        //  LISTAR CLIENTES
+        //  CARGAR CLIENTES
         // ============================================================
-        async function listarClientes(filter = '') {
+        async function cargarClientes(filter = '') {
             if (!supabase) {
                 updateNotice('info', '🔌 Conecta a Supabase primero');
                 return;
@@ -1150,22 +765,23 @@
                 clientesCache = data || [];
                 clientCount.textContent = `(${clientesCache.length} clientes)`;
 
+                // Renderizar tabla
                 clientsBody.innerHTML = '';
                 if (clientesCache.length === 0) {
-                    clientsEmpty.classList.remove('hidden');
+                    emptyState.classList.remove('hidden');
                     return;
                 }
-                clientsEmpty.classList.add('hidden');
+                emptyState.classList.add('hidden');
 
                 clientesCache.forEach(cli => {
+                    const nombre = cli.name || cli.nombres + ' ' + cli.apellidos;
                     const tr = document.createElement('tr');
-                    const name = cli.name || cli.nombres + ' ' + cli.apellidos;
                     tr.innerHTML = `
-                        <td><strong>${escapeHtml(name)}</strong></td>
+                        <td><strong>${escapeHtml(nombre)}</strong></td>
                         <td>${escapeHtml(cli.doi || '—')}</td>
                         <td>${escapeHtml(cli.phone || '—')}</td>
                         <td>${escapeHtml(cli.created_at ? new Date(cli.created_at).toLocaleDateString() : '—')}</td>
-                        <td style="white-space:nowrap;">
+                        <td>
                             <button class="btn-link" onclick="editarCliente('${cli.id}')">Editar</button>
                             <button class="btn-danger" onclick="eliminarCliente('${cli.id}')">Eliminar</button>
                         </td>
@@ -1176,7 +792,7 @@
                 updateNotice('success', `✅ ${clientesCache.length} clientes en Supabase`);
 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error al cargar clientes:', error);
                 updateNotice('error', `❌ ${error.message}`);
             }
         }
@@ -1216,7 +832,7 @@
                 showToast(`✅ "${nuevo.name}" registrado en Supabase`);
                 updateNotice('success', `✅ "${nuevo.name}" guardado`);
 
-                await listarClientes(searchInput.value);
+                await cargarClientes(searchInput.value);
                 return data[0];
 
             } catch (error) {
@@ -1236,16 +852,14 @@
             const cli = clientesCache.find(c => c.id === id);
             if (!cli) return;
 
-            document.getElementById('clientFormTitle').textContent = 'Editar cliente';
-            document.getElementById('cliEditId').value = cli.id;
+            document.getElementById('formTitle').textContent = 'Editar cliente';
+            document.getElementById('editId').value = cli.id;
             document.getElementById('cliNombres').value = cli.nombres || '';
             document.getElementById('cliApellidos').value = cli.apellidos || '';
             document.getElementById('cliDoi').value = cli.doi || '';
-            document.getElementById('cliBirthdate').value = cli.birthdate || '';
             document.getElementById('cliPhone').value = cli.phone || '';
             document.getElementById('cliEmail').value = cli.email || '';
-            document.getElementById('cliNotes').value = cli.notes || '';
-            document.getElementById('cancelEditClientBtn').classList.remove('hidden');
+            document.getElementById('cancelEdit').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1264,7 +878,7 @@
                 if (error) throw error;
 
                 showToast('✅ Cliente eliminado');
-                await listarClientes(searchInput.value);
+                await cargarClientes(searchInput.value);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`, 'error');
@@ -1296,8 +910,8 @@
 
                 showToast('✅ Cliente actualizado');
                 updateNotice('success', '✅ Actualizado');
-                resetClientForm();
-                await listarClientes(searchInput.value);
+                resetForm();
+                await cargarClientes(searchInput.value);
 
             } catch (error) {
                 showToast(`❌ ${error.message}`, 'error');
@@ -1308,24 +922,22 @@
         // ============================================================
         //  RESET FORM
         // ============================================================
-        function resetClientForm() {
-            document.getElementById('clientFormTitle').textContent = 'Agregar cliente';
-            document.getElementById('cliEditId').value = '';
+        function resetForm() {
+            document.getElementById('formTitle').textContent = 'Agregar cliente';
+            document.getElementById('editId').value = '';
             document.getElementById('cliNombres').value = '';
             document.getElementById('cliApellidos').value = '';
             document.getElementById('cliDoi').value = '';
-            document.getElementById('cliBirthdate').value = '';
             document.getElementById('cliPhone').value = '';
             document.getElementById('cliEmail').value = '';
-            document.getElementById('cliNotes').value = '';
-            document.getElementById('cancelEditClientBtn').classList.add('hidden');
+            document.getElementById('cancelEdit').classList.add('hidden');
         }
 
         // ============================================================
-        //  EVENTOS
+        //  EVENTOS DEL FORMULARIO
         // ============================================================
-        document.getElementById('saveClientBtn').addEventListener('click', async () => {
-            const editId = document.getElementById('cliEditId').value;
+        saveClientBtn.addEventListener('click', async () => {
+            const editId = document.getElementById('editId').value;
             const nombres = document.getElementById('cliNombres').value.trim();
             const apellidos = document.getElementById('cliApellidos').value.trim();
             const doi = document.getElementById('cliDoi').value.trim();
@@ -1341,9 +953,9 @@
                 apellidos,
                 doi,
                 phone,
-                birthdate: document.getElementById('cliBirthdate').value,
+                birthdate: '',
                 email: document.getElementById('cliEmail').value.trim(),
-                notes: document.getElementById('cliNotes').value.trim()
+                notes: ''
             };
 
             if (editId) {
@@ -1353,73 +965,81 @@
             }
         });
 
-        document.getElementById('cancelEditClientBtn').addEventListener('click', resetClientForm);
-        searchInput.addEventListener('input', (e) => listarClientes(e.target.value));
+        document.getElementById('cancelEdit').addEventListener('click', resetForm);
+        searchInput.addEventListener('input', (e) => cargarClientes(e.target.value));
 
         // ============================================================
-        //  ADMIN NAVEGACIÓN
+        //  ADMIN - LOGIN
         // ============================================================
-        function abrirAdmin() {
-            document.getElementById('loginModalBackdrop').classList.remove('hidden');
-        }
+        adminBtn.addEventListener('click', () => {
+            document.getElementById('loginModal').classList.remove('hidden');
+        });
 
-        document.getElementById('adminEntryBtn').addEventListener('click', abrirAdmin);
-        document.getElementById('adminEntryLink').addEventListener('click', (e) => { e.preventDefault();
-            abrirAdmin(); });
+        document.getElementById('closeLogin').addEventListener('click', () => {
+            document.getElementById('loginModal').classList.add('hidden');
+        });
 
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const pw = document.getElementById('loginPassword').value;
             if (pw === 'barberia2026') {
-                document.getElementById('loginModalBackdrop').classList.add('hidden');
+                document.getElementById('loginModal').classList.add('hidden');
                 document.getElementById('publicSite').classList.add('hidden');
                 document.getElementById('adminPanel').classList.remove('hidden');
-                if (supabase) listarClientes();
+                if (supabase) cargarClientes();
+                else updateNotice('info', '🔌 Conecta a Supabase primero');
             } else {
                 document.getElementById('loginError').classList.remove('hidden');
             }
         });
 
-        document.getElementById('backToSiteBtn').addEventListener('click', () => {
+        document.getElementById('backToSite').addEventListener('click', () => {
             document.getElementById('adminPanel').classList.add('hidden');
             document.getElementById('publicSite').classList.remove('hidden');
         });
 
+        // ============================================================
+        //  TABS
+        // ============================================================
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.addEventListener('click', () => {
                 document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
-                document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.add('hidden'));
+                document.querySelectorAll('[data-panel]').forEach(p => p.classList.add('hidden'));
                 document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.remove('hidden');
-                if (tab.dataset.tab === 'clientes' && supabase) listarClientes(searchInput.value);
+                if (tab.dataset.tab === 'clientes' && supabase) {
+                    cargarClientes(searchInput.value);
+                }
             });
         });
+
+        // ============================================================
+        //  BOTÓN DE PRUEBA - ASIGNAR EVENTO CORRECTAMENTE
+        // ============================================================
+        testBtn.addEventListener('click', probarConexion);
 
         // ============================================================
         //  INICIALIZACIÓN
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
-            updateStatus(false, '🔴 Desconectado');
-            updateNotice('info', 'Haz clic en "Probar Conexión" para conectar con Supabase');
-            showToast('🔌 Haz clic en "Probar Conexión" para conectar', 'info');
+            console.log('🪒 Barbería con Supabase cargada');
+            console.log('📌 Haz clic en "Probar Conexión" para conectar');
+            updateNotice('info', '🔌 Haz clic en "Probar Conexión" para conectar con Supabase');
         });
 
         // ============================================================
-        //  FUNCIONES GLOBALES
+        //  FUNCIONES GLOBALES (para usar desde consola)
         // ============================================================
         window.probarConexion = probarConexion;
-        window.listarClientes = listarClientes;
+        window.cargarClientes = cargarClientes;
         window.insertarCliente = insertarCliente;
         window.eliminarCliente = eliminarCliente;
         window.editarCliente = editarCliente;
-        window.abrirAdmin = abrirAdmin;
 
-        console.log('🪒 Barbería con Supabase');
-        console.log('📌 Comandos:');
+        console.log('📌 Comandos disponibles:');
         console.log('  • probarConexion() - Conectar a Supabase');
-        console.log('  • listarClientes() - Listar clientes');
+        console.log('  • cargarClientes() - Listar clientes');
         console.log('  • insertarCliente(datos) - Insertar cliente');
-        console.log('  • abrirAdmin() - Abrir panel admin');
     </script>
 
 </body>
