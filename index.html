@@ -1,1052 +1,1631 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barbería — Servicios y reservas</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- 🔴 SUPABASE 🔴 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
-    </script>
-    
-    <style>
-        :root {
-            --ink: #1c1712;
-            --cream: #f7f2e7;
-            --gold: #a3814f;
-            --gold-light: #c9a86a;
-            --muted: #8a8072;
-            --line: #e2d9c6;
-            --danger: #b3453b;
-            --success: #4c7a4f;
-            --radius: 16px;
-            --shadow: 0 16px 36px rgba(28, 23, 18, 0.16);
-            --font-display: 'Fraunces', serif;
-            --font-body: 'Inter', sans-serif;
-        }
-        * {
-            box-sizing: border-box;
-        }
-        body {
-            margin: 0;
-            font-family: var(--font-body);
-            color: var(--ink);
-            background: var(--cream);
-        }
-        h1,
-        h2,
-        h3 {
-            font-family: var(--font-display);
-            margin: 0;
-        }
-        button {
-            font-family: inherit;
-            cursor: pointer;
-        }
-        .hidden {
-            display: none !important;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Barbería — Servicios y reservas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        /* BARRA DE CONEXIÓN */
-        .connection-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: var(--ink);
-            color: var(--cream);
-            font-size: 13px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .connection-bar .status-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .connection-bar .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .connection-bar .dot.online {
-            background: var(--success);
-        }
-        .connection-bar .dot.offline {
-            background: var(--danger);
-        }
-        .connection-bar .dot.testing {
-            background: var(--gold);
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%,
-            100% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.3;
-            }
-        }
-        .connection-bar .btn-test {
-            background: var(--gold);
-            color: var(--ink);
-            border: none;
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .connection-bar .btn-test:hover {
-            background: var(--gold-light);
-            transform: scale(1.05);
-        }
-        .connection-bar .btn-test:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .connection-bar .client-count {
-            color: var(--muted);
-            font-size: 12px;
-        }
-        .connection-bar .btn-admin {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .connection-bar .btn-admin:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
+<!-- 🔴 SUPABASE 🔴 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+</script>
 
-        /* TOAST */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--ink);
-            color: var(--cream);
-            padding: 12px 24px;
-            border-radius: 999px;
-            font-size: 14px;
-            z-index: 200;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.3s ease;
-            max-width: 90%;
-            text-align: center;
-        }
-        .toast.error {
-            border: 2px solid var(--danger);
-        }
-        .toast.success {
-            border: 2px solid var(--success);
-        }
-        @keyframes slideUp {
-            from {
-                transform: translateX(-50%) translateY(20px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
-        }
+<style>
+  :root{
+    --ink:#1c1712;
+    --ink-soft:#332b23;
+    --cream:#f7f2e7;
+    --cream-dark:#eee7d8;
+    --gold:#a3814f;
+    --gold-light:#c9a86a;
+    --muted:#8a8072;
+    --line:#e2d9c6;
+    --danger:#b3453b;
+    --success:#4c7a4f;
+    --radius:16px;
+    --shadow: 0 16px 36px rgba(28,23,18,0.16);
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:var(--cream);}
+  h1,h2,h3{font-family:var(--font-display);margin:0;}
+  p{margin:0;}
+  button{font-family:inherit;cursor:pointer;}
+  a{color:inherit;}
+  .hidden{display:none !important;}
+  img{max-width:100%;display:block;}
 
-        /* HERO */
-        .site-header {
-            margin-top: 50px;
-            padding: 16px 5%;
-            background: rgba(28, 23, 18, .92);
-            color: var(--cream);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            font-family: var(--font-display);
-            font-weight: 700;
-            font-size: 20px;
-        }
-        .site-nav {
-            display: flex;
-            gap: 28px;
-            font-size: 14px;
-        }
-        .site-nav a {
-            color: var(--cream);
-            text-decoration: none;
-            opacity: .85;
-        }
-        .site-nav a:hover {
-            opacity: 1;
-        }
+  /* ---------- Barra de estado de conexión ---------- */
+  .connection-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ink);
+    color: var(--cream);
+    font-size: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .connection-bar .status-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .connection-bar .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .connection-bar .dot.online { background: var(--success); }
+  .connection-bar .dot.offline { background: var(--danger); }
+  .connection-bar .dot.testing { background: var(--gold); animation: pulse 1s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .connection-bar .btn-test {
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .connection-bar .btn-test:hover { background: var(--gold-light); transform: scale(1.05); }
+  .connection-bar .btn-test:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .hero {
-            min-height: 60vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            color: white;
-            background: linear-gradient(135deg, #2a2118, #14100c);
-            padding: 40px 20px;
-        }
-        .hero-content h1 {
-            font-size: clamp(34px, 5vw, 56px);
-        }
-        .hero-content p {
-            margin-top: 16px;
-            font-size: 16px;
-            opacity: .82;
-        }
-        .btn-primary {
-            display: inline-block;
-            margin-top: 30px;
-            background: var(--gold);
-            color: var(--ink);
-            padding: 14px 30px;
-            border-radius: 999px;
-            font-weight: 600;
-            border: none;
-            text-decoration: none;
-        }
-        .btn-primary:hover {
-            background: var(--gold-light);
-        }
+  /* ---------- Signature razor-stroke divider ---------- */
+  .razor-divider{width:86px;height:18px;margin:18px auto 0;opacity:.85;}
+  .razor-divider path{stroke:var(--gold-light);stroke-width:1.6;fill:none;stroke-linecap:round;}
+  .razor-divider circle{fill:var(--gold-light);}
+  .section-eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;}
 
-        .services {
-            padding: 60px 6%;
-            text-align: center;
-        }
-        .services-grid {
-            margin-top: 32px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 22px;
-            text-align: left;
-        }
-        @media(max-width:900px) {
-            .services-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media(max-width:600px) {
-            .services-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .service-card {
-            background: #fff;
-            border-radius: var(--radius);
-            padding: 28px 22px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--line);
-        }
-        .service-card h3 {
-            font-size: 17px;
-            font-weight: 700;
-        }
+  /* ---------- Header ---------- */
+  .site-header{position:sticky;top:36px;z-index:40;display:flex;align-items:center;justify-content:space-between;
+    padding:16px 5%;background:rgba(28,23,18,.92);backdrop-filter:blur(6px);color:var(--cream);}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:.02em;}
+  .logo img{height:34px;width:auto;border-radius:6px;}
+  .site-nav{display:flex;gap:28px;font-size:14px;letter-spacing:.03em;}
+  .site-nav a{text-decoration:none;color:var(--cream);opacity:.85;transition:opacity .2s;}
+  .site-nav a:hover{opacity:1;}
+  .admin-entry{background:transparent;border:1px solid rgba(247,242,231,.35);color:var(--cream);
+    width:38px;height:38px;border-radius:50%;font-size:16px;display:flex;align-items:center;justify-content:center;
+    transition:background .2s;}
+  .admin-entry:hover{background:rgba(247,242,231,.15);}
 
-        .cta-book {
-            background: var(--ink);
-            color: var(--cream);
-            text-align: center;
-            padding: 60px 6%;
-        }
-        footer {
-            padding: 30px 6%;
-            text-align: center;
-            font-size: 13px;
-            color: var(--muted);
-            border-top: 1px solid var(--line);
-        }
+  /* ---------- Hero ---------- */
+  .hero{position:relative;min-height:78vh;display:flex;align-items:center;justify-content:center;
+    background-size:cover;background-position:center;text-align:center;color:var(--cream);}
+  .hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg, rgba(20,16,12,.55), rgba(20,16,12,.72));}
+  .hero-content{position:relative;z-index:2;max-width:720px;padding:0 24px;}
+  .hero-content h1{font-size:clamp(34px,5.4vw,58px);font-weight:700;line-height:1.08;}
+  .hero-content p{margin-top:16px;font-size:16px;color:rgba(247,242,231,.82);}
+  .btn-primary{display:inline-block;margin-top:30px;background:var(--gold);color:var(--ink);
+    padding:14px 30px;border-radius:999px;font-weight:600;font-size:14px;letter-spacing:.03em;text-decoration:none;
+    border:none;transition:transform .15s, background .2s;}
+  .btn-primary:hover{background:var(--gold-light);transform:translateY(-1px);}
+  .btn-ghost{display:inline-block;background:transparent;border:1px solid var(--ink);color:var(--ink);
+    padding:12px 26px;border-radius:999px;font-weight:600;font-size:14px;}
 
-        /* ADMIN */
-        #adminPanel {
-            min-height: 100vh;
-            background: var(--cream);
-            display: flex;
-        }
-        .admin-sidebar {
-            width: 200px;
-            background: var(--ink);
-            color: var(--cream);
-            padding: 20px 14px;
-            height: 100vh;
-            position: sticky;
-            top: 0;
-        }
-        .admin-main {
-            flex: 1;
-            padding: 30px 4%;
-        }
-        .admin-card {
-            background: #fff;
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .admin-tab {
-            display: block;
-            width: 100%;
-            background: none;
-            border: none;
-            color: rgba(247, 242, 231, .75);
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            text-align: left;
-            margin-bottom: 4px;
-        }
-        .admin-tab:hover {
-            background: rgba(247, 242, 231, .08);
-            color: #fff;
-        }
-        .admin-tab.active {
-            background: var(--gold);
-            color: var(--ink);
-            font-weight: 700;
-        }
-        .btn-gold {
-            background: var(--gold);
-            color: var(--ink);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 999px;
-            font-weight: 700;
-            font-size: 13px;
-        }
-        .btn-gold:hover {
-            background: var(--gold-light);
-        }
-        .btn-danger {
-            background: none;
-            border: none;
-            color: var(--danger);
-            font-size: 13px;
-            font-weight: 600;
-        }
-        .btn-link {
-            background: none;
-            border: none;
-            color: var(--gold);
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: underline;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        @media(max-width:700px) {
-            .grid-2 {
-                grid-template-columns: 1fr;
-            }
-            .admin-sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                display: flex;
-                overflow-x: auto;
-                padding: 10px;
-            }
-            .admin-tab {
-                width: auto;
-                white-space: nowrap;
-            }
-        }
-        .field {
-            margin-bottom: 14px;
-        }
-        .field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-        .field input {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid var(--line);
-            font-size: 14px;
-            background: var(--cream);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        th {
-            text-align: left;
-            padding: 8px 10px;
-            border-bottom: 1px solid var(--line);
-            color: var(--muted);
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-        td {
-            padding: 10px 10px;
-            border-bottom: 1px solid var(--line);
-        }
-        .empty-state {
-            padding: 20px 0;
-            text-align: center;
-            color: var(--muted);
-        }
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .6);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .modal-box {
-            background: #fff;
-            border-radius: var(--radius);
-            max-width: 400px;
-            width: 100%;
-            padding: 30px;
-            position: relative;
-        }
-        .close-x {
-            position: absolute;
-            top: 12px;
-            right: 16px;
-            background: none;
-            border: none;
-            font-size: 20px;
-            color: var(--muted);
-        }
-        .admin-back {
-            margin-top: 20px;
-            background: none;
-            border: 1px solid rgba(247, 242, 231, .3);
-            color: var(--cream);
-            padding: 10px 14px;
-            border-radius: 8px;
-            width: 100%;
-        }
-        .btn-secondary {
-            background: var(--cream);
-            border: 1px solid var(--line);
-            padding: 10px 20px;
-            border-radius: 999px;
-            font-weight: 600;
-        }
-    </style>
+  /* ---------- Services ---------- */
+  .services{padding:90px 6% 60px;text-align:center;}
+  .services h2{font-size:clamp(26px,3.4vw,36px);margin-top:10px;}
+  .services-grid{margin-top:52px;display:grid;grid-template-columns:repeat(3,1fr);gap:22px;text-align:left;}
+  @media(max-width:900px){.services-grid{grid-template-columns:repeat(2,1fr);}}
+  @media(max-width:600px){.services-grid{grid-template-columns:1fr;}}
+  .service-card{background:#fff;border-radius:var(--radius);padding:34px 26px;box-shadow:var(--shadow);
+    display:flex;flex-direction:column;gap:16px;position:relative;border:1px solid var(--line);}
+  .service-icon{width:46px;height:46px;color:var(--gold);}
+  .service-icon svg{width:100%;height:100%;}
+  .service-card h3{font-size:19px;font-weight:700;font-family:var(--font-body);}
+  .service-price{font-size:13px;color:var(--muted);font-weight:600;}
+  .service-book-btn{margin-top:auto;align-self:flex-start;background:none;border:none;color:var(--gold);
+    font-weight:600;font-size:13px;padding:0;text-decoration:underline;text-underline-offset:3px;}
+
+  /* ---------- CTA / Booking section ---------- */
+  .cta-book{background:var(--ink);color:var(--cream);text-align:center;padding:80px 6%;margin-top:40px;}
+  .cta-book h2{font-size:clamp(24px,3vw,32px);}
+  .cta-book p{color:rgba(247,242,231,.75);margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;}
+
+  /* ---------- Footer ---------- */
+  footer{padding:34px 6%;text-align:center;font-size:13px;color:var(--muted);border-top:1px solid var(--line);}
+  footer a{color:var(--gold);text-decoration:none;}
+
+  /* ---------- Modals ---------- */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(20,16,12,.6);z-index:100;display:flex;
+    align-items:center;justify-content:center;padding:20px;}
+  .modal-box{background:#fff;border-radius:var(--radius);max-width:460px;width:100%;padding:32px;
+    box-shadow:var(--shadow);max-height:88vh;overflow-y:auto;}
+  .modal-box h3{font-size:22px;margin-bottom:6px;}
+  .modal-box .modal-sub{color:var(--muted);font-size:13px;margin-bottom:20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;}
+  .field input, .field select, .field textarea{width:100%;padding:11px 13px;border-radius:10px;
+    border:1px solid var(--line);font-family:inherit;font-size:14px;background:var(--cream);color:var(--ink);}
+  .field textarea{resize:vertical;min-height:64px;}
+  .modal-actions{display:flex;gap:10px;margin-top:22px;}
+  .btn-secondary{background:var(--cream-dark);border:none;padding:12px 20px;border-radius:999px;font-weight:600;
+    font-size:14px;color:var(--ink);}
+  .close-x{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;color:var(--muted);}
+  .modal-box{position:relative;}
+  .confirm-box{text-align:center;padding:10px 0;}
+  .confirm-box .check{width:52px;height:52px;border-radius:50%;background:#e9f3ea;color:var(--success);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;}
+
+  /* ---------- ADMIN ---------- */
+  #adminPanel{min-height:100vh;background:var(--cream);display:flex;}
+  .admin-sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:26px 18px;
+    display:flex;flex-direction:column;gap:6px;position:sticky;top:36px;height:calc(100vh - 36px);}
+  .admin-brand{font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:20px;
+    display:flex;align-items:center;gap:8px;}
+  .admin-brand .stripe{width:20px;height:20px;border-radius:4px;background:
+    repeating-linear-gradient(45deg, var(--gold) 0 4px, #7a1f1f 4px 8px, var(--cream) 8px 12px);}
+  .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:11px 14px;
+    border-radius:10px;font-size:14px;font-weight:500;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;}
+  .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
+  .admin-back{margin-top:auto;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
+    padding:10px 14px;border-radius:10px;font-size:13px;}
+  .admin-main{flex:1;padding:38px 4% 60px;max-width:1100px;}
+  .admin-panel-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
+  .admin-panel-header h2{font-size:26px;}
+  .admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
+  .admin-card h3{font-size:15px;font-family:var(--font-body);font-weight:700;margin-bottom:16px;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:700px){.grid-2{grid-template-columns:1fr;} .admin-main{padding:30px 5%;} #adminPanel{flex-direction:column;}
+    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;} .admin-back{margin-top:0;}}
+  .btn-gold{background:var(--gold);color:var(--ink);border:none;padding:11px 20px;border-radius:999px;
+    font-weight:700;font-size:13px;}
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-danger{background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;}
+  .btn-link{background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;
+    letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line);}
+  td{padding:11px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
+  .badge.pendiente{background:#fbe9d7;color:#a55b1f;}
+  .badge.pagado{background:#e2f0e3;color:var(--success);}
+  .icon-picker{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+  .icon-picker label{border:1px solid var(--line);border-radius:10px;padding:8px 0;display:flex;
+    align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
+  .icon-picker input{display:none;}
+  .icon-picker input:checked + span{color:var(--gold);}
+  .icon-picker label:has(input:checked){border-color:var(--gold);background:var(--cream);}
+  .icon-picker svg{width:20px;height:20px;}
+  .services-admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;}
+  .service-admin-card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--cream);}
+  .service-admin-card .top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .service-admin-card .service-icon{width:30px;height:30px;margin-bottom:8px;}
+  .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+  @media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr;}}
+  .stat-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+  .stat-box .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+  .stat-box .value{font-size:26px;font-family:var(--font-display);font-weight:700;margin-top:4px;}
+  .search-input{padding:10px 14px;border-radius:10px;border:1px solid var(--line);font-size:13.5px;width:220px;background:#fff;}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--cream);
+    padding:12px 22px;border-radius:999px;font-size:13.5px;z-index:200;box-shadow:var(--shadow);}
+  .toast.error { border: 2px solid var(--danger); }
+  .toast.success { border: 2px solid var(--success); }
+  .empty-state{padding:30px 0;text-align:center;color:var(--muted);font-size:13.5px;}
+  .field-row-flex{display:flex;gap:10px;align-items:flex-end;}
+  .thumb-preview{width:70px;height:70px;border-radius:10px;object-fit:cover;border:1px solid var(--line);}
+  
+  /* Sincronización */
+  .sync-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .sync-badge.cloud { background: #e3f2fd; color: #0d47a1; }
+  .sync-badge.local { background: #fff3e0; color: #e65100; }
+</style>
 </head>
 <body>
 
-    <!-- ================= BARRA DE CONEXIÓN ================= -->
-    <div class="connection-bar" id="connectionBar">
-        <div class="status-group">
-            <span class="dot offline" id="statusDot"></span>
-            <span id="statusText">🔴 Desconectado</span>
-            <span class="client-count" id="clientCount">(0 clientes)</span>
+<!-- ================= BARRA DE CONEXIÓN ================= -->
+<div class="connection-bar" id="connectionBar">
+  <div class="status-group">
+    <span class="dot offline" id="statusDot"></span>
+    <span id="statusText">🔴 Desconectado</span>
+    <span id="clientCount" style="color:var(--muted);font-size:11px;">(0 clientes)</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="btn-test" id="testBtn">🔌 Probar Conexión</button>
+    <span id="syncBadge" class="sync-badge local">📁 Local</span>
+  </div>
+</div>
+
+<!-- ================= PUBLIC SITE ================= -->
+<div id="publicSite">
+  <header class="site-header">
+    <div class="logo" id="logoDisplay"></div>
+    <nav class="site-nav">
+      <a href="#servicios">Servicios</a>
+      <a href="#reservar">Reservar</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <button class="admin-entry" id="adminEntryBtn" title="Panel de administración">⚙</button>
+  </header>
+
+  <section class="hero" id="heroSection">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="section-eyebrow" style="color:var(--gold-light)">Barbería tradicional</p>
+      <h1 id="heroTitle">Servicios de barbería</h1>
+      <p id="heroSubtitle">Cortes, afeitado clásico y cuidado de barba con oficio de barrio.</p>
+      <svg class="razor-divider" viewBox="0 0 86 18"><path d="M2 9 C 20 2, 30 16, 48 9 S 74 2, 84 9"/><circle cx="84" cy="9" r="2.2"/></svg>
+      <div><a href="#reservar" class="btn-primary">Reservar una cita</a></div>
+    </div>
+  </section>
+
+  <section class="services" id="servicios">
+    <p class="section-eyebrow">Lo que hacemos</p>
+    <h2 id="servicesTitle">Nuestros servicios</h2>
+    <div class="services-grid" id="servicesGrid"></div>
+  </section>
+
+  <section class="cta-book" id="reservar">
+    <p class="section-eyebrow" style="color:var(--gold-light)">Sin filas, sin llamadas</p>
+    <h2>Agenda tu cita en un minuto</h2>
+    <p>Elige tu servicio, deja tus datos y te confirmamos por teléfono.</p>
+    <div style="margin-top:26px;"><button class="btn-primary" id="openBookingBtn">Reservar ahora</button></div>
+  </section>
+
+  <footer id="contacto">
+    <p id="footerText">Barbería — hecho con cuidado, corte a corte.</p>
+    <p style="margin-top:8px;">Panel de administración: <a href="#" id="adminEntryLink">acceder</a></p>
+  </footer>
+</div>
+
+<!-- ================= BOOKING MODAL ================= -->
+<div class="modal-backdrop hidden" id="bookingModalBackdrop">
+  <div class="modal-box">
+    <button class="close-x" data-close="bookingModalBackdrop">✕</button>
+    <div id="bookingFormWrap">
+      <h3>Reservar cita</h3>
+      <p class="modal-sub">Completa tus datos y elige el servicio.</p>
+      <form id="bookingForm">
+        <div class="grid-2">
+          <div class="field"><label>Nombres</label><input type="text" id="bkNombres" required></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="bkApellidos" required></div>
         </div>
-        <div style="display:flex; gap: 10px; align-items:center;">
-            <button class="btn-test" id="testBtn">🔌 Probar Conexión</button>
-            <button class="btn-admin" id="adminBtn">⚙ Admin</button>
+        <div class="grid-2">
+          <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="bkDoi" required></div>
+          <div class="field"><label>Fecha de nacimiento</label><input type="date" id="bkBirthdate" required></div>
         </div>
-    </div>
-
-    <!-- ================= PUBLIC SITE ================= -->
-    <div id="publicSite">
-        <header class="site-header">
-            <div class="logo">✂ Barbería</div>
-            <nav class="site-nav">
-                <a href="#servicios">Servicios</a>
-                <a href="#reservar">Reservar</a>
-                <a href="#contacto">Contacto</a>
-            </nav>
-        </header>
-
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Servicios de barbería</h1>
-                <p>Cortes, afeitado clásico y cuidado de barba con oficio de barrio.</p>
-                <a href="#reservar" class="btn-primary">Reservar una cita</a>
-            </div>
-        </section>
-
-        <section class="services" id="servicios">
-            <h2>Nuestros servicios</h2>
-            <div class="services-grid" id="servicesGrid">
-                <div class="service-card"><h3>✂ Corte de pelo</h3></div>
-                <div class="service-card"><h3>🪒 Afeitado</h3></div>
-                <div class="service-card"><h3>🧔 Corte de barba</h3></div>
-            </div>
-        </section>
-
-        <section class="cta-book" id="reservar">
-            <h2>Agenda tu cita en un minuto</h2>
-            <p>Elige tu servicio, deja tus datos y te confirmamos por teléfono.</p>
-            <button class="btn-primary" style="margin-top:20px;">Reservar ahora</button>
-        </section>
-
-        <footer id="contacto">
-            <p>Barbería — hecho con cuidado, corte a corte.</p>
-        </footer>
-    </div>
-
-    <!-- ================= ADMIN LOGIN ================= -->
-    <div class="modal-backdrop hidden" id="loginModal">
-        <div class="modal-box">
-            <button class="close-x" id="closeLogin">✕</button>
-            <h3>Acceso administrador</h3>
-            <p style="color:var(--muted);font-size:13px;margin:10px 0 20px;">Contraseña: <b>barberia2026</b></p>
-            <form id="loginForm">
-                <div class="field">
-                    <label>Contraseña</label>
-                    <input type="password" id="loginPassword" required>
-                </div>
-                <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
-                <p id="loginError" class="hidden" style="color:var(--danger);margin-top:10px;">Contraseña incorrecta</p>
-            </form>
+        <div class="field"><label>Teléfono</label><input type="tel" id="bkPhone" required></div>
+        <div class="field"><label>Servicio</label><select id="bkService" required></select></div>
+        <div class="grid-2">
+          <div class="field"><label>Fecha</label><input type="date" id="bkDate" required></div>
+          <div class="field"><label>Hora</label><input type="time" id="bkTime" required></div>
         </div>
+        <div class="field"><label>Notas (opcional)</label><textarea id="bkNotes" placeholder="Ej. corte con degradado, alergias, etc."></textarea></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-close="bookingModalBackdrop">Cancelar</button>
+          <button type="submit" class="btn-gold">Confirmar reserva</button>
+        </div>
+      </form>
     </div>
-
-    <!-- ================= ADMIN PANEL ================= -->
-    <div id="adminPanel" class="hidden">
-        <aside class="admin-sidebar">
-            <div style="font-weight:700;font-size:18px;margin-bottom:16px;">📋 Panel</div>
-            <button class="admin-tab active" data-tab="clientes">Clientes</button>
-            <button class="admin-tab" data-tab="servicios">Servicios</button>
-            <button class="admin-tab" data-tab="ajustes">Ajustes</button>
-            <button class="admin-back" id="backToSite">← Volver</button>
-        </aside>
-
-        <main class="admin-main">
-            <!-- CLIENTES -->
-            <section data-panel="clientes">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-                    <h2>👥 Clientes</h2>
-                    <input type="text" id="clientSearch" placeholder="Buscar..." style="padding:8px 12px;border-radius:8px;border:1px solid var(--line);font-size:13px;">
-                </div>
-
-                <div id="notice" style="background:#e8f5e9;border:2px solid #4caf50;border-radius:8px;padding:10px 14px;margin-bottom:12px;">
-                    <span id="noticeIcon">ℹ️</span>
-                    <span id="noticeText">Conecta con Supabase para ver clientes</span>
-                </div>
-
-                <div class="admin-card">
-                    <h3 id="formTitle">Agregar cliente</h3>
-                    <input type="hidden" id="editId">
-                    <div class="grid-2">
-                        <div class="field"><label>Nombres *</label><input type="text" id="cliNombres"></div>
-                        <div class="field"><label>Apellidos *</label><input type="text" id="cliApellidos"></div>
-                    </div>
-                    <div class="grid-2">
-                        <div class="field"><label>DOI *</label><input type="text" id="cliDoi"></div>
-                        <div class="field"><label>Teléfono *</label><input type="text" id="cliPhone"></div>
-                    </div>
-                    <div class="field"><label>Email</label><input type="email" id="cliEmail"></div>
-                    <button class="btn-gold" id="saveClientBtn">💾 Guardar en Supabase</button>
-                    <button class="btn-secondary hidden" id="cancelEdit" style="margin-left:10px;">Cancelar</button>
-                </div>
-
-                <div class="admin-card" style="padding:0;overflow-x:auto;">
-                    <table>
-                        <thead><tr><th>Nombre</th><th>DOI</th><th>Teléfono</th><th>Registrado</th><th></th></tr></thead>
-                        <tbody id="clientsBody"></tbody>
-                    </table>
-                    <div class="empty-state hidden" id="emptyState">No hay clientes en Supabase</div>
-                </div>
-            </section>
-
-            <!-- SERVICIOS -->
-            <section data-panel="servicios" class="hidden">
-                <h2>Servicios</h2>
-                <div class="admin-card">
-                    <div class="grid-2">
-                        <div class="field"><label>Nombre</label><input type="text" id="svcTitle" placeholder="Corte de pelo"></div>
-                        <div class="field"><label>Precio</label><input type="text" id="svcPrice" placeholder="15.00"></div>
-                    </div>
-                    <button class="btn-gold" id="saveServiceBtn">Guardar</button>
-                </div>
-                <div id="servicesAdminGrid"></div>
-            </section>
-
-            <!-- AJUSTES -->
-            <section data-panel="ajustes" class="hidden">
-                <h2>Ajustes</h2>
-                <div class="admin-card">
-                    <h3>Cambiar contraseña</h3>
-                    <div class="field"><label>Nueva contraseña</label><input type="password" id="newPassword"></div>
-                    <button class="btn-gold" id="changePasswordBtn">Actualizar</button>
-                </div>
-            </section>
-        </main>
+    <div id="bookingConfirmWrap" class="hidden confirm-box">
+      <div class="check">✓</div>
+      <h3>¡Reserva recibida!</h3>
+      <p class="modal-sub">Te esperamos. El negocio confirmará tu horario.</p>
+      <button class="btn-gold" data-close="bookingModalBackdrop">Cerrar</button>
     </div>
+  </div>
+</div>
 
-    <script>
-        // ============================================================
-        //  CONFIGURACIÓN DE SUPABASE
-        // ============================================================
-        const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+<!-- ================= ADMIN LOGIN MODAL ================= -->
+<div class="modal-backdrop hidden" id="loginModalBackdrop">
+  <div class="modal-box" style="max-width:360px;">
+    <button class="close-x" data-close="loginModalBackdrop">✕</button>
+    <h3>Acceso administrador</h3>
+    <p class="modal-sub">Ingresa la contraseña del panel.</p>
+    <form id="loginForm">
+      <div class="field"><label>Contraseña</label><input type="password" id="loginPassword" required></div>
+      <p id="loginError" class="hidden" style="color:var(--danger);font-size:13px;margin-bottom:10px;">Contraseña incorrecta.</p>
+      <button type="submit" class="btn-gold" style="width:100%;">Entrar</button>
+    </form>
+    <p style="font-size:11.5px;color:var(--muted);margin-top:14px;">Contraseña de fábrica: <b>barberia2026</b> — cámbiala en Ajustes.</p>
+  </div>
+</div>
 
-        // ============================================================
-        //  VARIABLES GLOBALES (SIN DUPLICADOS)
-        // ============================================================
-        let _supabase = null;
-        let _clientesCache = [];
-        let _isConnected = false;
+<!-- ================= ADMIN PANEL ================= -->
+<div id="adminPanel" class="hidden">
+  <aside class="admin-sidebar">
+    <div class="admin-brand"><span class="stripe"></span> Panel</div>
+    <button class="admin-tab" data-tab="sitio">Sitio</button>
+    <button class="admin-tab" data-tab="servicios">Servicios</button>
+    <button class="admin-tab" data-tab="clientes">Clientes</button>
+    <button class="admin-tab" data-tab="pagos">Pagos</button>
+    <button class="admin-tab" data-tab="ajustes">Ajustes</button>
+    <button class="admin-back" id="backToSiteBtn">← Volver al sitio</button>
+  </aside>
 
-        // ============================================================
-        //  DOM ELEMENTS
-        // ============================================================
-        const _statusDot = document.getElementById('statusDot');
-        const _statusText = document.getElementById('statusText');
-        const _clientCount = document.getElementById('clientCount');
-        const _testBtn = document.getElementById('testBtn');
-        const _adminBtn = document.getElementById('adminBtn');
-        const _noticeEl = document.getElementById('notice');
-        const _noticeIcon = document.getElementById('noticeIcon');
-        const _noticeText = document.getElementById('noticeText');
-        const _clientsBody = document.getElementById('clientsBody');
-        const _emptyState = document.getElementById('emptyState');
-        const _searchInput = document.getElementById('clientSearch');
-        const _saveClientBtn = document.getElementById('saveClientBtn');
+  <main class="admin-main">
+    <!-- TAB: SITIO -->
+    <section class="admin-tab-panel" data-panel="sitio">
+      <div class="admin-panel-header"><h2>Apariencia del sitio</h2></div>
 
-        // ============================================================
-        //  FUNCIONES DE UTILIDAD
-        // ============================================================
-        function showToast(msg, type = 'success') {
-            const old = document.querySelector('.toast');
-            if (old) old.remove();
+      <div class="admin-card">
+        <h3>Logo</h3>
+        <div class="field"><label>Texto del logo</label><input type="text" id="cfgLogoText" placeholder="Ej. Barbería Central"></div>
+        <div class="field"><label>Imagen de logo (opcional)</label><input type="file" id="cfgLogoFile" accept="image/*"></div>
+        <div class="field-row-flex">
+          <img id="logoPreview" class="thumb-preview hidden" alt="logo">
+          <button type="button" class="btn-danger hidden" id="clearLogoBtn">Quitar imagen</button>
+        </div>
+      </div>
 
-            const el = document.createElement('div');
-            el.className = `toast ${type === 'error' ? 'error' : 'success'}`;
-            el.textContent = msg;
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 4000);
-        }
+      <div class="admin-card">
+        <h3>Fondo del encabezado (hero)</h3>
+        <div class="field"><label>URL de imagen</label><input type="text" id="cfgHeroUrl" placeholder="https://..."></div>
+        <div class="field"><label>O sube una imagen</label><input type="file" id="cfgHeroFile" accept="image/*"></div>
+        <img id="heroPreview" class="thumb-preview hidden" alt="fondo" style="width:120px;height:70px;">
+      </div>
 
-        function updateStatus(online, msg) {
-            _isConnected = online;
-            _statusDot.className = `dot ${online ? 'online' : 'offline'}`;
-            _statusText.textContent = online ? '✅ Conectado' : '🔴 Desconectado';
-            if (msg) _statusText.textContent = msg;
-            _clientCount.textContent = `(${_clientesCache.length} clientes)`;
-        }
+      <div class="admin-card">
+        <h3>Textos principales</h3>
+        <div class="field"><label>Título del encabezado</label><input type="text" id="cfgHeroTitle"></div>
+        <div class="field"><label>Subtítulo</label><input type="text" id="cfgHeroSubtitle"></div>
+        <div class="field"><label>Título de sección de servicios</label><input type="text" id="cfgServicesTitle"></div>
+        <div class="field"><label>Texto del pie de página</label><input type="text" id="cfgFooterText"></div>
+      </div>
+      <button class="btn-gold" id="saveSiteBtn">Guardar cambios</button>
+    </section>
 
-        function updateNotice(type, msg) {
-            const icons = {
-                'loading': '🔄',
-                'success': '✅',
-                'error': '❌',
-                'info': 'ℹ️'
-            };
-            _noticeIcon.textContent = icons[type] || 'ℹ️';
-            _noticeText.textContent = msg;
-            _noticeEl.style.borderColor = type === 'error' ? '#f44336' : type === 'success' ? '#4caf50' : '#ff9800';
-            _noticeEl.style.background = type === 'error' ? '#ffebee' : type === 'success' ? '#e8f5e9' : '#fff3e0';
-        }
+    <!-- TAB: SERVICIOS -->
+    <section class="admin-tab-panel hidden" data-panel="servicios">
+      <div class="admin-panel-header"><h2>Servicios</h2></div>
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            const div = document.createElement('div');
-            div.textContent = String(str);
-            return div.innerHTML;
-        }
+      <div class="admin-card">
+        <h3 id="serviceFormTitle">Agregar nuevo servicio</h3>
+        <input type="hidden" id="svcEditId">
+        <div class="grid-2">
+          <div class="field"><label>Nombre del servicio</label><input type="text" id="svcTitle" placeholder="Ej. Corte de pelo"></div>
+          <div class="field"><label>Precio (opcional)</label><input type="text" id="svcPrice" placeholder="Ej. 15.00"></div>
+        </div>
+        <div class="field"><label>Ícono</label><div class="icon-picker" id="iconPicker"></div></div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveServiceBtn">Guardar servicio</button>
+          <button class="btn-secondary hidden" id="cancelEditServiceBtn">Cancelar edición</button>
+        </div>
+      </div>
 
-        // ============================================================
-        //  CONEXIÓN A SUPABASE
-        // ============================================================
-        async function probarConexion() {
-            console.log('🔄 Probando conexión a Supabase...');
-            _testBtn.disabled = true;
-            _testBtn.textContent = '⏳ Probando...';
-            updateStatus(false, '⏳ Probando...');
-            updateNotice('loading', 'Conectando a Supabase...');
+      <div class="services-admin-grid" id="servicesAdminGrid"></div>
+    </section>
 
-            try {
-                // Crear cliente de Supabase
-                _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log('✅ Cliente Supabase creado');
+    <!-- TAB: CLIENTES -->
+    <section class="admin-tab-panel hidden" data-panel="clientes">
+      <div class="admin-panel-header">
+        <h2>Clientes</h2>
+        <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o teléfono">
+      </div>
 
-                // Probar conexión
-                const { data, error } = await _supabase
-                    .from('clientes')
-                    .select('*', { count: 'exact', head: true });
+      <div class="admin-card">
+        <h3 id="clientFormTitle">Agregar cliente</h3>
+        <input type="hidden" id="cliEditId">
+        <div class="grid-2">
+          <div class="field"><label>Nombres</label><input type="text" id="cliNombres"></div>
+          <div class="field"><label>Apellidos</label><input type="text" id="cliApellidos"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>DOI (documento de identidad)</label><input type="text" id="cliDoi"></div>
+          <div class="field"><label>Fecha de nacimiento</label><input type="date" id="cliBirthdate"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Teléfono</label><input type="text" id="cliPhone"></div>
+          <div class="field"><label>Email (opcional)</label><input type="email" id="cliEmail"></div>
+        </div>
+        <div class="field"><label>Notas</label><input type="text" id="cliNotes"></div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveClientBtn">Guardar cliente</button>
+          <button class="btn-secondary hidden" id="cancelEditClientBtn">Cancelar edición</button>
+        </div>
+      </div>
 
-                if (error) {
-                    if (error.code === '42P01') {
-                        console.warn('⚠️ La tabla "clientes" no existe');
-                        updateStatus(false, '⚠️ Tabla no existe');
-                        updateNotice('error',
-                            'La tabla "clientes" no existe. Ejecuta este SQL en Supabase:\n\n' +
-                            'CREATE TABLE clientes (\n' +
-                            '  id TEXT PRIMARY KEY,\n' +
-                            '  nombres TEXT,\n' +
-                            '  apellidos TEXT,\n' +
-                            '  name TEXT,\n' +
-                            '  doi TEXT UNIQUE,\n' +
-                            '  birthdate TEXT,\n' +
-                            '  phone TEXT,\n' +
-                            '  email TEXT,\n' +
-                            '  notes TEXT,\n' +
-                            '  created_at TIMESTAMP DEFAULT NOW()\n' +
-                            ');\n\n' +
-                            'ALTER TABLE clientes ENABLE ROW LEVEL SECURITY;\n' +
-                            'CREATE POLICY "Enable all" ON clientes FOR ALL USING (true);'
-                        );
-                        showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
-                        _testBtn.disabled = false;
-                        _testBtn.textContent = '🔌 Probar Conexión';
-                        return;
-                    }
-                    throw error;
-                }
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Nombre completo</th><th>DOI</th><th>F. nacimiento</th><th>Teléfono</th><th>Cliente desde</th><th></th></tr></thead>
+          <tbody id="clientsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="clientsEmpty">Aún no tienes clientes registrados.</div>
+      </div>
+    </section>
 
-                // Conexión exitosa
-                console.log('✅ Conexión exitosa a Supabase');
-                updateStatus(true, '✅ Conectado');
-                updateNotice('success', '✅ Conectado a Supabase correctamente');
-                showToast('✅ Conectado a Supabase');
+    <!-- TAB: PAGOS -->
+    <section class="admin-tab-panel hidden" data-panel="pagos">
+      <div class="admin-panel-header"><h2>Pagos y citas</h2></div>
 
-                // Cargar clientes
-                await cargarClientes();
+      <div class="stat-row">
+        <div class="stat-box"><div class="label">Ingresos cobrados</div><div class="value" id="statPaid">$0.00</div></div>
+        <div class="stat-box"><div class="label">Pendiente por cobrar</div><div class="value" id="statPending">$0.00</div></div>
+        <div class="stat-box"><div class="label">Transacciones</div><div class="value" id="statCount">0</div></div>
+      </div>
 
-            } catch (error) {
-                console.error('❌ Error:', error);
-                updateStatus(false, '❌ Error');
-                updateNotice('error', `❌ ${error.message}`);
-                showToast(`❌ Error: ${error.message}`, 'error');
-            }
+      <div class="admin-card">
+        <h3>Registrar cobro manual</h3>
+        <div class="grid-2">
+          <div class="field"><label>Cliente</label><select id="payClient"></select></div>
+          <div class="field"><label>Servicio</label><select id="payService"></select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Fecha</label><input type="date" id="payDate"></div>
+          <div class="field"><label>Monto</label><input type="text" id="payAmount" placeholder="Ej. 15.00"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Método de pago</label>
+            <select id="payMethod"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select>
+          </div>
+          <div class="field"><label>Estado</label>
+            <select id="payStatus"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
+          </div>
+        </div>
+        <button class="btn-gold" id="addPaymentBtn">Agregar registro</button>
+      </div>
 
-            _testBtn.disabled = false;
-            _testBtn.textContent = '🔌 Probar Conexión';
-        }
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table>
+          <thead><tr><th>Cliente</th><th>Servicio</th><th>Fecha</th><th>Monto</th><th>Método</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="paymentsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="paymentsEmpty">No hay registros de pago todavía.</div>
+      </div>
+    </section>
 
-        // ============================================================
-        //  CARGAR CLIENTES
-        // ============================================================
-        async function cargarClientes(filter = '') {
-            if (!_supabase) {
-                updateNotice('info', '🔌 Conecta a Supabase primero');
-                return;
-            }
+    <!-- TAB: AJUSTES -->
+    <section class="admin-tab-panel hidden" data-panel="ajustes">
+      <div class="admin-panel-header"><h2>Ajustes</h2></div>
 
-            try {
-                let query = _supabase
-                    .from('clientes')
-                    .select('*')
-                    .order('created_at', { ascending: false });
+      <div class="admin-card">
+        <h3>Cambiar contraseña del panel</h3>
+        <div class="field"><label>Nueva contraseña</label><input type="password" id="newAdminPassword"></div>
+        <button class="btn-gold" id="changePasswordBtn">Actualizar contraseña</button>
+      </div>
 
-                if (filter) {
-                    const f = filter.toLowerCase();
-                    query = query.or(`name.ilike.%${f}%,doi.ilike.%${f}%,phone.ilike.%${f}%`);
-                }
+      <div class="admin-card">
+        <h3>Respaldo de datos</h3>
+        <p class="modal-sub" style="margin-bottom:14px;">Este sitio guarda todo (clientes, servicios, pagos) en el navegador donde lo abras. Descarga un respaldo regularmente y guárdalo en un lugar seguro.</p>
+        <div class="modal-actions" style="margin-top:0;">
+          <button class="btn-gold" id="exportBackupBtn">Descargar respaldo (.json)</button>
+          <label class="btn-secondary" style="display:inline-flex;align-items:center;">Restaurar respaldo
+            <input type="file" id="importBackupFile" accept=".json" style="display:none;">
+          </label>
+        </div>
+      </div>
 
-                const { data, error } = await query;
-                if (error) throw error;
+      <div class="admin-card">
+        <h3>Zona de riesgo</h3>
+        <p class="modal-sub" style="margin-bottom:14px;">Esto borra todos los clientes, pagos y servicios personalizados de este navegador.</p>
+        <button class="btn-danger" id="resetAllBtn">Borrar todos los datos</button>
+      </div>
+    </section>
+  </main>
+</div>
 
-                _clientesCache = data || [];
-                _clientCount.textContent = `(${_clientesCache.length} clientes)`;
+<script>
+/* ============================================================
+   🔴 CONFIGURACIÓN DE SUPABASE 🔴
+   ============================================================ */
+const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
 
-                // Renderizar tabla
-                _clientsBody.innerHTML = '';
-                if (_clientesCache.length === 0) {
-                    _emptyState.classList.remove('hidden');
-                    return;
-                }
-                _emptyState.classList.add('hidden');
+/* ============================================================
+   ICON LIBRARY
+   ============================================================ */
+const ICONS = {
+  scissors: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="6" r="2.4"/><circle cx="6" cy="18" r="2.4"/><line x1="20" y1="4" x2="8" y2="15"/><line x1="8" y1="9" x2="20" y2="20"/><line x1="8" y1="9" x2="6" y2="8.3"/><line x1="8" y1="15" x2="6" y2="15.7"/></svg>`,
+  razor: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 17 L15 5 a2 2 0 0 1 3 3 L6 20 Z"/><line x1="12" y1="8" x2="17" y2="13"/></svg>`,
+  beard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4 v6 c0 6 3 10 6 10 s6 -4 6 -10 V4"/><path d="M9 4 v5 M12 4 v6 M15 4 v5"/></svg>`,
+  child: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="10" r="6"/><path d="M8 9 q4 -3 8 0"/><path d="M9.5 13 q2.5 2 5 0"/><path d="M12 4 v-1.5"/></svg>`,
+  mask: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9 c0 -3 3.5 -5 8 -5 s8 2 8 5 c0 6 -4 11 -8 11 s-8 -5 -8 -11 Z"/><path d="M8 10 q4 -2 8 0"/></svg>`,
+  spa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21 c-4 0-7-3-7-7 0-4 3-9 7-12 4 3 7 8 7 12 0 4-3 7-7 7Z"/><path d="M12 21 V9"/></svg>`,
+  comb: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="5" width="16" height="4" rx="1"/><line x1="6" y1="9" x2="6" y2="19"/><line x1="10" y1="9" x2="10" y2="19"/><line x1="14" y1="9" x2="14" y2="19"/><line x1="18" y1="9" x2="18" y2="19"/></svg>`,
+  star: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 l2.6 5.8 6.2 0.6 -4.7 4.2 1.4 6.1 -5.5 -3.3 -5.5 3.3 1.4 -6.1 -4.7 -4.2 6.2 -0.6 Z"/></svg>`,
+  crown: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8 l4 4 4 -7 4 7 4 -4 -1.5 9 h-13 Z"/></svg>`,
+  heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20 C6 15 3 11.5 3 8 a4.5 4.5 0 0 1 9 -1 a4.5 4.5 0 0 1 9 1 c0 3.5 -3 7 -9 12Z"/></svg>`,
+  clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8.5"/><path d="M12 7 v5 l3.5 2"/></svg>`,
+  spray: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="8" y="9" width="7" height="12" rx="1.5"/><path d="M11 9 V5 h3 v4"/><line x1="17" y1="6" x2="20" y2="4"/><line x1="18" y1="9" x2="21" y2="9"/><line x1="17" y1="12" x2="20" y2="13"/></svg>`,
+  bottle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3 h4 v3 l2 2 v11 a2 2 0 0 1 -2 2 h-4 a2 2 0 0 1 -2 -2 V8 l2 -2 Z"/><line x1="8" y1="13" x2="16" y2="13"/></svg>`,
+  sparkle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 3 v4 M12 17 v4 M3 12 h4 M17 12 h4 M6 6 l2.5 2.5 M15.5 15.5 L18 18 M18 6 l-2.5 2.5 M8.5 15.5 L6 18"/></svg>`,
+};
 
-                _clientesCache.forEach(cli => {
-                    const nombre = cli.name || cli.nombres + ' ' + cli.apellidos;
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td><strong>${escapeHtml(nombre)}</strong></td>
-                        <td>${escapeHtml(cli.doi || '—')}</td>
-                        <td>${escapeHtml(cli.phone || '—')}</td>
-                        <td>${escapeHtml(cli.created_at ? new Date(cli.created_at).toLocaleDateString() : '—')}</td>
-                        <td>
-                            <button class="btn-link" onclick="editarCliente('${cli.id}')">Editar</button>
-                            <button class="btn-danger" onclick="eliminarCliente('${cli.id}')">Eliminar</button>
-                        </td>
-                    `;
-                    _clientsBody.appendChild(tr);
-                });
+/* ============================================================
+   DEFAULT DATA (respaldo local)
+   ============================================================ */
+function defaultData(){
+  return {
+    site: {
+      logoText: "✂ Barbería",
+      logoImage: "",
+      heroUrl: "",
+      heroTitle: "Servicios de barbería",
+      heroSubtitle: "Cortes, afeitado clásico y cuidado de barba con oficio de barrio.",
+      servicesTitle: "Nuestros servicios",
+      footerText: "Barbería — hecho con cuidado, corte a corte.",
+    },
+    services: [
+      {id: "s1", icon: "scissors", title: "Corte de pelo", price: ""},
+      {id: "s2", icon: "razor", title: "Afeitado", price: ""},
+      {id: "s3", icon: "beard", title: "Corte de barba", price: ""},
+      {id: "s4", icon: "child", title: "Corte de pelo para niños", price: ""},
+      {id: "s5", icon: "spray", title: "Afeitado característico", price: ""},
+      {id: "s6", icon: "mask", title: "Masaje facial", price: ""},
+    ],
+    clients: [],
+    payments: [],
+    adminPassword: "barberia2026",
+  };
+}
 
-                updateNotice('success', `✅ ${_clientesCache.length} clientes en Supabase`);
+/* ============================================================
+   VARIABLES GLOBALES
+   ============================================================ */
+let DATA = null;
+let supabaseClient = null;
+let isConnected = false;
+let clientesCache = [];
+let serviciosCache = [];
+let pagosCache = [];
+const STORAGE_KEY = "barberia_app_data_v1";
 
-            } catch (error) {
-                console.error('Error al cargar clientes:', error);
-                updateNotice('error', `❌ ${error.message}`);
-            }
-        }
+/* ============================================================
+   FUNCIONES DE UTILIDAD
+   ============================================================ */
+function showToast(msg, type = 'success'){
+  const el = document.createElement("div");
+  el.className = `toast ${type === 'error' ? 'error' : 'success'}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=> el.remove(), 3000);
+}
 
-        // ============================================================
-        //  INSERTAR CLIENTE
-        // ============================================================
-        async function insertarCliente(datos) {
-            if (!_supabase) {
-                showToast('⚠️ Conecta a Supabase primero', 'error');
-                return null;
-            }
+function money(n){
+  const num = parseFloat(n);
+  if(isNaN(num)) return "$0.00";
+  return "$" + num.toFixed(2);
+}
 
-            try {
-                updateNotice('loading', 'Guardando en Supabase...');
+function escapeHtml(str){
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
 
-                const nuevo = {
-                    id: 'cli_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
-                    nombres: datos.nombres,
-                    apellidos: datos.apellidos,
-                    name: `${datos.nombres} ${datos.apellidos}`,
-                    doi: datos.doi,
-                    birthdate: datos.birthdate || '',
-                    phone: datos.phone,
-                    email: datos.email || '',
-                    notes: datos.notes || '',
-                    created_at: new Date().toISOString()
-                };
+function uid(prefix){ 
+  return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); 
+}
 
-                const { data, error } = await _supabase
-                    .from('clientes')
-                    .insert([nuevo])
-                    .select();
+/* ============================================================
+   CARGA LOCAL (respaldo)
+   ============================================================ */
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){ DATA = JSON.parse(raw); }
+    else { DATA = defaultData(); }
+  }catch(e){
+    DATA = defaultData();
+  }
+  const d = defaultData();
+  DATA.site = Object.assign({}, d.site, DATA.site||{});
+  if(!Array.isArray(DATA.services)) DATA.services = d.services;
+  if(!Array.isArray(DATA.clients)) DATA.clients = [];
+  if(!Array.isArray(DATA.payments)) DATA.payments = [];
+  if(!DATA.adminPassword) DATA.adminPassword = d.adminPassword;
+}
 
-                if (error) throw error;
+function saveDataLocal(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+  }catch(e){
+    showToast("No se pudo guardar localmente.", "error");
+  }
+}
 
-                showToast(`✅ "${nuevo.name}" registrado en Supabase`);
-                updateNotice('success', `✅ "${nuevo.name}" guardado`);
+/* ============================================================
+   CONEXIÓN A SUPABASE
+   ============================================================ */
+async function conectarSupabase() {
+  const testBtn = document.getElementById('testBtn');
+  testBtn.disabled = true;
+  testBtn.textContent = '⏳ Probando...';
+  document.getElementById('statusDot').className = 'dot testing';
+  document.getElementById('statusText').textContent = '⏳ Conectando...';
 
-                await cargarClientes(_searchInput.value);
-                return data[0];
+  try {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Probar conexión
+    const { error } = await supabaseClient
+      .from('clientes')
+      .select('count', { count: 'exact', head: true });
 
-            } catch (error) {
-                console.error('Error:', error);
-                let msg = error.message;
-                if (error.code === '23505') msg = '⚠️ DOI duplicado. Usa otro.';
-                showToast(`❌ ${msg}`, 'error');
-                updateNotice('error', `❌ ${msg}`);
-                return null;
-            }
-        }
+    if (error && error.code === '42P01') {
+      document.getElementById('statusDot').className = 'dot offline';
+      document.getElementById('statusText').textContent = '⚠️ Tabla no existe';
+      showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
+      testBtn.disabled = false;
+      testBtn.textContent = '🔌 Probar Conexión';
+      return false;
+    }
 
-        // ============================================================
-        //  EDITAR CLIENTE
-        // ============================================================
-        function editarCliente(id) {
-            const cli = _clientesCache.find(c => c.id === id);
-            if (!cli) return;
+    if (error) throw error;
 
-            document.getElementById('formTitle').textContent = 'Editar cliente';
-            document.getElementById('editId').value = cli.id;
-            document.getElementById('cliNombres').value = cli.nombres || '';
-            document.getElementById('cliApellidos').value = cli.apellidos || '';
-            document.getElementById('cliDoi').value = cli.doi || '';
-            document.getElementById('cliPhone').value = cli.phone || '';
-            document.getElementById('cliEmail').value = cli.email || '';
-            document.getElementById('cancelEdit').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    isConnected = true;
+    document.getElementById('statusDot').className = 'dot online';
+    document.getElementById('statusText').textContent = '✅ Conectado';
+    document.getElementById('syncBadge').textContent = '☁️ Cloud';
+    document.getElementById('syncBadge').className = 'sync-badge cloud';
+    
+    showToast('✅ Conectado a Supabase', 'success');
+    
+    // Cargar datos desde Supabase
+    await cargarTodosLosDatos();
+    
+    testBtn.disabled = false;
+    testBtn.textContent = '🔌 Probar Conexión';
+    return true;
 
-        // ============================================================
-        //  ELIMINAR CLIENTE
-        // ============================================================
-        async function eliminarCliente(id) {
-            if (!confirm('¿Eliminar este cliente de Supabase?')) return;
+  } catch (error) {
+    console.error('Error de conexión:', error);
+    document.getElementById('statusDot').className = 'dot offline';
+    document.getElementById('statusText').textContent = '❌ Error';
+    showToast('❌ Error de conexión: ' + error.message, 'error');
+    testBtn.disabled = false;
+    testBtn.textContent = '🔌 Probar Conexión';
+    return false;
+  }
+}
 
-            try {
-                const { error } = await _supabase
-                    .from('clientes')
-                    .delete()
-                    .eq('id', id);
+/* ============================================================
+   CARGAR DATOS DESDE SUPABASE
+   ============================================================ */
+async function cargarTodosLosDatos() {
+  if (!supabaseClient || !isConnected) return;
 
-                if (error) throw error;
+  try {
+    // Cargar servicios
+    const { data: servicios, error: errServicios } = await supabaseClient
+      .from('servicios')
+      .select('*')
+      .order('created_at', { ascending: true });
 
-                showToast('✅ Cliente eliminado');
-                await cargarClientes(_searchInput.value);
+    if (!errServicios && servicios && servicios.length > 0) {
+      DATA.services = servicios;
+    }
 
-            } catch (error) {
-                showToast(`❌ ${error.message}`, 'error');
-            }
-        }
+    // Cargar clientes
+    const { data: clientes, error: errClientes } = await supabaseClient
+      .from('clientes')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-        // ============================================================
-        //  ACTUALIZAR CLIENTE
-        // ============================================================
-        async function actualizarCliente(id, datos) {
-            try {
-                updateNotice('loading', 'Actualizando...');
+    if (!errClientes && clientes) {
+      DATA.clients = clientes;
+      clientesCache = clientes;
+      document.getElementById('clientCount').textContent = `(${clientes.length} clientes)`;
+    }
 
-                const { error } = await _supabase
-                    .from('clientes')
-                    .update({
-                        nombres: datos.nombres,
-                        apellidos: datos.apellidos,
-                        name: `${datos.nombres} ${datos.apellidos}`,
-                        doi: datos.doi,
-                        birthdate: datos.birthdate || '',
-                        phone: datos.phone,
-                        email: datos.email || '',
-                        notes: datos.notes || ''
-                    })
-                    .eq('id', id);
+    // Cargar pagos
+    const { data: pagos, error: errPagos } = await supabaseClient
+      .from('pagos')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-                if (error) throw error;
+    if (!errPagos && pagos) {
+      DATA.payments = pagos;
+    }
 
-                showToast('✅ Cliente actualizado');
-                updateNotice('success', '✅ Actualizado');
-                resetForm();
-                await cargarClientes(_searchInput.value);
+    saveDataLocal();
+    renderPublicSite();
+    renderAdminServices();
+    renderAdminClients();
+    renderAdminPayments();
 
-            } catch (error) {
-                showToast(`❌ ${error.message}`, 'error');
-                updateNotice('error', `❌ ${error.message}`);
-            }
-        }
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+  }
+}
 
-        // ============================================================
-        //  RESET FORM
-        // ============================================================
-        function resetForm() {
-            document.getElementById('formTitle').textContent = 'Agregar cliente';
-            document.getElementById('editId').value = '';
-            document.getElementById('cliNombres').value = '';
-            document.getElementById('cliApellidos').value = '';
-            document.getElementById('cliDoi').value = '';
-            document.getElementById('cliPhone').value = '';
-            document.getElementById('cliEmail').value = '';
-            document.getElementById('cancelEdit').classList.add('hidden');
-        }
+/* ============================================================
+   FUNCIONES CRUD PARA SUPABASE
+   ============================================================ */
 
-        // ============================================================
-        //  EVENTOS DEL FORMULARIO
-        // ============================================================
-        _saveClientBtn.addEventListener('click', async () => {
-            const editId = document.getElementById('editId').value;
-            const nombres = document.getElementById('cliNombres').value.trim();
-            const apellidos = document.getElementById('cliApellidos').value.trim();
-            const doi = document.getElementById('cliDoi').value.trim();
-            const phone = document.getElementById('cliPhone').value.trim();
+// CLIENTES
+async function insertarClienteSupabase(cliente) {
+  if (!supabaseClient || !isConnected) {
+    // Fallback a local
+    DATA.clients.push(cliente);
+    saveDataLocal();
+    renderAdminClients();
+    renderPublicSite();
+    showToast('💾 Cliente guardado localmente (sin conexión)');
+    return cliente;
+  }
 
-            if (!nombres || !apellidos || !doi || !phone) {
-                showToast('⚠️ Completa todos los campos obligatorios', 'error');
-                return;
-            }
+  try {
+    const { data, error } = await supabaseClient
+      .from('clientes')
+      .insert([cliente])
+      .select();
 
-            const datos = {
-                nombres,
-                apellidos,
-                doi,
-                phone,
-                birthdate: '',
-                email: document.getElementById('cliEmail').value.trim(),
-                notes: ''
-            };
+    if (error) throw error;
 
-            if (editId) {
-                await actualizarCliente(editId, datos);
-            } else {
-                await insertarCliente(datos);
-            }
-        });
+    if (data && data.length > 0) {
+      // Actualizar cache local
+      const idx = DATA.clients.findIndex(c => c.id === cliente.id);
+      if (idx >= 0) DATA.clients[idx] = data[0];
+      else DATA.clients.unshift(data[0]);
+      
+      saveDataLocal();
+      renderAdminClients();
+      renderPublicSite();
+      showToast(`✅ Cliente "${cliente.name}" guardado en Supabase`);
+      return data[0];
+    }
+  } catch (error) {
+    console.error('Error al insertar cliente:', error);
+    // Fallback a local
+    DATA.clients.push(cliente);
+    saveDataLocal();
+    renderAdminClients();
+    renderPublicSite();
+    showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
+    return cliente;
+  }
+}
 
-        document.getElementById('cancelEdit').addEventListener('click', resetForm);
-        _searchInput.addEventListener('input', (e) => cargarClientes(e.target.value));
+async function eliminarClienteSupabase(id) {
+  if (!confirm('¿Eliminar este cliente de Supabase?')) return;
 
-        // ============================================================
-        //  ADMIN - LOGIN
-        // ============================================================
-        _adminBtn.addEventListener('click', () => {
-            document.getElementById('loginModal').classList.remove('hidden');
-        });
+  if (!supabaseClient || !isConnected) {
+    DATA.clients = DATA.clients.filter(c => c.id !== id);
+    saveDataLocal();
+    renderAdminClients();
+    showToast('🗑️ Cliente eliminado localmente');
+    return;
+  }
 
-        document.getElementById('closeLogin').addEventListener('click', () => {
-            document.getElementById('loginModal').classList.add('hidden');
-        });
+  try {
+    const { error } = await supabaseClient
+      .from('clientes')
+      .delete()
+      .eq('id', id);
 
-        document.getElementById('loginForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const pw = document.getElementById('loginPassword').value;
-            if (pw === 'barberia2026') {
-                document.getElementById('loginModal').classList.add('hidden');
-                document.getElementById('publicSite').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                if (_supabase) cargarClientes();
-                else updateNotice('info', '🔌 Conecta a Supabase primero');
-            } else {
-                document.getElementById('loginError').classList.remove('hidden');
-            }
-        });
+    if (error) throw error;
 
-        document.getElementById('backToSite').addEventListener('click', () => {
-            document.getElementById('adminPanel').classList.add('hidden');
-            document.getElementById('publicSite').classList.remove('hidden');
-        });
+    DATA.clients = DATA.clients.filter(c => c.id !== id);
+    saveDataLocal();
+    renderAdminClients();
+    showToast('✅ Cliente eliminado de Supabase');
+  } catch (error) {
+    console.error('Error al eliminar cliente:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
 
-        // ============================================================
-        //  TABS
-        // ============================================================
-        document.querySelectorAll('.admin-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelectorAll('[data-panel]').forEach(p => p.classList.add('hidden'));
-                document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.remove('hidden');
-                if (tab.dataset.tab === 'clientes' && _supabase) {
-                    cargarClientes(_searchInput.value);
-                }
-            });
-        });
+async function actualizarClienteSupabase(id, datos) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.clients.findIndex(c => c.id === id);
+    if (idx >= 0) DATA.clients[idx] = { ...DATA.clients[idx], ...datos };
+    saveDataLocal();
+    renderAdminClients();
+    showToast('💾 Cliente actualizado localmente');
+    return;
+  }
 
-        // ============================================================
-        //  BOTÓN DE PRUEBA
-        // ============================================================
-        _testBtn.addEventListener('click', probarConexion);
+  try {
+    const { error } = await supabaseClient
+      .from('clientes')
+      .update({
+        nombres: datos.nombres,
+        apellidos: datos.apellidos,
+        name: datos.name,
+        doi: datos.doi,
+        birthdate: datos.birthdate,
+        phone: datos.phone,
+        email: datos.email,
+        notes: datos.notes
+      })
+      .eq('id', id);
 
-        // ============================================================
-        //  INICIALIZACIÓN
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('🪒 Barbería con Supabase cargada');
-            console.log('📌 Haz clic en "Probar Conexión" para conectar');
-            updateNotice('info', '🔌 Haz clic en "Probar Conexión" para conectar con Supabase');
-        });
+    if (error) throw error;
 
-        // ============================================================
-        //  FUNCIONES GLOBALES
-        // ============================================================
-        window.probarConexion = probarConexion;
-        window.cargarClientes = cargarClientes;
-        window.insertarCliente = insertarCliente;
-        window.eliminarCliente = eliminarCliente;
-        window.editarCliente = editarCliente;
+    const idx = DATA.clients.findIndex(c => c.id === id);
+    if (idx >= 0) DATA.clients[idx] = { ...DATA.clients[idx], ...datos };
+    saveDataLocal();
+    renderAdminClients();
+    showToast('✅ Cliente actualizado en Supabase');
+  } catch (error) {
+    console.error('Error al actualizar cliente:', error);
+    showToast('❌ Error al actualizar: ' + error.message, 'error');
+  }
+}
 
-        console.log('📌 Comandos disponibles:');
-        console.log('  • probarConexion() - Conectar a Supabase');
-        console.log('  • cargarClientes() - Listar clientes');
-        console.log('  • insertarCliente(datos) - Insertar cliente');
-    </script>
+// SERVICIOS
+async function insertarServicioSupabase(servicio) {
+  if (!supabaseClient || !isConnected) {
+    DATA.services.push(servicio);
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('💾 Servicio guardado localmente');
+    return servicio;
+  }
 
+  try {
+    const { data, error } = await supabaseClient
+      .from('servicios')
+      .insert([servicio])
+      .select();
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      const idx = DATA.services.findIndex(s => s.id === servicio.id);
+      if (idx >= 0) DATA.services[idx] = data[0];
+      else DATA.services.push(data[0]);
+      saveDataLocal();
+      renderAdminServices();
+      renderPublicSite();
+      showToast(`✅ Servicio "${servicio.title}" guardado en Supabase`);
+      return data[0];
+    }
+  } catch (error) {
+    console.error('Error al insertar servicio:', error);
+    DATA.services.push(servicio);
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('⚠️ Guardado localmente', 'error');
+    return servicio;
+  }
+}
+
+async function eliminarServicioSupabase(id) {
+  if (!confirm('¿Eliminar este servicio de Supabase?')) return;
+
+  if (!supabaseClient || !isConnected) {
+    DATA.services = DATA.services.filter(s => s.id !== id);
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('🗑️ Servicio eliminado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('servicios')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    DATA.services = DATA.services.filter(s => s.id !== id);
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('✅ Servicio eliminado de Supabase');
+  } catch (error) {
+    console.error('Error al eliminar servicio:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+async function actualizarServicioSupabase(id, datos) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.services.findIndex(s => s.id === id);
+    if (idx >= 0) DATA.services[idx] = { ...DATA.services[idx], ...datos };
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('💾 Servicio actualizado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('servicios')
+      .update({
+        title: datos.title,
+        price: datos.price,
+        icon: datos.icon
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const idx = DATA.services.findIndex(s => s.id === id);
+    if (idx >= 0) DATA.services[idx] = { ...DATA.services[idx], ...datos };
+    saveDataLocal();
+    renderAdminServices();
+    renderPublicSite();
+    showToast('✅ Servicio actualizado en Supabase');
+  } catch (error) {
+    console.error('Error al actualizar servicio:', error);
+    showToast('❌ Error al actualizar: ' + error.message, 'error');
+  }
+}
+
+// PAGOS
+async function insertarPagoSupabase(pago) {
+  if (!supabaseClient || !isConnected) {
+    DATA.payments.push(pago);
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('💾 Pago guardado localmente');
+    return pago;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('pagos')
+      .insert([pago])
+      .select();
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      DATA.payments.push(data[0]);
+      saveDataLocal();
+      renderAdminPayments();
+      showToast(`✅ Pago registrado en Supabase`);
+      return data[0];
+    }
+  } catch (error) {
+    console.error('Error al insertar pago:', error);
+    DATA.payments.push(pago);
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('⚠️ Guardado localmente', 'error');
+    return pago;
+  }
+}
+
+async function eliminarPagoSupabase(id) {
+  if (!confirm('¿Eliminar este registro de pago?')) return;
+
+  if (!supabaseClient || !isConnected) {
+    DATA.payments = DATA.payments.filter(p => p.id !== id);
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('🗑️ Pago eliminado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('pagos')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    DATA.payments = DATA.payments.filter(p => p.id !== id);
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('✅ Pago eliminado de Supabase');
+  } catch (error) {
+    console.error('Error al eliminar pago:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+async function actualizarPagoSupabase(id, datos) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.payments.findIndex(p => p.id === id);
+    if (idx >= 0) DATA.payments[idx] = { ...DATA.payments[idx], ...datos };
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('💾 Pago actualizado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('pagos')
+      .update({
+        status: datos.status,
+        amount: datos.amount,
+        method: datos.method
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const idx = DATA.payments.findIndex(p => p.id === id);
+    if (idx >= 0) DATA.payments[idx] = { ...DATA.payments[idx], ...datos };
+    saveDataLocal();
+    renderAdminPayments();
+    showToast('✅ Pago actualizado en Supabase');
+  } catch (error) {
+    console.error('Error al actualizar pago:', error);
+    showToast('❌ Error al actualizar: ' + error.message, 'error');
+  }
+}
+
+/* ============================================================
+   RENDER: PUBLIC SITE
+   ============================================================ */
+function renderPublicSite(){
+  const s = DATA.site;
+  document.getElementById("heroTitle").textContent = s.heroTitle;
+  document.getElementById("heroSubtitle").textContent = s.heroSubtitle;
+  document.getElementById("servicesTitle").textContent = s.servicesTitle;
+  document.getElementById("footerText").textContent = s.footerText;
+
+  const heroBg = s.heroImage || s.heroUrl;
+  const heroSection = document.getElementById("heroSection");
+  if(heroBg){
+    heroSection.style.backgroundImage = `url('${heroBg}')`;
+  } else {
+    heroSection.style.backgroundImage = "linear-gradient(135deg, #2a2118, #14100c)";
+  }
+
+  const logoEl = document.getElementById("logoDisplay");
+  logoEl.innerHTML = "";
+  if(s.logoImage){
+    const img = document.createElement("img");
+    img.src = s.logoImage;
+    logoEl.appendChild(img);
+  } else {
+    logoEl.textContent = s.logoText || "Barbería";
+  }
+
+  const grid = document.getElementById("servicesGrid");
+  grid.innerHTML = "";
+  DATA.services.forEach(svc => {
+    const card = document.createElement("div");
+    card.className = "service-card";
+    card.innerHTML = `
+      <div class="service-icon">${ICONS[svc.icon] || ICONS.star}</div>
+      <h3>${escapeHtml(svc.title)}</h3>
+      ${svc.price ? `<div class="service-price">${money(svc.price)}</div>` : ""}
+      <button class="service-book-btn" data-service-id="${svc.id}">Reservar este servicio →</button>
+    `;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll(".service-book-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      openBookingModal(btn.dataset.serviceId);
+    });
+  });
+
+  const bkService = document.getElementById("bkService");
+  bkService.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
+}
+
+/* ============================================================
+   BOOKING MODAL
+   ============================================================ */
+function openBookingModal(serviceId){
+  document.getElementById("bookingFormWrap").classList.remove("hidden");
+  document.getElementById("bookingConfirmWrap").classList.add("hidden");
+  document.getElementById("bookingForm").reset();
+  if(serviceId){ document.getElementById("bkService").value = serviceId; }
+  document.getElementById("bookingModalBackdrop").classList.remove("hidden");
+}
+
+document.getElementById("openBookingBtn").addEventListener("click", ()=> openBookingModal());
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.getElementById(btn.dataset.close).classList.add("hidden");
+  });
+});
+
+document.getElementById("bookingForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const nombres = document.getElementById("bkNombres").value.trim();
+  const apellidos = document.getElementById("bkApellidos").value.trim();
+  const doi = document.getElementById("bkDoi").value.trim();
+  const birthDate = document.getElementById("bkBirthdate").value;
+  const phone = document.getElementById("bkPhone").value.trim();
+  const serviceId = document.getElementById("bkService").value;
+  const date = document.getElementById("bkDate").value;
+  const time = document.getElementById("bkTime").value;
+  const notes = document.getElementById("bkNotes").value.trim();
+  const fullName = (nombres + " " + apellidos).trim();
+
+  let client = DATA.clients.find(c => c.doi === doi);
+  if(!client){
+    client = {
+      id: uid("c"), 
+      nombres, 
+      apellidos, 
+      name: fullName, 
+      doi, 
+      birthdate: birthDate, 
+      phone, 
+      email: "", 
+      notes: "", 
+      created_at: new Date().toISOString()
+    };
+    // Insertar en Supabase o local
+    await insertarClienteSupabase(client);
+  } else {
+    client.nombres = nombres || client.nombres;
+    client.apellidos = apellidos || client.apellidos;
+    client.name = fullName || client.name;
+    client.birthdate = birthDate || client.birthdate;
+    client.phone = phone || client.phone;
+    await actualizarClienteSupabase(client.id, client);
+  }
+
+  const service = DATA.services.find(s=>s.id===serviceId);
+  const pago = {
+    id: uid("p"),
+    clientid: client.id,
+    clientname: client.name,
+    serviceid: serviceId,
+    servicetitle: service ? service.title : "",
+    date: date,
+    time: time,
+    amount: service && service.price ? service.price : "",
+    method: "",
+    status: "pendiente",
+    notes: notes,
+    created_at: new Date().toISOString()
+  };
+  
+  await insertarPagoSupabase(pago);
+
+  document.getElementById("bookingFormWrap").classList.add("hidden");
+  document.getElementById("bookingConfirmWrap").classList.remove("hidden");
+});
+
+/* ============================================================
+   ADMIN: LOGIN / NAVIGATION
+   ============================================================ */
+document.getElementById("adminEntryBtn").addEventListener("click", ()=> openLogin());
+document.getElementById("adminEntryLink").addEventListener("click", (e)=>{ e.preventDefault(); openLogin(); });
+
+function openLogin(){
+  document.getElementById("loginError").classList.add("hidden");
+  document.getElementById("loginForm").reset();
+  document.getElementById("loginModalBackdrop").classList.remove("hidden");
+}
+
+document.getElementById("loginForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const pw = document.getElementById("loginPassword").value;
+  if(pw === DATA.adminPassword){
+    document.getElementById("loginModalBackdrop").classList.add("hidden");
+    enterAdmin();
+  } else {
+    document.getElementById("loginError").classList.remove("hidden");
+  }
+});
+
+function enterAdmin(){
+  document.getElementById("publicSite").classList.add("hidden");
+  document.getElementById("adminPanel").classList.remove("hidden");
+  renderAdminSiteForm();
+  renderAdminServices();
+  renderAdminClients();
+  renderAdminPayments();
+  switchTab("clientes");
+}
+
+document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
+  document.getElementById("adminPanel").classList.add("hidden");
+  document.getElementById("publicSite").classList.remove("hidden");
+  renderPublicSite();
+});
+
+document.querySelectorAll(".admin-tab").forEach(tab=>{
+  tab.addEventListener("click", ()=> switchTab(tab.dataset.tab));
+});
+
+function switchTab(name){
+  document.querySelectorAll(".admin-tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===name));
+  document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
+}
+
+/* ============================================================
+   ADMIN: TAB SITIO
+   ============================================================ */
+function renderAdminSiteForm(){
+  const s = DATA.site;
+  document.getElementById("cfgLogoText").value = s.logoText || "";
+  document.getElementById("cfgHeroUrl").value = s.heroUrl || "";
+  document.getElementById("cfgHeroTitle").value = s.heroTitle || "";
+  document.getElementById("cfgHeroSubtitle").value = s.heroSubtitle || "";
+  document.getElementById("cfgServicesTitle").value = s.servicesTitle || "";
+  document.getElementById("cfgFooterText").value = s.footerText || "";
+
+  const logoPreview = document.getElementById("logoPreview");
+  const clearLogoBtn = document.getElementById("clearLogoBtn");
+  if(s.logoImage){ logoPreview.src = s.logoImage; logoPreview.classList.remove("hidden"); clearLogoBtn.classList.remove("hidden"); }
+  else { logoPreview.classList.add("hidden"); clearLogoBtn.classList.add("hidden"); }
+
+  const heroPreview = document.getElementById("heroPreview");
+  const heroImg = s.heroImage || s.heroUrl;
+  if(heroImg){ heroPreview.src = heroImg; heroPreview.classList.remove("hidden"); }
+  else { heroPreview.classList.add("hidden"); }
+}
+
+document.getElementById("cfgLogoFile").addEventListener("change", (e)=>{
+  fileToDataUrl(e.target.files[0], (url)=>{ DATA.site.logoImage = url; saveDataLocal(); renderAdminSiteForm(); renderPublicSite(); });
+});
+document.getElementById("clearLogoBtn").addEventListener("click", ()=>{
+  DATA.site.logoImage = ""; document.getElementById("cfgLogoFile").value = ""; saveDataLocal(); renderAdminSiteForm(); renderPublicSite();
+});
+document.getElementById("cfgHeroFile").addEventListener("change", (e)=>{
+  fileToDataUrl(e.target.files[0], (url)=>{ DATA.site.heroImage = url; saveDataLocal(); renderAdminSiteForm(); renderPublicSite(); });
+});
+
+function fileToDataUrl(file, cb){
+  if(!file) return;
+  if(file.size > 3.5*1024*1024){ showToast("Imagen muy pesada, usa una menor a 3.5MB.", "error"); return; }
+  const reader = new FileReader();
+  reader.onload = ()=> cb(reader.result);
+  reader.readAsDataURL(file);
+}
+
+document.getElementById("saveSiteBtn").addEventListener("click", ()=>{
+  DATA.site.logoText = document.getElementById("cfgLogoText").value.trim();
+  DATA.site.heroUrl = document.getElementById("cfgHeroUrl").value.trim();
+  DATA.site.heroTitle = document.getElementById("cfgHeroTitle").value.trim();
+  DATA.site.heroSubtitle = document.getElementById("cfgHeroSubtitle").value.trim();
+  DATA.site.servicesTitle = document.getElementById("cfgServicesTitle").value.trim();
+  DATA.site.footerText = document.getElementById("cfgFooterText").value.trim();
+  saveDataLocal();
+  renderPublicSite();
+  showToast("Cambios guardados.");
+});
+
+/* ============================================================
+   ADMIN: TAB SERVICIOS
+   ============================================================ */
+function renderIconPicker(selected){
+  const wrap = document.getElementById("iconPicker");
+  wrap.innerHTML = "";
+  Object.keys(ICONS).forEach(key=>{
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="radio" name="svcIcon" value="${key}" ${key===selected?"checked":""}><span>${ICONS[key]}</span>`;
+    wrap.appendChild(label);
+  });
+}
+renderIconPicker("scissors");
+
+function renderAdminServices(){
+  const grid = document.getElementById("servicesAdminGrid");
+  grid.innerHTML = "";
+  DATA.services.forEach(svc=>{
+    const card = document.createElement("div");
+    card.className = "service-admin-card";
+    card.innerHTML = `
+      <div class="top">
+        <div class="service-icon" style="color:var(--gold);">${ICONS[svc.icon]||ICONS.star}</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-link" data-edit="${svc.id}">Editar</button>
+          <button class="btn-danger" data-del="${svc.id}">Eliminar</button>
+        </div>
+      </div>
+      <div style="font-weight:700;margin-top:4px;">${escapeHtml(svc.title)}</div>
+      <div style="font-size:12.5px;color:var(--muted);">${svc.price?money(svc.price):"Sin precio fijo"}</div>
+    `;
+    grid.appendChild(card);
+  });
+  grid.querySelectorAll("[data-edit]").forEach(btn=>{
+    btn.addEventListener("click", ()=> loadServiceForEdit(btn.dataset.edit));
+  });
+  grid.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      eliminarServicioSupabase(btn.dataset.del);
+    });
+  });
+}
+
+function loadServiceForEdit(id){
+  const svc = DATA.services.find(s=>s.id===id);
+  if(!svc) return;
+  document.getElementById("serviceFormTitle").textContent = "Editar servicio";
+  document.getElementById("svcEditId").value = svc.id;
+  document.getElementById("svcTitle").value = svc.title;
+  document.getElementById("svcPrice").value = svc.price || "";
+  renderIconPicker(svc.icon);
+  document.getElementById("cancelEditServiceBtn").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.getElementById("cancelEditServiceBtn").addEventListener("click", resetServiceForm);
+function resetServiceForm(){
+  document.getElementById("serviceFormTitle").textContent = "Agregar nuevo servicio";
+  document.getElementById("svcEditId").value = "";
+  document.getElementById("svcTitle").value = "";
+  document.getElementById("svcPrice").value = "";
+  renderIconPicker("scissors");
+  document.getElementById("cancelEditServiceBtn").classList.add("hidden");
+}
+
+document.getElementById("saveServiceBtn").addEventListener("click", async ()=>{
+  const title = document.getElementById("svcTitle").value.trim();
+  if(!title){ showToast("Escribe un nombre para el servicio.", "error"); return; }
+  const price = document.getElementById("svcPrice").value.trim();
+  const iconInput = document.querySelector('input[name="svcIcon"]:checked');
+  const icon = iconInput ? iconInput.value : "scissors";
+  const editId = document.getElementById("svcEditId").value;
+
+  const servicio = { id: editId || uid("s"), title, price, icon, created_at: new Date().toISOString() };
+
+  if(editId){
+    await actualizarServicioSupabase(editId, { title, price, icon });
+    resetServiceForm();
+  } else {
+    await insertarServicioSupabase(servicio);
+    resetServiceForm();
+  }
+});
+
+/* ============================================================
+   ADMIN: TAB CLIENTES
+   ============================================================ */
+function renderAdminClients(filter){
+  const tbody = document.getElementById("clientsTableBody");
+  tbody.innerHTML = "";
+  const f = (filter||"").toLowerCase();
+  const list = DATA.clients.filter(c => !f || (c.name||"").toLowerCase().includes(f) || (c.phone||"").includes(f) || (c.doi||"").toLowerCase().includes(f));
+  document.getElementById("clientsEmpty").classList.toggle("hidden", list.length>0);
+  document.getElementById('clientCount').textContent = `(${DATA.clients.length} clientes)`;
+
+  list.slice().reverse().forEach(c=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(c.name)}</td>
+      <td>${escapeHtml(c.doi||"—")}</td>
+      <td>${escapeHtml(c.birthdate||"—")}</td>
+      <td>${escapeHtml(c.phone)}</td>
+      <td>${escapeHtml(c.created_at ? new Date(c.created_at).toLocaleDateString() : "—")}</td>
+      <td style="white-space:nowrap;">
+        <button class="btn-link" data-edit-client="${c.id}">Editar</button>
+        <button class="btn-danger" data-del-client="${c.id}" style="margin-left:8px;">Eliminar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-edit-client]").forEach(btn=>{
+    btn.addEventListener("click", ()=> loadClientForEdit(btn.dataset.editClient));
+  });
+  tbody.querySelectorAll("[data-del-client]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      eliminarClienteSupabase(btn.dataset.delClient);
+    });
+  });
+  refreshPaymentSelectors();
+}
+
+document.getElementById("clientSearch").addEventListener("input", (e)=> renderAdminClients(e.target.value));
+
+function loadClientForEdit(id){
+  const c = DATA.clients.find(c=>c.id===id);
+  if(!c) return;
+  document.getElementById("clientFormTitle").textContent = "Editar cliente";
+  document.getElementById("cliEditId").value = c.id;
+  document.getElementById("cliNombres").value = c.nombres||c.name||"";
+  document.getElementById("cliApellidos").value = c.apellidos||"";
+  document.getElementById("cliDoi").value = c.doi||"";
+  document.getElementById("cliBirthdate").value = c.birthdate||"";
+  document.getElementById("cliPhone").value = c.phone;
+  document.getElementById("cliEmail").value = c.email||"";
+  document.getElementById("cliNotes").value = c.notes||"";
+  document.getElementById("cancelEditClientBtn").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.getElementById("cancelEditClientBtn").addEventListener("click", resetClientForm);
+function resetClientForm(){
+  document.getElementById("clientFormTitle").textContent = "Agregar cliente";
+  document.getElementById("cliEditId").value = "";
+  ["cliNombres","cliApellidos","cliDoi","cliBirthdate","cliPhone","cliEmail","cliNotes"].forEach(id=> document.getElementById(id).value="");
+  document.getElementById("cancelEditClientBtn").classList.add("hidden");
+}
+
+document.getElementById("saveClientBtn").addEventListener("click", async ()=>{
+  const nombres = document.getElementById("cliNombres").value.trim();
+  const apellidos = document.getElementById("cliApellidos").value.trim();
+  const phone = document.getElementById("cliPhone").value.trim();
+  if(!nombres || !apellidos || !phone){ showToast("Nombres, apellidos y teléfono son obligatorios.", "error"); return; }
+  const doi = document.getElementById("cliDoi").value.trim();
+  const birthdate = document.getElementById("cliBirthdate").value;
+  const email = document.getElementById("cliEmail").value.trim();
+  const notes = document.getElementById("cliNotes").value.trim();
+  const editId = document.getElementById("cliEditId").value;
+  const name = (nombres + " " + apellidos).trim();
+
+  if(editId){
+    await actualizarClienteSupabase(editId, { nombres, apellidos, name, doi, birthdate, phone, email, notes });
+    resetClientForm();
+    renderAdminClients(document.getElementById("clientSearch").value);
+  } else {
+    const cliente = { id: uid("c"), nombres, apellidos, name, doi, birthdate, phone, email, notes, created_at: new Date().toISOString() };
+    await insertarClienteSupabase(cliente);
+    resetClientForm();
+    renderAdminClients(document.getElementById("clientSearch").value);
+  }
+});
+
+/* ============================================================
+   ADMIN: TAB PAGOS
+   ============================================================ */
+function refreshPaymentSelectors(){
+  const clientSel = document.getElementById("payClient");
+  clientSel.innerHTML = DATA.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("") || `<option value="">Sin clientes aún</option>`;
+  const serviceSel = document.getElementById("payService");
+  serviceSel.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
+}
+
+document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
+  const clientId = document.getElementById("payClient").value;
+  if(!clientId){ showToast("Agrega primero un cliente.", "error"); return; }
+  const client = DATA.clients.find(c=>c.id===clientId);
+  const serviceId = document.getElementById("payService").value;
+  const service = DATA.services.find(s=>s.id===serviceId);
+  const date = document.getElementById("payDate").value || new Date().toISOString().slice(0,10);
+  const amount = document.getElementById("payAmount").value.trim();
+  const method = document.getElementById("payMethod").value;
+  const status = document.getElementById("payStatus").value;
+
+  const pago = {
+    id: uid("p"),
+    clientid: clientId,
+    clientname: client.name,
+    serviceid: serviceId,
+    servicetitle: service?service.title:"",
+    date: date,
+    time: "",
+    amount: amount,
+    method: method,
+    status: status,
+    notes: "",
+    created_at: new Date().toISOString()
+  };
+
+  await insertarPagoSupabase(pago);
+  document.getElementById("payAmount").value = "";
+  renderAdminPayments();
+});
+
+function renderAdminPayments(){
+  const tbody = document.getElementById("paymentsTableBody");
+  tbody.innerHTML = "";
+  const list = DATA.payments.slice().reverse();
+  document.getElementById("paymentsEmpty").classList.toggle("hidden", list.length>0);
+
+  let totalPaid = 0, totalPending = 0;
+  DATA.payments.forEach(p=>{
+    const amt = parseFloat(p.amount)||0;
+    if(p.status==="pagado") totalPaid += amt; else totalPending += amt;
+  });
+  document.getElementById("statPaid").textContent = money(totalPaid);
+  document.getElementById("statPending").textContent = money(totalPending);
+  document.getElementById("statCount").textContent = DATA.payments.length;
+
+  list.forEach(p=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(p.clientname)}</td>
+      <td>${escapeHtml(p.servicetitle)}</td>
+      <td>${escapeHtml(p.date||"—")}</td>
+      <td>${p.amount?money(p.amount):"—"}</td>
+      <td>${escapeHtml(p.method||"—")}</td>
+      <td><span class="badge ${p.status}">${p.status==="pagado"?"Pagado":"Pendiente"}</span></td>
+      <td style="white-space:nowrap;">
+        ${p.status==="pendiente" ? `<button class="btn-link" data-mark-paid="${p.id}">Marcar pagado</button>` : ""}
+        <button class="btn-danger" data-del-payment="${p.id}" style="margin-left:8px;">Eliminar</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  tbody.querySelectorAll("[data-mark-paid]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const p = DATA.payments.find(p=>p.id===btn.dataset.markPaid);
+      if(!p.amount){
+        const amt = prompt("Monto cobrado:");
+        if(amt===null) return;
+        p.amount = amt;
+      }
+      p.status = "pagado";
+      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method });
+      renderAdminPayments();
+    });
+  });
+  tbody.querySelectorAll("[data-del-payment]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      eliminarPagoSupabase(btn.dataset.delPayment);
+    });
+  });
+}
+
+/* ============================================================
+   ADMIN: TAB AJUSTES
+   ============================================================ */
+document.getElementById("changePasswordBtn").addEventListener("click", ()=>{
+  const pw = document.getElementById("newAdminPassword").value.trim();
+  if(pw.length < 4){ showToast("Usa al menos 4 caracteres.", "error"); return; }
+  DATA.adminPassword = pw;
+  saveDataLocal();
+  document.getElementById("newAdminPassword").value = "";
+  showToast("Contraseña actualizada.");
+});
+
+document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "respaldo_barberia_" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById("importBackupFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const parsed = JSON.parse(reader.result);
+      DATA = parsed;
+      saveDataLocal();
+      renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
+      showToast("Respaldo restaurado.");
+    }catch(err){
+      showToast("Archivo inválido.", "error");
+    }
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById("resetAllBtn").addEventListener("click", ()=>{
+  if(confirm("Esta acción no se puede deshacer. ¿Borrar todos los datos?")){
+    DATA = defaultData();
+    saveDataLocal();
+    renderAdminSiteForm(); renderAdminServices(); renderAdminClients(); renderAdminPayments(); renderPublicSite();
+    showToast("Datos restablecidos.");
+  }
+});
+
+/* ============================================================
+   BOTÓN DE CONEXIÓN
+   ============================================================ */
+document.getElementById('testBtn').addEventListener('click', conectarSupabase);
+
+/* ============================================================
+   INICIALIZACIÓN
+   ============================================================ */
+loadData();
+renderPublicSite();
+
+// Intentar conectar automáticamente al cargar
+setTimeout(() => {
+  conectarSupabase();
+}, 1000);
+
+console.log('🪒 Barbería con Supabase');
+console.log('📌 Comandos disponibles:');
+console.log('  • conectarSupabase() - Conectar a Supabase');
+console.log('  • insertarClienteSupabase(datos) - Insertar cliente');
+console.log('  • DATA - Ver todos los datos locales');
+</script>
 </body>
 </html>
