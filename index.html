@@ -1871,9 +1871,9 @@ document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>
     CodigoYape: p.yape_code || ""
   }));
 
-  const header = Object.keys(rows[0] || {}).join(",") + "\n";
-  const csv = header + rows.map(r => Object.values(r).map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const header = Object.keys(rows[0] || {}).join(";") + "\n";
+  const csv = "sep=;\n" + header + rows.map(r => Object.values(r).map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(";")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
