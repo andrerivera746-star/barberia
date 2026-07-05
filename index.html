@@ -1904,7 +1904,7 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
     serviceid: serviceId,
     servicetitle: service?service.title:"",
     date: date,
-    time: method === 'Yape' ? yapeHour : "",
+    time: method === 'Yape' ? yapeHour : new Date().toTimeString().slice(0,5),
     amount: amount,
     method: method,
     status: status,
@@ -1972,8 +1972,11 @@ function renderAdminPayments(){
         if(amt===null) return;
         p.amount = amt;
       }
+      if(!p.time){
+        p.time = new Date().toTimeString().slice(0,5);
+      }
       p.status = "pagado";
-      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername });
+      await actualizarPagoSupabase(p.id, { status: "pagado", amount: p.amount, method: p.method, workerid: p.workerid, workername: p.workername, time: p.time });
       renderAdminPayments();
     });
   });
@@ -2009,7 +2012,7 @@ document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
 function exportPaymentsCsv(fromDate, toDate){
   const filterPayment = p => {
     if(!fromDate && !toDate) return true;
-    const paymentDate = p.date || "";
+    const paymentDate = p.date || p.start_date || "";
     if(fromDate && paymentDate < fromDate) return false;
     if(toDate && paymentDate > toDate) return false;
     return true;
@@ -2019,8 +2022,8 @@ function exportPaymentsCsv(fromDate, toDate){
     ID: p.id,
     Cliente: p.clientname,
     Servicio: p.servicetitle,
-    Fecha: p.date,
-    Hora: p.time,
+    Fecha: p.date || p.start_date || "",
+    Hora: p.time || p.start_time || "",
     Monto: p.amount,
     Metodo: p.method,
     Estado: p.status,
@@ -2047,8 +2050,8 @@ function exportWorkerPaymentsCsv(workerId){
     ID: p.id,
     Cliente: p.clientname,
     Servicio: p.servicetitle,
-    Fecha: p.date,
-    Hora: p.time,
+    Fecha: p.date || p.start_date || "",
+    Hora: p.time || p.start_time || "",
     Monto: p.amount,
     Metodo: p.method,
     Estado: p.status,
@@ -2530,7 +2533,7 @@ function openWorkerOperations(workerId){
         <td>${escapeHtml(p.clientname)}</td>
         <td>${escapeHtml(p.servicetitle)}</td>
         <td>${escapeHtml(p.date||'—')}</td>
-        <td>${escapeHtml(p.time||'—')}</td>
+        <td>${escapeHtml(p.time || p.start_time || '—')}</td>
         <td>${p.amount?money(p.amount):'—'}</td>
         <td>${escapeHtml(p.method||'—')}</td>
         <td>${escapeHtml(p.status||'—')}</td>
