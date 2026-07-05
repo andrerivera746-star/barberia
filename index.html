@@ -747,12 +747,14 @@ async function conectarSupabase() {
   document.getElementById('statusText').textContent = '⏳ Conectando...';
 
   try {
+    if (!window.supabase) throw new Error('Supabase JS no está cargado');
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // Probar conexión
-    const { error } = await supabaseClient
+    // Probar conexión con una consulta simple
+    const { data, error } = await supabaseClient
       .from('clientes')
-      .select('count', { count: 'exact', head: true });
+      .select('id')
+      .limit(1);
 
     if (error && error.code === '42P01') {
       document.getElementById('statusDot').className = 'dot offline';
@@ -764,6 +766,10 @@ async function conectarSupabase() {
     }
 
     if (error) throw error;
+
+    if (!Array.isArray(data)) {
+      throw new Error('Respuesta de Supabase inesperada');
+    }
 
     isConnected = true;
     document.getElementById('statusDot').className = 'dot online';
