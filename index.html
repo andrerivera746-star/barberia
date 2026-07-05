@@ -1419,7 +1419,8 @@ function resetLoginForms(){
   document.getElementById("workerLoginError").classList.add("hidden");
   document.getElementById("loginForm").reset();
   document.getElementById("workerLoginForm").reset();
-  setLoginRoleTab("admin");
+  const savedRole = localStorage.getItem('barberia_login_role') || 'admin';
+  setLoginRoleTab(savedRole);
   document.getElementById("loginGate").classList.remove("hidden");
 }
 
@@ -1463,6 +1464,7 @@ function setLoginRoleTab(role){
   });
   document.getElementById("loginForm").classList.toggle("hidden", role !== "admin");
   document.getElementById("workerLoginForm").classList.toggle("hidden", role !== "worker");
+  localStorage.setItem('barberia_login_role', role);
 }
 
 document.querySelectorAll("[data-role-tab]").forEach(btn=>{
@@ -2607,6 +2609,8 @@ document.getElementById('testBtn').addEventListener('click', conectarSupabase);
    ============================================================ */
 loadData();
 renderLoginBrand();
+const savedLoginRole = localStorage.getItem('barberia_login_role') || 'admin';
+setLoginRoleTab(savedLoginRole);
 restoreSession();
 
 // Intentar conectar automáticamente al cargar
