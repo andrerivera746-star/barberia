@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="refresh" content="0; url=index.html#admin">
+<title>Acceso administrador — Barbería</title>
+<style>
+  body{font-family:sans-serif;background:#f4f5fb;display:flex;align-items:center;justify-content:center;
+    min-height:100vh;margin:0;color:#1c1712;}
+  a{color:#2e3192;}
+</style>
+<script>location.replace('index.html#admin');</script>
+</head>
+<body>
+  <p>Redirigiendo al acceso de administrador…
+    <a href="index.html#admin">Haz clic aquí</a> si no avanza automáticamente.
+  </p>
+</body>
+</html>
