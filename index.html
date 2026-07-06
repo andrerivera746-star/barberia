@@ -1355,21 +1355,15 @@ async function insertarClienteSupabase(cliente) {
       return data[0];
     }
   } catch (error) {
-    // ESTO TE DIRÁ EXACTAMENTE POR QUÉ FALLA LA BASE DE DATOS
-    console.error('Detalles del error en Supabase:', error);
-    
-    // Inspecciona si es un error de duplicado (código 23505 en PostgreSQL)
-    if (error.code === '23505') {
-        console.warn('El cliente ya existe en la base de datos.');
-    }
-
-    console.error('Error al insertar cliente:', error.message);
-    
+    console.error('Error al insertar cliente:', error);
     // Fallback a local
     DATA.clients.push(cliente);
     saveDataLocal();
-    // ... resto de tu código
-}
+    renderAdminClients();
+    renderLoginBrand();
+    showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
+    return cliente;
+  }
 }
 
 async function eliminarClienteSupabase(id) {
