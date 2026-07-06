@@ -143,6 +143,10 @@
   .admin-tab .admin-tab-icon{font-size:16px;line-height:1;}
   .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;}
   .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
+  .admin-tab{position:relative;}
+  .loyalty-nav-dot{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;
+    background:var(--danger);box-shadow:0 0 0 2px var(--ink);}
+  @media(max-width:700px){ .loyalty-nav-dot{top:2px;right:14px;} }
   .admin-back{margin-top:auto;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
     padding:10px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;}
   .admin-main{flex:1;padding:38px 4% 60px;max-width:900px;margin:0 auto;}
@@ -151,6 +155,31 @@
   .admin-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;}
   .admin-card h3{font-size:15px;font-family:var(--font-body);font-weight:700;margin-bottom:16px;}
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+
+  /* ---------- FIDELIZACIÓN ---------- */
+  .loyalty-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    background:var(--cream-dark);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+  .loyalty-toggle-row .ltr-text strong{display:block;font-size:14px;margin-bottom:2px;}
+  .loyalty-toggle-row .ltr-text span{font-size:12.5px;color:var(--muted);}
+  .switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch .slider{position:absolute;cursor:pointer;inset:0;background:#cfc6b4;border-radius:999px;transition:.2s;}
+  .switch .slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;top:3px;
+    background:#fff;border-radius:50%;transition:.2s;}
+  .switch input:checked + .slider{background:var(--success);}
+  .switch input:checked + .slider:before{transform:translateX(20px);}
+  .loyalty-progress-wrap{display:flex;align-items:center;gap:8px;min-width:120px;}
+  .loyalty-progress-bar{flex:1;height:8px;border-radius:999px;background:var(--cream-dark);overflow:hidden;}
+  .loyalty-progress-fill{height:100%;background:var(--gold);border-radius:999px;transition:width .25s;}
+  .loyalty-progress-label{font-size:11.5px;color:var(--muted);white-space:nowrap;}
+  .badge.reward-ready{background:rgba(76,122,79,.15);color:var(--success);}
+  .badge.reward-wait{background:rgba(138,128,114,.15);color:var(--muted);}
+  .btn-reward{background:var(--success);color:#fff;border:none;padding:8px 14px;border-radius:999px;
+    font-weight:600;font-size:12.5px;white-space:nowrap;}
+  .btn-reward:disabled{opacity:.4;cursor:not-allowed;}
+  .loyalty-banner{display:flex;align-items:flex-start;gap:12px;background:#fff7e6;border:1px solid var(--gold-light);
+    border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:13.5px;line-height:1.5;}
+  .loyalty-banner .lb-icon{font-size:20px;}
   @media(max-width:900px){
     .admin-main{padding:30px 4%;}
     .admin-panel-header{flex-direction:column;align-items:flex-start;}
@@ -532,6 +561,7 @@
     <button class="admin-tab" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
     <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
     <button class="admin-tab" data-tab="clientes"><span class="admin-tab-icon">📇</span><span class="admin-tab-label">Clientes</span></button>
+    <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
     <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
     <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
     <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
@@ -651,6 +681,49 @@
           <tbody id="clientsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="clientsEmpty">Aún no tienes clientes registrados.</div>
+      </div>
+    </section>
+
+    <!-- TAB: FIDELIZACIÓN -->
+    <section class="admin-tab-panel hidden" data-panel="fidelizacion">
+      <div class="admin-panel-header">
+        <h2>Fidelización</h2>
+        <input type="text" class="search-input" id="loyaltySearch" placeholder="Buscar cliente">
+      </div>
+
+      <div class="admin-card">
+        <h3>Configuración del programa</h3>
+        <div class="loyalty-toggle-row">
+          <div class="ltr-text">
+            <strong>Programa de fidelización</strong>
+            <span>Actívalo o desactívalo para todos los clientes</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="loyaltyEnabled">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="field">
+          <label>Cada cuántas visitas se regala un corte</label>
+          <input type="number" id="loyaltyThreshold" min="2" max="50" step="1" placeholder="Ej. 5">
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
+          Ejemplo: si pones <strong>5</strong>, al completar la 5ª visita pagada el cliente gana un corte gratis
+          (su 6ª visita). El ciclo se repite automáticamente cada 5 visitas pagadas.
+        </p>
+        <div class="modal-actions" style="margin-top:0;">
+          <button class="btn-gold" id="loyaltySaveBtn">Guardar configuración</button>
+        </div>
+      </div>
+
+      <div id="loyaltyAlertsBox"></div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Cliente</th><th>Visitas pagadas</th><th>Progreso</th><th>Cortes gratis usados</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="loyaltyTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="loyaltyEmpty">Aún no tienes clientes registrados.</div>
       </div>
     </section>
 
@@ -954,6 +1027,11 @@ function defaultData(){
     payments: [],
     workers: [],
     adminPassword: "barberia2026",
+    loyalty: {
+      enabled: true,
+      visitsRequired: 5,
+      notified: {}
+    },
   };
 }
 
@@ -1033,6 +1111,9 @@ function loadData(){
   if(!Array.isArray(DATA.payments)) DATA.payments = [];
   if(!Array.isArray(DATA.workers)) DATA.workers = [];
   if(!DATA.adminPassword) DATA.adminPassword = d.adminPassword;
+  DATA.loyalty = Object.assign({}, d.loyalty, DATA.loyalty||{});
+  if(!DATA.loyalty.notified || typeof DATA.loyalty.notified !== 'object') DATA.loyalty.notified = {};
+  if(!DATA.loyalty.visitsRequired || DATA.loyalty.visitsRequired < 2) DATA.loyalty.visitsRequired = d.loyalty.visitsRequired;
 }
 
 function saveDataLocal(){
@@ -1166,6 +1247,7 @@ async function cargarTodosLosDatos() {
     renderAdminClients();
     renderAdminPayments();
     renderAdminWorkers();
+    checkLoyaltyMilestones();
 
   } catch (error) {
     console.error('Error al cargar datos:', error);
@@ -2159,11 +2241,168 @@ document.getElementById("saveClientBtn").addEventListener("click", async ()=>{
 });
 
 /* ============================================================
+   FIDELIZACIÓN (100% local: no depende de tablas nuevas en Supabase,
+   se calcula a partir de los pagos ya existentes en DATA.payments)
+   ============================================================ */
+const LOYALTY_REWARD_MARK = "FIDELIZACION_REWARD";
+
+// Marca si un pago es un "corte gratis" entregado por el programa de fidelización
+function isLoyaltyRewardPayment(p){
+  return !!(p && typeof p.notes === "string" && p.notes.indexOf(LOYALTY_REWARD_MARK) === 0);
+}
+
+// Cuenta las visitas PAGADAS reales de un cliente (sin contar los cortes gratis ya entregados)
+function getClientPaidVisits(clientId){
+  return DATA.payments.filter(p =>
+    p.clientid === clientId &&
+    p.status === "pagado" &&
+    !isLoyaltyRewardPayment(p)
+  ).length;
+}
+
+// Cuenta cuántos cortes gratis ya se le han entregado a ese cliente
+function getClientRewardsGiven(clientId){
+  return DATA.payments.filter(p => p.clientid === clientId && isLoyaltyRewardPayment(p)).length;
+}
+
+// Devuelve el estado de fidelización de un cliente
+function getClientLoyaltyInfo(clientId){
+  const n = Math.max(2, parseInt(DATA.loyalty.visitsRequired, 10) || 5);
+  const visits = getClientPaidVisits(clientId);
+  const rewardsGiven = getClientRewardsGiven(clientId);
+  const milestonesReached = Math.floor(visits / n);   // cuántas veces completó el ciclo
+  const eligible = DATA.loyalty.enabled && (milestonesReached > rewardsGiven);
+  const visitsIntoCycle = visits % n;                  // progreso dentro del ciclo actual
+  return {
+    n, visits, rewardsGiven, milestonesReached, eligible,
+    progressCurrent: eligible ? n : visitsIntoCycle,
+    progressTotal: n
+  };
+}
+
+// Revisa a todos los clientes y muestra una alerta cuando alguno ACABA de alcanzar el ciclo
+function checkLoyaltyMilestones(){
+  if(!DATA.loyalty.enabled || !Array.isArray(DATA.clients)) return;
+  let sawNew = false;
+  DATA.clients.forEach(c=>{
+    const info = getClientLoyaltyInfo(c.id);
+    const lastNotified = DATA.loyalty.notified[c.id] || 0;
+    if(info.milestonesReached > lastNotified && info.eligible){
+      showToast(`🎁 ¡${c.name} llegó a ${info.visits} visitas! Tiene un corte #${info.visits + 1} GRATIS disponible.`, "success");
+      DATA.loyalty.notified[c.id] = info.milestonesReached;
+      sawNew = true;
+    }
+  });
+  if(sawNew) saveDataLocal();
+  updateLoyaltyNavDot();
+}
+
+function updateLoyaltyNavDot(){
+  const dot = document.getElementById("loyaltyNavDot");
+  if(!dot) return;
+  const hasPending = DATA.loyalty.enabled && Array.isArray(DATA.clients) &&
+    DATA.clients.some(c => getClientLoyaltyInfo(c.id).eligible);
+  dot.classList.toggle("hidden", !hasPending);
+}
+
+function renderLoyaltyTab(filter){
+  if(!DATA.clients) return;
+  document.getElementById("loyaltyEnabled").checked = !!DATA.loyalty.enabled;
+  document.getElementById("loyaltyThreshold").value = DATA.loyalty.visitsRequired;
+
+  const term = (filter||"").trim().toLowerCase();
+  const tbody = document.getElementById("loyaltyTableBody");
+  tbody.innerHTML = "";
+
+  const list = DATA.clients
+    .filter(c => !term || (c.name||"").toLowerCase().includes(term) || (c.phone||"").includes(term))
+    .map(c => ({ client: c, info: getClientLoyaltyInfo(c.id) }))
+    .sort((a,b)=> b.info.visits - a.info.visits);
+
+  document.getElementById("loyaltyEmpty").classList.toggle("hidden", list.length>0);
+
+  list.forEach(({client, info})=>{
+    const pct = Math.min(100, Math.round((info.progressCurrent / info.progressTotal) * 100));
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Cliente">${escapeHtml(client.name)}</td>
+      <td data-label="Visitas pagadas">${info.visits}</td>
+      <td data-label="Progreso">
+        <div class="loyalty-progress-wrap">
+          <div class="loyalty-progress-bar"><div class="loyalty-progress-fill" style="width:${pct}%;"></div></div>
+          <span class="loyalty-progress-label">${info.eligible ? "¡Listo! 🎁" : `${info.progressCurrent}/${info.progressTotal}`}</span>
+        </div>
+      </td>
+      <td data-label="Cortes gratis usados">${info.rewardsGiven}</td>
+      <td data-label="Estado"><span class="badge ${info.eligible ? "reward-ready" : "reward-wait"}">${info.eligible ? "🎁 Disponible" : "En progreso"}</span></td>
+      <td data-label="">
+        <button class="btn-reward" data-redeem-loyalty="${client.id}" ${info.eligible ? "" : "disabled"}>Registrar corte gratis</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll("[data-redeem-loyalty]").forEach(btn=>{
+    btn.addEventListener("click", ()=> redeemLoyaltyReward(btn.dataset.redeemLoyalty));
+  });
+
+  updateLoyaltyNavDot();
+}
+
+async function redeemLoyaltyReward(clientId){
+  const client = DATA.clients.find(c=>c.id===clientId);
+  if(!client) return;
+  const info = getClientLoyaltyInfo(clientId);
+  if(!info.eligible){ showToast("Este cliente aún no tiene un corte gratis disponible.", "error"); return; }
+  if(!confirm(`¿Registrar el corte gratis de fidelización para ${client.name}?`)) return;
+
+  const pago = {
+    id: uid("p"),
+    clientid: client.id,
+    clientname: client.name,
+    serviceid: "",
+    servicetitle: "Corte gratis (Fidelización)",
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    amount: "0.00",
+    method: "Cortesía",
+    status: "pagado",
+    workerid: null,
+    workername: "",
+    yape_code: "",
+    notes: LOYALTY_REWARD_MARK,
+    created_at: new Date().toISOString()
+  };
+
+  await insertarPagoSupabase(pago);
+  showToast(`🎉 Corte gratis registrado para ${client.name}`);
+  renderLoyaltyTab(document.getElementById("loyaltySearch").value);
+}
+
+document.getElementById("loyaltySaveBtn").addEventListener("click", ()=>{
+  const enabled = document.getElementById("loyaltyEnabled").checked;
+  let n = parseInt(document.getElementById("loyaltyThreshold").value, 10);
+  if(!n || n < 2){ showToast("Ingresa un número válido de visitas (mínimo 2).", "error"); return; }
+  DATA.loyalty.enabled = enabled;
+  DATA.loyalty.visitsRequired = n;
+  saveDataLocal();
+  showToast("Configuración de fidelización guardada.");
+  renderLoyaltyTab(document.getElementById("loyaltySearch").value);
+  checkLoyaltyMilestones();
+});
+
+document.getElementById("loyaltySearch").addEventListener("input", (e)=>{
+  renderLoyaltyTab(e.target.value);
+});
+
+/* ============================================================
    ADMIN: TAB PAGOS
    ============================================================ */
 function refreshPaymentSelectors(){
   const clientSel = document.getElementById("payClient");
-  clientSel.innerHTML = DATA.clients.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("") || `<option value="">Sin clientes aún</option>`;
+  clientSel.innerHTML = DATA.clients.map(c=>{
+    const eligible = DATA.loyalty && DATA.loyalty.enabled && getClientLoyaltyInfo(c.id).eligible;
+    return `<option value="${c.id}">${eligible ? "🎁 " : ""}${escapeHtml(c.name)}</option>`;
+  }).join("") || `<option value="">Sin clientes aún</option>`;
   const serviceSel = document.getElementById("payService");
   serviceSel.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
   const workerSel = document.getElementById("payWorker");
@@ -2232,6 +2471,12 @@ function renderAdminPayments(){
   document.getElementById("statPaid").textContent = money(totalPaid);
   document.getElementById("statPending").textContent = money(totalPending);
   document.getElementById("statCount").textContent = DATA.payments.length;
+
+  checkLoyaltyMilestones();
+  const loyaltyPanel = document.querySelector('.admin-tab-panel[data-panel="fidelizacion"]');
+  if(loyaltyPanel && !loyaltyPanel.classList.contains('hidden')){
+    renderLoyaltyTab(document.getElementById("loyaltySearch").value);
+  }
 
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
 
@@ -2793,6 +3038,7 @@ function switchTab(name){
   document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
   if(name === 'cortes') renderAdminActiveCuts();
   if(name === 'pagos') renderAdminPayments();
+  if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
 }
 
 /* ============================================================
