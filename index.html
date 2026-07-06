@@ -532,7 +532,7 @@
       <div class="login-brand" id="loginBrandDisplay">✂ Barbería</div>
       <h3 class="login-title">Iniciar sesión</h3>
 
-      <div class="role-tabs">
+      <div class="role-tabs" id="loginRoleTabs">
         <button type="button" class="role-tab-btn active" data-role-tab="admin">Administrador</button>
         <button type="button" class="role-tab-btn" data-role-tab="worker">Trabajador</button>
       </div>
@@ -1047,6 +1047,7 @@ let serviciosCache = [];
 let pagosCache = [];
 let currentWorker = null;
 let realtimeChannel = null;
+let lockedRole = null; // 'admin' | 'worker' | null -> se fija cuando se entra por un link dedicado (#admin / #trabajador)
 const STORAGE_KEY = "barberia_app_data_v1";
 
 /* ============================================================
@@ -1769,7 +1770,7 @@ function resetLoginForms(){
   document.getElementById("workerLoginError").classList.add("hidden");
   document.getElementById("loginForm").reset();
   document.getElementById("workerLoginForm").reset();
-  const savedRole = localStorage.getItem('barberia_login_role') || 'admin';
+  const savedRole = lockedRole || localStorage.getItem('barberia_login_role') || 'admin';
   setLoginRoleTab(savedRole);
   document.getElementById("loginGate").classList.remove("hidden");
 }
@@ -1787,6 +1788,12 @@ function restoreSession(){
     const raw = localStorage.getItem('barberia_session');
     if(!raw) return false;
     const session = JSON.parse(raw);
+    if(lockedRole && session.role !== lockedRole){
+      // Se entró por un link dedicado (#admin o #trabajador) distinto a la sesión guardada:
+      // no la restauramos, para no mezclar accesos entre dispositivos/links.
+      clearSession();
+      return false;
+    }
     if(session.role === 'admin'){
       document.getElementById("loginGate").classList.add("hidden");
       sessionRestored = true;
@@ -3261,11 +3268,35 @@ function renderWorkerHistory(){
 document.getElementById('testBtn').addEventListener('click', conectarSupabase);
 
 /* ============================================================
+   LINKS DEDICADOS (admin.html / trabajador.html)
+   Detecta #admin o #trabajador (o #worker) en la URL y, si existe,
+   fija ese rol y oculta el selector para que se sienta como un
+   acceso propio de cada uno, sin duplicar el archivo.
+   ============================================================ */
+function getRoleFromHash(){
+  const h = (window.location.hash || "").replace("#", "").trim().toLowerCase();
+  if(h === "admin") return "admin";
+  if(h === "trabajador" || h === "worker") return "worker";
+  return null;
+}
+
+function applyDedicatedLinkLock(){
+  const role = getRoleFromHash();
+  if(role){
+    lockedRole = role;
+    const tabs = document.getElementById("loginRoleTabs");
+    if(tabs) tabs.classList.add("hidden");
+  }
+  return role;
+}
+
+/* ============================================================
    INICIALIZACIÓN
    ============================================================ */
 loadData();
 renderLoginBrand();
-const savedLoginRole = localStorage.getItem('barberia_login_role') || 'admin';
+const hashRole = applyDedicatedLinkLock();
+const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') || 'admin';
 setLoginRoleTab(savedLoginRole);
 restoreSession();
 
