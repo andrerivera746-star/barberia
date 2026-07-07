@@ -28,11 +28,6 @@
     --shadow: 0 16px 36px rgba(0,0,0,0.28);
     --font-display: 'Fraunces', serif;
     --font-body: 'Inter', sans-serif;
-    /* Marca (pantalla de login): ahora en negro/dorado, a tono con el logo,
-       en vez del azul genérico anterior. */
-    --brand-indigo:#121212;
-    --brand-indigo-light:#b3894f;
-    --brand-bg:#f6f4f1;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -100,9 +95,9 @@
   .btn-secondary{background:var(--cream-dark);border:none;padding:12px 20px;border-radius:999px;font-weight:600;
     font-size:14px;color:var(--ink);}
 
-  /* ---------- LOGIN GATE (branding tipo Cignifi) ---------- */
-  #loginGate{min-height:100vh;background:var(--brand-bg);}
-  .login-splash{position:fixed;inset:0;background:var(--brand-indigo);display:flex;align-items:center;
+  /* ---------- LOGIN GATE (pantalla oscura con logo, tipo app) ---------- */
+  #loginGate{min-height:100vh;background:var(--ink);}
+  .login-splash{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;
     justify-content:center;z-index:500;animation:splashFade 2s ease forwards;}
   .login-splash-logo{font-family:var(--font-display);font-weight:700;font-size:30px;color:#fff;letter-spacing:.02em;}
   @keyframes splashFade{
@@ -112,18 +107,37 @@
   }
   .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
   .login-card{width:100%;max-width:380px;}
-  .login-brand{font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--brand-indigo);
-    text-align:center;margin-bottom:28px;letter-spacing:.02em;}
-  .login-title{font-size:20px;font-weight:700;margin-bottom:22px;color:var(--ink);text-align:center;}
-  .login-error{color:var(--danger);font-size:13px;margin-bottom:10px;}
-  #loginGate .role-tabs{background:#eceefa;}
-  #loginGate .role-tab-btn.active{background:#fff;color:var(--brand-indigo);}
-  #loginGate .field input{background:var(--brand-bg);border:1px solid transparent;border-radius:12px;
-    padding:14px 16px;font-size:14px;}
-  #loginGate .field input:focus{outline:none;border-color:var(--brand-indigo-light);background:#fff;}
-  .btn-login{width:100%;background:var(--brand-indigo);color:#fff;border:none;padding:15px;border-radius:12px;
-    font-weight:700;font-size:14.5px;margin-top:6px;transition:background .2s;}
-  .btn-login:hover{background:var(--brand-indigo-light);}
+
+  .login-hero{text-align:center;margin-bottom:26px;}
+  .login-hero-badge{width:72px;height:72px;border-radius:50%;margin:0 auto 14px;overflow:hidden;
+    background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.22);
+    display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--gold);}
+  .login-hero-badge img{width:100%;height:100%;object-fit:cover;}
+  .login-hero-name{font-family:var(--font-display);font-weight:700;font-size:22px;color:#fff;letter-spacing:.02em;}
+  .login-hero-address{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;}
+
+  .login-title{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:rgba(255,255,255,.65);text-align:center;margin-bottom:22px;}
+  .login-error{color:#ff8a80;font-size:13px;margin-bottom:10px;}
+
+  #loginGate .role-tabs{background:rgba(255,255,255,.07);}
+  #loginGate .role-tab-btn{color:rgba(255,255,255,.6);}
+  #loginGate .role-tab-btn.active{background:#fff;color:var(--ink);}
+
+  .login-field{position:relative;margin-bottom:14px;}
+  .login-field-icon{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:15px;
+    opacity:.6;pointer-events:none;}
+  .login-field input{width:100%;padding:15px 16px 15px 46px;border-radius:999px;font-family:inherit;
+    border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#fff;font-size:14px;}
+  .login-field input::placeholder{color:rgba(255,255,255,.45);}
+  .login-field input:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.1);}
+
+  .btn-login-pill{width:100%;position:relative;display:flex;align-items:center;justify-content:center;
+    background:#fff;color:var(--ink);border:none;border-radius:999px;padding:16px;
+    font-weight:700;font-size:14.5px;margin-top:8px;transition:transform .15s;}
+  .btn-login-pill:hover{transform:translateY(-1px);}
+  .btn-login-arrow{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:38px;height:38px;
+    border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;}
 
   /* ---------- LOGIN ROLE TABS ---------- */
   .role-tabs{display:flex;gap:6px;background:var(--cream-dark);padding:4px;border-radius:12px;margin-bottom:20px;}
@@ -595,7 +609,15 @@
 
   <div class="login-screen">
     <div class="login-card">
-      <div class="login-brand" id="loginBrandDisplay">✂ Barbería</div>
+      <div class="login-hero">
+        <div class="login-hero-badge">
+          <img id="loginHeroImg" class="hidden" alt="logo">
+          <span id="loginHeroFallback">✂</span>
+        </div>
+        <div class="login-hero-name" id="loginBrandDisplay">Barbería</div>
+        <div class="login-hero-address hidden" id="loginAddressDisplay"></div>
+      </div>
+
       <h3 class="login-title">Iniciar sesión</h3>
 
       <div class="role-tabs" id="loginRoleTabs">
@@ -604,17 +626,29 @@
       </div>
 
       <form id="loginForm" data-role-form="admin">
-        <div class="field"><input type="text" id="loginUsername" placeholder="Usuario" required></div>
-        <div class="field"><input type="password" id="loginPassword" placeholder="Contraseña" required></div>
+        <div class="login-field">
+          <span class="login-field-icon">👤</span>
+          <input type="text" id="loginUsername" placeholder="Usuario" required>
+        </div>
+        <div class="login-field">
+          <span class="login-field-icon">🔒</span>
+          <input type="password" id="loginPassword" placeholder="Contraseña" required>
+        </div>
         <p id="loginError" class="hidden login-error">Usuario o contraseña incorrectos.</p>
-        <button type="submit" class="btn-login">Entrar</button>
+        <button type="submit" class="btn-login-pill"><span>Entrar</span><span class="btn-login-arrow">→</span></button>
       </form>
 
       <form id="workerLoginForm" data-role-form="worker" class="hidden">
-        <div class="field"><input type="text" id="workerLoginUser" placeholder="Usuario" required></div>
-        <div class="field"><input type="password" id="workerLoginPassword" placeholder="Contraseña" required></div>
+        <div class="login-field">
+          <span class="login-field-icon">👤</span>
+          <input type="text" id="workerLoginUser" placeholder="Usuario" required>
+        </div>
+        <div class="login-field">
+          <span class="login-field-icon">🔒</span>
+          <input type="password" id="workerLoginPassword" placeholder="Contraseña" required>
+        </div>
         <p id="workerLoginError" class="hidden login-error">Usuario o contraseña incorrectos, o cuenta inactiva.</p>
-        <button type="submit" class="btn-login">Entrar</button>
+        <button type="submit" class="btn-login-pill"><span>Entrar</span><span class="btn-login-arrow">→</span></button>
       </form>
     </div>
   </div>
@@ -676,6 +710,19 @@
         <div class="field-row-flex">
           <img id="logoPreview" class="thumb-preview hidden" alt="logo">
           <button type="button" class="btn-danger hidden" id="clearLogoBtn">Quitar imagen</button>
+        </div>
+        <div class="field"><label>Dirección de la empresa (opcional)</label><input type="text" id="cfgAddress" placeholder="Ej. Av. Principal 123, Lima"></div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Colores de marca</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
+          Se aplican a toda la app (panel de administrador, panel de trabajador y pantalla de inicio de sesión),
+          tanto en la web como en el celular.
+        </p>
+        <div class="grid-2">
+          <div class="field"><label>Color oscuro principal</label><input type="color" id="cfgPrimaryColor"></div>
+          <div class="field"><label>Color de acento (dorado)</label><input type="color" id="cfgAccentColor"></div>
         </div>
       </div>
       <button class="btn-gold" id="saveSiteBtn">Guardar cambios</button>
@@ -1191,6 +1238,9 @@ function defaultData(){
     site: {
       logoText: "✂ Barbería",
       logoImage: "",
+      address: "",
+      primaryColor: "#121212",
+      accentColor: "#b3894f",
     },
     services: [
       {id: "s1", icon: "scissors", title: "Corte de pelo", price: ""},
@@ -2056,18 +2106,42 @@ async function actualizarTrabajadorSupabase(id, datos) {
    ============================================================ */
 function renderLoginBrand(){
   const s = DATA.site;
-  [document.getElementById("splashLogoDisplay"), document.getElementById("loginBrandDisplay")].forEach(el=>{
-    el.innerHTML = "";
-    if(s.logoImage){
-      const img = document.createElement("img");
-      img.src = s.logoImage;
-      img.style.height = "34px";
-      img.style.borderRadius = "6px";
-      el.appendChild(img);
-    } else {
-      el.textContent = s.logoText || "Barbería";
-    }
-  });
+
+  // Pantalla de bienvenida (2s al cargar): imagen o texto grande, como antes.
+  const splashEl = document.getElementById("splashLogoDisplay");
+  splashEl.innerHTML = "";
+  if(s.logoImage){
+    const img = document.createElement("img");
+    img.src = s.logoImage;
+    img.style.height = "34px";
+    img.style.borderRadius = "6px";
+    splashEl.appendChild(img);
+  } else {
+    splashEl.textContent = s.logoText || "Barbería";
+  }
+
+  // Tarjeta de login: círculo con la imagen del logo (o el ícono ✂ si aún no
+  // hay una), nombre del negocio debajo, y su dirección si la configuraron.
+  document.getElementById("loginBrandDisplay").textContent = s.logoText || "Barbería";
+
+  const heroImg = document.getElementById("loginHeroImg");
+  const heroFallback = document.getElementById("loginHeroFallback");
+  if(s.logoImage){
+    heroImg.src = s.logoImage;
+    heroImg.classList.remove("hidden");
+    heroFallback.classList.add("hidden");
+  } else {
+    heroImg.classList.add("hidden");
+    heroFallback.classList.remove("hidden");
+  }
+
+  const addressEl = document.getElementById("loginAddressDisplay");
+  if(s.address){
+    addressEl.textContent = s.address;
+    addressEl.classList.remove("hidden");
+  } else {
+    addressEl.classList.add("hidden");
+  }
 
   // Barra lateral del panel de administrador: mismo logo/nombre, en formato
   // circular pequeño junto al texto (o el rombo decorativo si aún no hay logo).
@@ -2341,11 +2415,23 @@ document.querySelectorAll(".admin-tab").forEach(tab=>{
 function renderAdminSiteForm(){
   const s = DATA.site;
   document.getElementById("cfgLogoText").value = s.logoText || "";
+  document.getElementById("cfgAddress").value = s.address || "";
+  document.getElementById("cfgPrimaryColor").value = s.primaryColor || "#121212";
+  document.getElementById("cfgAccentColor").value = s.accentColor || "#b3894f";
 
   const logoPreview = document.getElementById("logoPreview");
   const clearLogoBtn = document.getElementById("clearLogoBtn");
   if(s.logoImage){ logoPreview.src = s.logoImage; logoPreview.classList.remove("hidden"); clearLogoBtn.classList.remove("hidden"); }
   else { logoPreview.classList.add("hidden"); clearLogoBtn.classList.add("hidden"); }
+}
+
+// Aplica los colores de marca guardados a toda la app (variables CSS globales):
+// como --ink y --gold se usan en el panel admin, el panel de trabajador y el
+// login, cambiarlos aquí los actualiza en todos lados a la vez, en web y celular.
+function applyBrandTheme(){
+  const s = DATA.site;
+  if(s.primaryColor) document.documentElement.style.setProperty('--ink', s.primaryColor);
+  if(s.accentColor) document.documentElement.style.setProperty('--gold', s.accentColor);
 }
 
 document.getElementById("cfgLogoFile").addEventListener("change", (e)=>{
@@ -2365,7 +2451,11 @@ function fileToDataUrl(file, cb){
 
 document.getElementById("saveSiteBtn").addEventListener("click", ()=>{
   DATA.site.logoText = document.getElementById("cfgLogoText").value.trim();
+  DATA.site.address = document.getElementById("cfgAddress").value.trim();
+  DATA.site.primaryColor = document.getElementById("cfgPrimaryColor").value;
+  DATA.site.accentColor = document.getElementById("cfgAccentColor").value;
   saveDataLocal();
+  applyBrandTheme();
   renderLoginBrand();
   showToast("Cambios guardados.");
 });
@@ -4006,6 +4096,7 @@ function applyDedicatedLinkLock(){
    INICIALIZACIÓN
    ============================================================ */
 loadData();
+applyBrandTheme();
 renderLoginBrand();
 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const hashRole = applyDedicatedLinkLock();
