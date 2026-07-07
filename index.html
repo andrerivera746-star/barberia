@@ -617,7 +617,10 @@
 
     <!-- TAB: TRABAJADORES -->
     <section class="admin-tab-panel hidden" data-panel="trabajadores">
-      <div class="admin-panel-header"><h2>Trabajadores</h2></div>
+      <div class="admin-panel-header">
+        <h2>Trabajadores</h2>
+        <button type="button" class="btn-link" id="toggleInactiveWorkersBtn">Mostrar inactivos</button>
+      </div>
 
       <div class="admin-card">
         <h3 id="workerFormTitle">Agregar trabajador</h3>
@@ -2159,12 +2162,21 @@ document.getElementById("saveServiceBtn").addEventListener("click", async ()=>{
 /* ============================================================
    ADMIN: TAB TRABAJADORES
    ============================================================ */
+let showInactiveWorkers = false;
+
+document.getElementById("toggleInactiveWorkersBtn").addEventListener("click", ()=>{
+  showInactiveWorkers = !showInactiveWorkers;
+  document.getElementById("toggleInactiveWorkersBtn").textContent = showInactiveWorkers ? "Ocultar inactivos" : "Mostrar inactivos";
+  renderAdminWorkers();
+});
+
 function renderAdminWorkers(){
   const tbody = document.getElementById("workersTableBody");
   tbody.innerHTML = "";
-  document.getElementById("workersEmpty").classList.toggle("hidden", DATA.workers.length>0);
+  const visibleWorkers = DATA.workers.filter(w => showInactiveWorkers || w.active === true || w.active === "true");
+  document.getElementById("workersEmpty").classList.toggle("hidden", visibleWorkers.length>0);
 
-  DATA.workers.slice().reverse().forEach(w=>{
+  visibleWorkers.slice().reverse().forEach(w=>{
     const active = w.active === true || w.active === "true";
     const cortes = DATA.payments.filter(p=>p.workerid===w.id && p.status==="pagado").length;
     const tr = document.createElement("tr");
