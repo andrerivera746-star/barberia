@@ -370,6 +370,8 @@
   .service-admin-card .service-icon{width:30px;height:30px;margin-bottom:8px;}
   .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
   @media(max-width:700px){.stat-row{grid-template-columns:1fr 1fr;}}
+  .stat-row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px;}
+  @media(max-width:700px){.stat-row-4{grid-template-columns:1fr 1fr;}}
   .stat-box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
   .stat-box .label{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
   .stat-box .value{font-size:26px;font-family:var(--font-display);font-weight:700;margin-top:4px;}
@@ -663,6 +665,7 @@
       <span class="admin-brand-text" id="adminBrandText">Panel</span>
     </div>
     <nav class="admin-nav" id="adminNav">
+      <button class="admin-tab" data-tab="resumen"><span class="admin-tab-icon">📊</span><span class="admin-tab-label">Resumen</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
@@ -671,7 +674,7 @@
       <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
       <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
-      <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
       <button type="button" class="admin-tab admin-more-btn" id="adminMoreBtn"><span class="admin-tab-icon">⋯</span><span class="admin-tab-label">Más</span></button>
@@ -692,6 +695,7 @@
       <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
       <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span></button>
       <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
+      <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
       <button class="admin-tab" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
       <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
     </div>
@@ -699,8 +703,33 @@
   </div>
 
   <main class="admin-main">
+    <!-- TAB: RESUMEN -->
+    <section class="admin-tab-panel" data-panel="resumen">
+      <div class="admin-panel-header"><h2>Resumen</h2></div>
+
+      <div class="admin-card">
+        <h3>Histórico</h3>
+        <div class="stat-row-4">
+          <div class="stat-box"><div class="label">Cortes totales</div><div class="value" id="kpiTotalCortes">0</div></div>
+          <div class="stat-box"><div class="label">Ingresos totales</div><div class="value" id="kpiTotalIngresos">$0.00</div></div>
+          <div class="stat-box"><div class="label">Pendiente por cobrar</div><div class="value" id="kpiTotalPendiente">$0.00</div></div>
+          <div class="stat-box"><div class="label">Ticket promedio</div><div class="value" id="kpiTicketPromedio">$0.00</div></div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3>Hoy</h3>
+        <div class="stat-row-4">
+          <div class="stat-box"><div class="label">Cortes hoy</div><div class="value" id="kpiCortesHoy">0</div></div>
+          <div class="stat-box"><div class="label">Cobrado hoy</div><div class="value" id="kpiCobradoHoy">$0.00</div></div>
+          <div class="stat-box"><div class="label">Trabajadores activos</div><div class="value" id="kpiTrabajadoresActivos">0</div></div>
+          <div class="stat-box"><div class="label">Clientes registrados</div><div class="value" id="kpiClientesRegistrados">0</div></div>
+        </div>
+      </div>
+    </section>
+
     <!-- TAB: SITIO -->
-    <section class="admin-tab-panel" data-panel="sitio">
+    <section class="admin-tab-panel hidden" data-panel="sitio">
       <div class="admin-panel-header"><h2>Marca</h2></div>
 
       <div class="admin-card">
@@ -796,7 +825,10 @@
     <section class="admin-tab-panel hidden" data-panel="clientes">
       <div class="admin-panel-header">
         <h2>Clientes</h2>
-        <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o celular">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="text" class="search-input" id="clientSearch" placeholder="Buscar por nombre o celular">
+          <button type="button" class="btn-gold" id="exportClientsBtn">Descargar (.csv)</button>
+        </div>
       </div>
 
       <div class="admin-card">
@@ -834,7 +866,10 @@
     <section class="admin-tab-panel hidden" data-panel="fidelizacion">
       <div class="admin-panel-header">
         <h2>Fidelización</h2>
-        <input type="text" class="search-input" id="loyaltySearch" placeholder="Buscar cliente">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="text" class="search-input" id="loyaltySearch" placeholder="Buscar cliente">
+          <button type="button" class="btn-gold" id="exportLoyaltyBtn">Descargar (.csv)</button>
+        </div>
       </div>
 
       <div class="admin-card">
@@ -929,7 +964,10 @@
     <section class="admin-tab-panel hidden" data-panel="comisiones">
       <div class="admin-panel-header">
         <h2>Comisiones</h2>
-        <input type="date" class="search-input" id="commReportDate" style="width:auto;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="date" class="search-input" id="commReportDate" style="width:auto;">
+          <button type="button" class="btn-gold" id="exportComisionesBtn">Descargar (.csv)</button>
+        </div>
       </div>
 
       <div class="admin-card">
@@ -950,7 +988,10 @@
 
     <!-- TAB: CORTES -->
     <section class="admin-tab-panel hidden" data-panel="cortes">
-      <div class="admin-panel-header"><h2>Cortes</h2></div>
+      <div class="admin-panel-header">
+        <h2>Cortes</h2>
+        <button type="button" class="btn-gold" id="exportActiveCutsBtn">Descargar (.csv)</button>
+      </div>
       <div class="admin-card">
         <div class="stat-row">
           <div class="stat-box"><div class="label">Cortes activos</div><div class="value" id="activeCutsCount">0</div></div>
@@ -971,7 +1012,10 @@
     <section class="admin-tab-panel hidden" data-panel="asistencia">
       <div class="admin-panel-header">
         <h2>Asistencia</h2>
-        <input type="date" class="search-input" id="asistReportDate" style="width:auto;">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <input type="date" class="search-input" id="asistReportDate" style="width:auto;">
+          <button type="button" class="btn-gold" id="exportAsistenciaBtn">Descargar (.csv)</button>
+        </div>
       </div>
 
       <div class="admin-card">
@@ -1542,6 +1586,8 @@ function actualizarVistasTrasCambioPago() {
   if (adminPanel && !adminPanel.classList.contains('hidden')) {
     renderAdminPayments();
     renderAdminActiveCuts();
+    const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
+    if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
   }
 
   // Panel trabajador: su resumen, su tarjeta de corte activo y su historial
@@ -1607,6 +1653,8 @@ function actualizarVistasTrasCambioCliente() {
   if (adminPanel && !adminPanel.classList.contains('hidden')) {
     renderAdminClients(document.getElementById("clientSearch").value);
     refreshPaymentSelectors();
+    const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
+    if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
   }
 
   const workerPanel = document.getElementById('workerPanel');
@@ -1673,6 +1721,8 @@ function manejarCambioTrabajadorRealtime(payload) {
     renderAdminWorkers();
     const commPanel = document.querySelector('.admin-tab-panel[data-panel="comisiones"]');
     if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
+    const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
+    if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
   }
 }
 
@@ -2312,7 +2362,7 @@ function enterAdmin(){
   renderAdminWorkers();
   renderAdminClients();
   renderAdminPayments();
-  switchTab("clientes");
+  switchTab("resumen");
 }
 
 async function handleAdminLogout(){
@@ -2326,7 +2376,7 @@ document.getElementById("backToSiteBtnMobile").addEventListener("click", handleA
 /* ============================================================
    ADMIN (mobile): panel "Más opciones"
    ============================================================ */
-const SECONDARY_TABS = ["sitio","servicios","trabajadores","fidelizacion","comisiones","administradores","ajustes"];
+const SECONDARY_TABS = ["sitio","servicios","trabajadores","fidelizacion","comisiones","asistencia","administradores","ajustes"];
 
 function openMoreSheet(){
   document.getElementById("adminMoreSheet").classList.add("open");
@@ -3129,6 +3179,116 @@ function exportWorkerPaymentsCsv(workerId){
   URL.revokeObjectURL(url);
 }
 
+/* ============================================================
+   EXPORTAR A EXCEL (.csv): Clientes, Fidelización, Comisiones,
+   Cortes en curso y Asistencia. Mismo formato que "pagos" (separador
+   ";" + BOM UTF-8, para que Excel lo abra sin problemas de acentos).
+   ============================================================ */
+function downloadCsv(filename, rows){
+  if(!rows.length){ showToast('No hay datos para exportar.', 'error'); return; }
+  const header = Object.keys(rows[0]).join(";") + "\n";
+  const csv = "sep=;\n" + header + rows.map(r => Object.values(r).map(v => `"${String(v==null?"":v).replace(/"/g, '""')}"`).join(";")).join("\n");
+  const blob = new Blob(["﻿" + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportClientsCsv(){
+  const rows = DATA.clients.map(c => ({
+    Nombre: c.name || "",
+    DOI: c.doi || "",
+    FechaNacimiento: c.birthdate || "",
+    Celular: c.phone || "",
+    Email: c.email || "",
+    ClienteDesde: c.created_at ? new Date(c.created_at).toLocaleDateString() : ""
+  }));
+  downloadCsv('clientes_barberia_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+}
+document.getElementById('exportClientsBtn').addEventListener('click', exportClientsCsv);
+
+function exportLoyaltyCsv(){
+  const rows = DATA.clients.map(c => {
+    const info = getClientLoyaltyInfo(c.id);
+    return {
+      Cliente: c.name || "",
+      VisitasPagadas: info.visits,
+      Progreso: `${info.progressCurrent}/${info.progressTotal}`,
+      CortesGratisUsados: info.rewardsGiven,
+      Estado: info.eligible ? 'Disponible' : 'En progreso'
+    };
+  });
+  downloadCsv('fidelizacion_barberia_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+}
+document.getElementById('exportLoyaltyBtn').addEventListener('click', exportLoyaltyCsv);
+
+function exportComisionesCsv(){
+  const date = document.getElementById('commReportDate').value || new Date().toISOString().slice(0,10);
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+  const rows = activeWorkers.map(w => {
+    const cobrado = DATA.payments
+      .filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date)
+      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pct = parseFloat(w.commission_percent) || 0;
+    return {
+      Trabajador: w.name,
+      Fecha: date,
+      PorcentajeComision: pct,
+      Cobrado: cobrado.toFixed(2),
+      ComisionAPagar: (cobrado * (pct/100)).toFixed(2)
+    };
+  });
+  downloadCsv('comisiones_' + date + '.csv', rows);
+}
+document.getElementById('exportComisionesBtn').addEventListener('click', exportComisionesCsv);
+
+function exportActiveCutsCsv(){
+  const active = DATA.payments.filter(p => p.status === "in_progress");
+  const rows = active.map(p => ({
+    Trabajador: p.workername || '',
+    Cliente: p.clientname || '',
+    Servicio: p.servicetitle || '',
+    FechaInicio: p.start_date || '',
+    HoraInicio: p.start_time || '',
+    TiempoTranscurridoMin: calcMinutesSince(p.started_at),
+    Estado: 'En curso'
+  }));
+  downloadCsv('cortes_en_curso_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+}
+document.getElementById('exportActiveCutsBtn').addEventListener('click', exportActiveCutsCsv);
+
+async function exportAsistenciaCsv(){
+  const date = document.getElementById('asistReportDate').value || new Date().toISOString().slice(0,10);
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+  const { data: registros, error } = await supabaseClient.from('asistencias').select('*').eq('date', date);
+  if(error){ showToast('Error al cargar asistencia: ' + error.message, 'error'); return; }
+
+  const rows = activeWorkers.map(w => {
+    const r = (registros || []).find(x => x.workerid === w.id);
+    let horas = '';
+    if(r && r.entrada && r.salida){
+      const totalMin = minutesBetween(r.entrada, r.salida);
+      const breakMin = (r.salida_refrigerio && r.regreso_refrigerio) ? minutesBetween(r.salida_refrigerio, r.regreso_refrigerio) : 0;
+      const workedMin = Math.max(0, totalMin - breakMin);
+      horas = `${Math.floor(workedMin/60)}h ${workedMin%60}m`;
+    }
+    return {
+      Trabajador: w.name,
+      Fecha: date,
+      Entrada: r && r.entrada ? r.entrada.slice(0,5) : '',
+      SalidaRefrigerio: r && r.salida_refrigerio ? r.salida_refrigerio.slice(0,5) : '',
+      RegresoRefrigerio: r && r.regreso_refrigerio ? r.regreso_refrigerio.slice(0,5) : '',
+      Salida: r && r.salida ? r.salida.slice(0,5) : '',
+      HorasTrabajadas: horas
+    };
+  });
+  downloadCsv('asistencia_' + date + '.csv', rows);
+}
+document.getElementById('exportAsistenciaBtn').addEventListener('click', exportAsistenciaCsv);
+
 document.getElementById("exportPaymentsExcelBtn").addEventListener("click", ()=>{
   const fromDate = document.getElementById("exportFromDate").value;
   const toDate = document.getElementById("exportToDate").value;
@@ -3644,12 +3804,46 @@ function renderAdminActiveCuts(){
   });
 }
 
+/* ============================================================
+   ADMIN: TAB RESUMEN (KPIs)
+   Todo se calcula del lado del cliente a partir de lo que ya está
+   cargado en DATA (sin pedir nada extra a Supabase), así que se
+   actualiza al instante junto con las demás pestañas.
+   ============================================================ */
+function renderAdminResumen(){
+  const today = new Date().toISOString().slice(0,10);
+  const pagados = DATA.payments.filter(p => p.status === "pagado");
+  const pendientes = DATA.payments.filter(p => p.status === "pendiente");
+
+  const totalCortes = pagados.length;
+  const totalIngresos = pagados.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const totalPendiente = pendientes.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const ticketPromedio = totalCortes ? totalIngresos / totalCortes : 0;
+
+  const pagadosHoy = pagados.filter(p => p.date === today);
+  const cortesHoy = pagadosHoy.length;
+  const cobradoHoy = pagadosHoy.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+
+  const trabajadoresActivos = DATA.workers.filter(w => w.active === true || w.active === "true").length;
+  const clientesRegistrados = DATA.clients.length;
+
+  document.getElementById('kpiTotalCortes').textContent = totalCortes;
+  document.getElementById('kpiTotalIngresos').textContent = money(totalIngresos);
+  document.getElementById('kpiTotalPendiente').textContent = money(totalPendiente);
+  document.getElementById('kpiTicketPromedio').textContent = money(ticketPromedio);
+  document.getElementById('kpiCortesHoy').textContent = cortesHoy;
+  document.getElementById('kpiCobradoHoy').textContent = money(cobradoHoy);
+  document.getElementById('kpiTrabajadoresActivos').textContent = trabajadoresActivos;
+  document.getElementById('kpiClientesRegistrados').textContent = clientesRegistrados;
+}
+
 function switchTab(name){
   document.querySelectorAll(".admin-tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===name));
   document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
   const moreBtn = document.getElementById("adminMoreBtn");
   if(moreBtn) moreBtn.classList.toggle("active", SECONDARY_TABS.includes(name));
   closeMoreSheet();
+  if(name === 'resumen') renderAdminResumen();
   if(name === 'cortes') renderAdminActiveCuts();
   if(name === 'pagos') renderAdminPayments();
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
