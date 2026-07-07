@@ -1174,8 +1174,9 @@ async function conectarSupabase() {
     }
 
     // Activar sincronización en tiempo real (para que admin y trabajadores
-    // vean los pagos al instante, sin necesidad de recargar la página)
+    // vean los pagos y clientes al instante, sin necesidad de recargar la página)
     suscribirRealtimePagos();
+    suscribirRealtimeClientes();
 
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
@@ -1314,6 +1315,71 @@ function actualizarVistasTrasCambioPago() {
     renderWorkerHome();
     renderWorkerHistory();
     if (typeof renderWorkerActiveCutCard === 'function') renderWorkerActiveCutCard();
+  }
+}
+
+/* ============================================================
+   TIEMPO REAL: CLIENTES
+   Igual que con pagos: si un trabajador registra un cliente nuevo
+   (o el admin edita uno), el resto de paneles abiertos lo ven al
+   instante, sin necesidad de recargar la página.
+   ============================================================ */
+let realtimeClientesChannel = null;
+
+function suscribirRealtimeClientes() {
+  if (!supabaseClient) return;
+
+  if (realtimeClientesChannel) {
+    supabaseClient.removeChannel(realtimeClientesChannel);
+    realtimeClientesChannel = null;
+  }
+
+  realtimeClientesChannel = supabaseClient
+    .channel('clientes-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'clientes' }, (payload) => {
+      manejarCambioClienteRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (clientes)');
+      }
+    });
+}
+
+function manejarCambioClienteRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'INSERT') {
+    const yaExiste = DATA.clients.some(c => c.id === nuevo.id);
+    if (!yaExiste) DATA.clients.unshift(nuevo);
+  } else if (eventType === 'UPDATE') {
+    const idx = DATA.clients.findIndex(c => c.id === nuevo.id);
+    if (idx >= 0) DATA.clients[idx] = nuevo;
+    else DATA.clients.unshift(nuevo);
+  } else if (eventType === 'DELETE') {
+    DATA.clients = DATA.clients.filter(c => c.id !== viejo.id);
+  }
+
+  saveDataLocal();
+  actualizarVistasTrasCambioCliente();
+}
+
+function actualizarVistasTrasCambioCliente() {
+  const clientCountEl = document.getElementById('clientCount');
+  if (clientCountEl) clientCountEl.textContent = `(${DATA.clients.length} clientes)`;
+
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    renderAdminClients(document.getElementById("clientSearch").value);
+    refreshPaymentSelectors();
+  }
+
+  const workerPanel = document.getElementById('workerPanel');
+  if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
+    const attendPanel = document.querySelector('.worker-tab-panel[data-worker-panel="atender"]');
+    if (attendPanel && !attendPanel.classList.contains('hidden')) {
+      renderClientChips(document.getElementById("wkClientSearch").value);
+    }
   }
 }
 
