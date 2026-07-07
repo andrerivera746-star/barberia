@@ -375,12 +375,20 @@
   .stat-chip-value{display:block;font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);}
   .stat-chip-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
 
-  .worker-navbar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 8px;}
+  .worker-navbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 8px;}
   .worker-nav-btn{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;
-    border:1px solid #ececec;border-radius:18px;padding:14px 6px;font-size:12px;font-weight:700;color:var(--muted);transition:all .25s ease;}
+    border:1px solid #ececec;border-radius:18px;padding:14px 4px;font-size:11px;font-weight:700;color:var(--muted);transition:all .25s ease;}
   .worker-nav-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(28,23,18,.06);}
   .worker-nav-btn .nav-icon{font-size:20px;}
   .worker-nav-btn.active{background:var(--ink);border-color:var(--ink);color:var(--cream);}
+
+  .asist-steps{display:flex;flex-direction:column;gap:10px;margin:14px 0;}
+  .asist-step{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;background:#f8f8fa;}
+  .asist-step.done{background:rgba(76,122,79,.08);}
+  .asist-step.next{background:rgba(163,129,79,.1);border:1px dashed var(--gold);}
+  .asist-step-icon{font-size:17px;}
+  .asist-step-label{flex:1;font-size:13px;font-weight:600;color:var(--ink);}
+  .asist-step-time{font-size:13px;color:var(--muted);font-weight:700;}
 
   .worker-main{padding:18px 16px 110px;}
   .worker-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;
@@ -496,8 +504,8 @@
     .worker-avatar{width:40px;height:40px;font-size:16px;}
     .worker-topbar-name{font-size:15px;}
     .stat-chip-row{grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 8px;}
-    .worker-navbar{grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px 8px;}
-    .worker-nav-btn{padding:12px 8px;font-size:11px;}
+    .worker-navbar{grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 14px 8px;}
+    .worker-nav-btn{padding:10px 4px;font-size:10px;}
     .worker-main{padding:16px 14px 120px;}
     .worker-section-title{margin:20px 0 10px;}
     .cita-card{flex-direction:column;align-items:stretch;padding:16px;}
@@ -564,6 +572,7 @@
     <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
     <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
     <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
+    <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
     <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
     <button class="admin-back" id="backToSiteBtn"><span class="admin-tab-icon">↩️</span><span class="admin-tab-label">Cerrar sesión</span></button>
   </aside>
@@ -798,6 +807,30 @@
       </div>
     </section>
 
+    <!-- TAB: ASISTENCIA -->
+    <section class="admin-tab-panel hidden" data-panel="asistencia">
+      <div class="admin-panel-header">
+        <h2>Asistencia</h2>
+        <input type="date" class="search-input" id="asistReportDate" style="width:auto;">
+      </div>
+
+      <div class="admin-card">
+        <div class="stat-row">
+          <div class="stat-box"><div class="label">Marcaron entrada</div><div class="value" id="asistPresentCount">0</div></div>
+          <div class="stat-box"><div class="label">En refrigerio</div><div class="value" id="asistBreakCount">0</div></div>
+          <div class="stat-box"><div class="label">Turno finalizado</div><div class="value" id="asistDoneCount">0</div></div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Trabajador</th><th>Entrada</th><th>Salida refrigerio</th><th>Regreso</th><th>Salida</th><th>Horas</th><th>Estado</th></tr></thead>
+          <tbody id="asistenciaTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="asistenciaEmpty">No tienes trabajadores activos.</div>
+      </div>
+    </section>
+
     <!-- TAB: AJUSTES -->
     <section class="admin-tab-panel hidden" data-panel="ajustes">
       <div class="admin-panel-header"><h2>Ajustes</h2></div>
@@ -869,6 +902,7 @@
     <nav class="worker-navbar">
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
       <button class="worker-nav-btn" data-worker-tab="atender"><span class="nav-icon">✂️</span>Atender</button>
+      <button class="worker-nav-btn" data-worker-tab="asistencia"><span class="nav-icon">🕐</span>Asistencia</button>
       <button class="worker-nav-btn" data-worker-tab="historial"><span class="nav-icon">📊</span>Historial</button>
     </nav>
 
@@ -877,6 +911,11 @@
       <section class="worker-tab-panel" data-worker-panel="citas">
         <div class="cita-card-list" id="workerCitasList"></div>
         <div class="empty-state hidden" id="workerCitasEmpty">No tienes citas asignadas pendientes.</div>
+      </section>
+
+      <!-- TAB: ASISTENCIA -->
+      <section class="worker-tab-panel hidden" data-worker-panel="asistencia">
+        <div id="asistenciaCard"></div>
       </section>
 
       <!-- TAB: ATENDER CLIENTE -->
@@ -1990,6 +2029,7 @@ function switchWorkerTab(name){
   document.getElementById("wkConfirmBar").classList.toggle("hidden", name !== "atender");
   if(name === "citas") renderWorkerCitas();
   if(name === "atender") renderWorkerAttendForm();
+  if(name === "asistencia") renderWorkerAsistencia();
   if(name === "historial") renderWorkerHistory();
 }
 
@@ -2808,6 +2848,93 @@ function renderWorkerCitas(){
 }
 
 /* ============================================================
+   WORKER: ASISTENCIA (entrada / refrigerio / salida)
+   ============================================================ */
+let currentAsistencia = null;
+
+async function fetchAsistenciaHoy(workerId){
+  const today = new Date().toISOString().slice(0,10);
+  const { data, error } = await supabaseClient
+    .from('asistencias')
+    .select('*')
+    .eq('workerid', workerId)
+    .eq('date', today)
+    .maybeSingle();
+  if (error) { console.error('Error al cargar asistencia:', error); return null; }
+  return data;
+}
+
+const ASISTENCIA_STEPS = [
+  { key: 'entrada', label: 'Entrada', icon: '🟢' },
+  { key: 'salida_refrigerio', label: 'Salida a refrigerio', icon: '🍽️' },
+  { key: 'regreso_refrigerio', label: 'Regreso de refrigerio', icon: '↩️' },
+  { key: 'salida', label: 'Salida', icon: '🔴' },
+];
+
+async function renderWorkerAsistencia(){
+  if(!currentWorker) return;
+  const wrap = document.getElementById('asistenciaCard');
+  wrap.innerHTML = `<div class="empty-state">Cargando...</div>`;
+
+  currentAsistencia = await fetchAsistenciaHoy(currentWorker.id);
+  const a = currentAsistencia || {};
+  const fechaLabel = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+  const nextStepIndex = ASISTENCIA_STEPS.findIndex(s => !a[s.key]);
+
+  wrap.innerHTML = `
+    <div class="worker-active-cut-card">
+      <div class="cut-title" style="text-transform:capitalize;">${fechaLabel}</div>
+      <div class="asist-steps">
+        ${ASISTENCIA_STEPS.map((s, i) => `
+          <div class="asist-step ${a[s.key] ? 'done' : (i === nextStepIndex ? 'next' : '')}">
+            <span class="asist-step-icon">${s.icon}</span>
+            <span class="asist-step-label">${s.label}</span>
+            <span class="asist-step-time">${a[s.key] ? a[s.key].slice(0,5) : '—'}</span>
+          </div>
+        `).join('')}
+      </div>
+      ${nextStepIndex >= 0
+        ? `<button class="btn-gold" id="asistMarkBtn" style="width:100%;">Marcar ${ASISTENCIA_STEPS[nextStepIndex].label.toLowerCase()}</button>`
+        : `<div class="empty-state" style="padding:14px 0 0;">Jornada completa por hoy ✅</div>`
+      }
+    </div>`;
+
+  const btn = document.getElementById('asistMarkBtn');
+  if (btn) btn.addEventListener('click', () => marcarAsistencia(ASISTENCIA_STEPS[nextStepIndex].key));
+}
+
+async function marcarAsistencia(stepKey){
+  if(!currentWorker) return;
+  const now = new Date().toTimeString().slice(0,5);
+  const today = new Date().toISOString().slice(0,10);
+
+  if(!currentAsistencia){
+    const nuevo = {
+      id: uid('a'),
+      workerid: currentWorker.id,
+      workername: currentWorker.name,
+      date: today,
+      entrada: now,
+      created_at: new Date().toISOString()
+    };
+    const { data, error } = await supabaseClient.from('asistencias').insert([nuevo]).select().single();
+    if(error){ showToast('❌ Error al marcar asistencia: ' + error.message, 'error'); return; }
+    currentAsistencia = data;
+  } else {
+    const { data, error } = await supabaseClient
+      .from('asistencias')
+      .update({ [stepKey]: now })
+      .eq('id', currentAsistencia.id)
+      .select()
+      .single();
+    if(error){ showToast('❌ Error al marcar asistencia: ' + error.message, 'error'); return; }
+    currentAsistencia = data;
+  }
+  showToast('✅ Asistencia registrada');
+  renderWorkerAsistencia();
+}
+
+/* ============================================================
    WORKER: ATENDER CLIENTE SIN CITA
    ============================================================ */
 let wkSelectedServiceId = null;
@@ -3099,7 +3226,74 @@ function switchTab(name){
   if(name === 'cortes') renderAdminActiveCuts();
   if(name === 'pagos') renderAdminPayments();
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
+  if(name === 'asistencia') renderAdminAsistencia();
 }
+
+/* ============================================================
+   ADMIN: TAB ASISTENCIA
+   ============================================================ */
+function minutesBetween(t1, t2){
+  const [h1,m1] = t1.split(':').map(Number);
+  const [h2,m2] = t2.split(':').map(Number);
+  return (h2*60+m2) - (h1*60+m1);
+}
+
+async function renderAdminAsistencia(dateStr){
+  const dateInput = document.getElementById('asistReportDate');
+  const date = dateStr || dateInput.value || new Date().toISOString().slice(0,10);
+  dateInput.value = date;
+
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+
+  const { data: registros, error } = await supabaseClient
+    .from('asistencias')
+    .select('*')
+    .eq('date', date);
+
+  if(error){ showToast('Error al cargar asistencia: ' + error.message, 'error'); return; }
+
+  const tbody = document.getElementById('asistenciaTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('asistenciaEmpty').classList.toggle('hidden', activeWorkers.length > 0);
+
+  let present = 0, onBreak = 0, done = 0;
+
+  activeWorkers.forEach(w => {
+    const r = (registros || []).find(x => x.workerid === w.id);
+    let estadoBadge = '<span class="badge inactivo">No marcó entrada</span>';
+    let horas = '—';
+
+    if(r){
+      if(r.salida){ estadoBadge = '<span class="badge inactivo">Turno finalizado</span>'; present++; done++; }
+      else if(r.salida_refrigerio && !r.regreso_refrigerio){ estadoBadge = '<span class="badge pendiente">En refrigerio</span>'; present++; onBreak++; }
+      else if(r.entrada){ estadoBadge = '<span class="badge pagado">En turno</span>'; present++; }
+
+      if(r.entrada && r.salida){
+        const totalMin = minutesBetween(r.entrada, r.salida);
+        const breakMin = (r.salida_refrigerio && r.regreso_refrigerio) ? minutesBetween(r.salida_refrigerio, r.regreso_refrigerio) : 0;
+        const workedMin = Math.max(0, totalMin - breakMin);
+        horas = `${Math.floor(workedMin/60)}h ${workedMin%60}m`;
+      }
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td data-label="Trabajador">${escapeHtml(w.name)}</td>
+      <td data-label="Entrada">${r && r.entrada ? r.entrada.slice(0,5) : '—'}</td>
+      <td data-label="Salida refrigerio">${r && r.salida_refrigerio ? r.salida_refrigerio.slice(0,5) : '—'}</td>
+      <td data-label="Regreso">${r && r.regreso_refrigerio ? r.regreso_refrigerio.slice(0,5) : '—'}</td>
+      <td data-label="Salida">${r && r.salida ? r.salida.slice(0,5) : '—'}</td>
+      <td data-label="Horas">${horas}</td>
+      <td data-label="Estado">${estadoBadge}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('asistPresentCount').textContent = present;
+  document.getElementById('asistBreakCount').textContent = onBreak;
+  document.getElementById('asistDoneCount').textContent = done;
+}
+
+document.getElementById('asistReportDate').addEventListener('change', ()=> renderAdminAsistencia());
 
 /* ============================================================
    WORKER: MI HISTORIAL
