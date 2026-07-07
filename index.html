@@ -1781,25 +1781,28 @@ async function insertarClienteSupabase(cliente) {
   }
 
   try {
-    const { data, error } = await supabaseClient
+    // Ojo: NO se encadena .select() aquí a propósito. Al pedir que Supabase
+    // devuelva la fila insertada, Postgres exige además poder LEERLA (política
+    // de SELECT, que solo permite is_admin()); para un trabajador esa lectura
+    // se niega y ESO tumbaba el insert completo, aunque el insert en sí sí
+    // estaba permitido. Como "cliente" ya trae todos sus datos armados de
+    // antemano, no hace falta que Supabase nos lo devuelva.
+    const { error } = await supabaseClient
       .from('clientes')
-      .insert([cliente])
-      .select();
+      .insert([cliente]);
 
     if (error) throw error;
 
-    if (data && data.length > 0) {
-      // Actualizar cache local
-      const idx = DATA.clients.findIndex(c => c.id === cliente.id);
-      if (idx >= 0) DATA.clients[idx] = data[0];
-      else DATA.clients.unshift(data[0]);
-      
-      saveDataLocal();
-      renderAdminClients();
-      renderLoginBrand();
-      showToast(`✅ Cliente "${cliente.name}" guardado en Supabase`);
-      return data[0];
-    }
+    // Actualizar cache local
+    const idx = DATA.clients.findIndex(c => c.id === cliente.id);
+    if (idx >= 0) DATA.clients[idx] = cliente;
+    else DATA.clients.unshift(cliente);
+
+    saveDataLocal();
+    renderAdminClients();
+    renderLoginBrand();
+    showToast(`✅ Cliente "${cliente.name}" guardado en Supabase`);
+    return cliente;
   } catch (error) {
     console.error('Error al insertar cliente:', error);
     // Diagnóstico: si esto fue un rechazo de seguridad (RLS), imprime de una
