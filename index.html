@@ -134,27 +134,38 @@
   /* ---------- ADMIN ---------- */
   #adminPanel{min-height:100vh;background:var(--cream);display:flex;align-items:flex-start;}
   #workerPanel{min-height:100vh;background:var(--cream);}
-  .admin-sidebar{width:250px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:28px 16px;
-    display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;}
-  .admin-brand{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:28px;
-    display:flex;align-items:center;gap:10px;padding:0 4px;}
+  .admin-sidebar{width:250px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:28px 16px 16px;
+    display:flex;flex-direction:column;gap:0;position:sticky;top:0;height:100vh;overflow:hidden;}
+  .admin-brand{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:20px;
+    display:flex;align-items:center;gap:10px;padding:0 4px;flex-shrink:0;}
+  .admin-nav{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:6px;
+    margin:0 -8px;padding:2px 8px 8px;scrollbar-width:thin;scrollbar-color:rgba(179,137,79,.5) transparent;}
+  .admin-nav::-webkit-scrollbar{width:5px;}
+  .admin-nav::-webkit-scrollbar-thumb{background:rgba(179,137,79,.5);border-radius:999px;}
+  .admin-nav::-webkit-scrollbar-track{background:transparent;}
+  .admin-nav-fade{position:relative;flex-shrink:0;height:14px;margin-top:-14px;pointer-events:none;
+    background:linear-gradient(to bottom, transparent, var(--ink));z-index:1;}
   .admin-brand img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;
     box-shadow:0 0 0 1.5px rgba(179,137,79,.4);}
   .admin-brand .stripe{width:20px;height:20px;border-radius:4px;flex-shrink:0;background:
     repeating-linear-gradient(45deg, var(--gold) 0 4px, #000 4px 8px, var(--cream) 8px 12px);}
   .admin-brand span.admin-brand-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:12px 14px;
-    border-radius:10px;font-size:14px;font-weight:500;transition:background .15s,color .15s;
-    display:flex;align-items:center;gap:12px;}
+  .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:11px 14px;
+    border-radius:10px;font-size:13.5px;font-weight:500;transition:background .15s,color .15s,transform .15s;
+    display:flex;align-items:center;gap:12px;flex-shrink:0;}
   .admin-tab .admin-tab-icon{font-size:16px;line-height:1;}
-  .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;}
-  .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
+  .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;transform:translateX(3px);}
+  .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;box-shadow:inset 3px 0 0 rgba(0,0,0,.2);}
   .admin-tab{position:relative;}
   .loyalty-nav-dot{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;
     background:var(--danger);box-shadow:0 0 0 2px var(--ink);}
   @media(max-width:700px){ .loyalty-nav-dot{top:2px;right:14px;} }
-  .admin-back{margin-top:auto;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
-    padding:10px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;}
+  .admin-back{flex-shrink:0;margin-top:10px;background:none;border:1px solid rgba(247,242,231,.3);color:var(--cream);
+    padding:10px 14px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:10px;
+    transition:background .15s,border-color .15s;}
+  .admin-back:hover{background:rgba(220,90,80,.15);border-color:rgba(220,90,80,.5);}
+  /* "Más opciones" (menú inferior del celular): solo existe visualmente en mobile */
+  .admin-more-btn, .admin-more-sheet, .admin-more-backdrop{display:none;}
   .admin-main{flex:1;padding:38px 4% 60px;max-width:900px;margin:0 auto;}
   .admin-panel-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:12px;}
   .admin-panel-header h2{font-size:26px;}
@@ -198,27 +209,56 @@
     .admin-main{padding:20px 16px 96px;}
     #adminPanel{flex-direction:column;}
 
-    /* La barra lateral se convierte en un menú inferior fijo, tipo app */
+    /* La barra lateral se convierte en un menú inferior fijo, tipo app,
+       con 4 accesos directos + "Más" (sin scroll horizontal, nada amontonado) */
     .admin-sidebar{
       position:fixed;left:0;right:0;bottom:0;top:auto;width:100%;height:auto;z-index:150;
-      flex-direction:row;align-items:stretch;justify-content:flex-start;gap:0;
+      flex-direction:row;align-items:stretch;justify-content:flex-start;gap:0;overflow:visible;
       padding:6px 4px calc(6px + env(safe-area-inset-bottom));
-      overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
       box-shadow:0 -8px 24px rgba(0,0,0,.25);
     }
-    .admin-sidebar::-webkit-scrollbar{display:none;}
     .admin-brand{display:none;}
+    .admin-back{display:none;} /* en mobile, cerrar sesión vive dentro del panel "Más" */
+    .admin-nav{
+      flex:1;min-width:0;display:grid;grid-template-columns:repeat(5,1fr);gap:2px;
+      overflow:visible;margin:0;padding:0;
+    }
+    .admin-nav-fade{display:none;}
+    .admin-nav .admin-tab-secondary{display:none;}
     .admin-tab{
-      flex:0 0 auto;min-width:70px;flex-direction:column;align-items:center;justify-content:center;
-      gap:2px;padding:8px 10px;border-radius:12px;font-size:10.5px;text-align:center;
+      min-width:0;flex-direction:column;align-items:center;justify-content:center;
+      gap:2px;padding:8px 4px;border-radius:12px;font-size:10px;text-align:center;
     }
     .admin-tab .admin-tab-icon{font-size:19px;}
-    .admin-tab .admin-tab-label{white-space:nowrap;}
-    .admin-back{
-      flex:0 0 auto;min-width:70px;flex-direction:column;justify-content:center;gap:2px;
-      margin-top:0;border:none;padding:8px 10px;font-size:10.5px;color:rgba(247,242,231,.6);
+    .admin-tab .admin-tab-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+    .admin-more-btn{display:flex;}
+    .admin-more-btn.active{background:rgba(247,242,231,.1);}
+
+    /* Panel "Más opciones": hoja inferior con el resto de pestañas + cerrar sesión */
+    .admin-more-backdrop{
+      display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:155;
+      opacity:0;pointer-events:none;transition:opacity .2s ease;
     }
-    .admin-back .admin-tab-icon{font-size:19px;}
+    .admin-more-backdrop.open{opacity:1;pointer-events:auto;}
+    .admin-more-sheet{
+      display:block;position:fixed;left:0;right:0;bottom:0;z-index:160;background:var(--ink);
+      color:var(--cream);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));
+      max-height:75vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease;
+      box-shadow:0 -10px 30px rgba(0,0,0,.3);
+    }
+    .admin-more-sheet.open{transform:translateY(0);}
+    .admin-more-sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .admin-more-sheet-header h3{font-size:16px;font-family:var(--font-display);}
+    .admin-more-sheet-header button{background:none;border:none;color:var(--cream);font-size:18px;padding:4px 8px;}
+    .admin-more-sheet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+    .admin-more-sheet-grid .admin-tab{
+      background:rgba(247,242,231,.06);border-radius:14px;padding:14px 6px;font-size:11.5px;gap:6px;
+    }
+    .admin-more-sheet-grid .admin-tab .admin-tab-icon{font-size:22px;}
+    .admin-more-sheet .admin-back{
+      display:flex;flex-direction:row;justify-content:center;margin-top:4px;padding:12px 14px;font-size:13px;
+      border:1px solid rgba(247,242,231,.3);color:var(--cream);
+    }
 
     .admin-card{padding:16px;}
     .admin-panel-header{margin-bottom:16px;}
@@ -491,9 +531,6 @@
     .role-tab-btn{padding:10px 8px;font-size:13px;}
 
     #adminPanel{flex-direction:column;}
-    .admin-sidebar{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;top:0;padding:16px 12px;gap:8px;}
-    .admin-sidebar .admin-brand{flex:1;min-width:0;}
-    .admin-tab{white-space:nowrap;flex:0 0 auto;}
     .admin-main{padding:24px 4% 60px;}
     .admin-card{padding:18px;}
     .admin-panel-header{flex-direction:column;align-items:flex-start;gap:10px;}
@@ -578,19 +615,41 @@
       <img id="adminBrandImg" class="hidden" alt="logo">
       <span class="admin-brand-text" id="adminBrandText">Panel</span>
     </div>
-    <button class="admin-tab" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
-    <button class="admin-tab" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
-    <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
-    <button class="admin-tab" data-tab="clientes"><span class="admin-tab-icon">📇</span><span class="admin-tab-label">Clientes</span></button>
-    <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
-    <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
-    <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
-    <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
-    <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
-    <button class="admin-tab" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
-    <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
+    <nav class="admin-nav" id="adminNav">
+      <button class="admin-tab admin-tab-secondary" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
+      <button class="admin-tab" data-tab="clientes"><span class="admin-tab-icon">📇</span><span class="admin-tab-label">Clientes</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
+      <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
+      <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
+      <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
+      <button type="button" class="admin-tab admin-more-btn" id="adminMoreBtn"><span class="admin-tab-icon">⋯</span><span class="admin-tab-label">Más</span></button>
+    </nav>
+    <div class="admin-nav-fade"></div>
     <button class="admin-back" id="backToSiteBtn"><span class="admin-tab-icon">↩️</span><span class="admin-tab-label">Cerrar sesión</span></button>
   </aside>
+
+  <div class="admin-more-backdrop" id="adminMoreBackdrop"></div>
+  <div class="admin-more-sheet" id="adminMoreSheet">
+    <div class="admin-more-sheet-header">
+      <h3>Más opciones</h3>
+      <button type="button" id="closeMoreSheet" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="admin-more-sheet-grid">
+      <button class="admin-tab" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
+      <button class="admin-tab" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
+      <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
+      <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span></button>
+      <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
+      <button class="admin-tab" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
+      <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
+    </div>
+    <button class="admin-back" id="backToSiteBtnMobile"><span class="admin-tab-icon">↩️</span><span class="admin-tab-label">Cerrar sesión</span></button>
+  </div>
 
   <main class="admin-main">
     <!-- TAB: SITIO -->
@@ -2071,11 +2130,30 @@ function enterAdmin(){
   switchTab("clientes");
 }
 
-document.getElementById("backToSiteBtn").addEventListener("click", async ()=>{
+async function handleAdminLogout(){
   document.getElementById("adminPanel").classList.add("hidden");
   await clearSession();
   resetLoginForms();
-});
+}
+document.getElementById("backToSiteBtn").addEventListener("click", handleAdminLogout);
+document.getElementById("backToSiteBtnMobile").addEventListener("click", handleAdminLogout);
+
+/* ============================================================
+   ADMIN (mobile): panel "Más opciones"
+   ============================================================ */
+const SECONDARY_TABS = ["sitio","servicios","trabajadores","fidelizacion","comisiones","administradores","ajustes"];
+
+function openMoreSheet(){
+  document.getElementById("adminMoreSheet").classList.add("open");
+  document.getElementById("adminMoreBackdrop").classList.add("open");
+}
+function closeMoreSheet(){
+  document.getElementById("adminMoreSheet").classList.remove("open");
+  document.getElementById("adminMoreBackdrop").classList.remove("open");
+}
+document.getElementById("adminMoreBtn").addEventListener("click", openMoreSheet);
+document.getElementById("closeMoreSheet").addEventListener("click", closeMoreSheet);
+document.getElementById("adminMoreBackdrop").addEventListener("click", closeMoreSheet);
 
 /* ============================================================
    WORKER: LOGIN / NAVIGATION
@@ -3328,6 +3406,9 @@ function renderAdminActiveCuts(){
 function switchTab(name){
   document.querySelectorAll(".admin-tab").forEach(t=> t.classList.toggle("active", t.dataset.tab===name));
   document.querySelectorAll(".admin-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.panel!==name));
+  const moreBtn = document.getElementById("adminMoreBtn");
+  if(moreBtn) moreBtn.classList.toggle("active", SECONDARY_TABS.includes(name));
+  closeMoreSheet();
   if(name === 'cortes') renderAdminActiveCuts();
   if(name === 'pagos') renderAdminPayments();
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
