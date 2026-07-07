@@ -1802,6 +1802,19 @@ async function insertarClienteSupabase(cliente) {
     }
   } catch (error) {
     console.error('Error al insertar cliente:', error);
+    // Diagnóstico: si esto fue un rechazo de seguridad (RLS), imprime de una
+    // vez con qué sesión se intentó guardar, para no tener que ir a la consola
+    // a revisarlo a mano la próxima vez que pase.
+    if(error && error.code === '42501'){
+      supabaseClient.auth.getSession().then(({data})=>{
+        const session = data && data.session;
+        if(!session){ console.error('🔎 Diagnóstico RLS: NO había sesión activa en el momento del insert.'); return; }
+        try{
+          const payload = JSON.parse(atob(session.access_token.split('.')[1]));
+          console.error('🔎 Diagnóstico RLS: sesión activa ->', { role: payload.role, app_role: payload.app_metadata && payload.app_metadata.role, user: payload.sub, exp: new Date(payload.exp*1000).toLocaleString() });
+        }catch(e){ console.error('🔎 Diagnóstico RLS: no se pudo leer el token.', e); }
+      });
+    }
     // Fallback a local
     DATA.clients.push(cliente);
     saveDataLocal();
@@ -4293,6 +4306,28 @@ loadData();
 applyBrandTheme();
 renderLoginBrand();
 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Vigila cambios de sesión en segundo plano (token renovado, cierre de sesión
+// desde otra pestaña/dispositivo, etc.). Antes esto no se escuchaba en ningún
+// lado, así que si la sesión se invalidaba sola, el panel se quedaba "zombi":
+// se veía como logueado pero cualquier guardado nuevo fallaba con error de RLS.
+supabaseClient.auth.onAuthStateChange((event, session)=>{
+  console.log('🔐 Evento de autenticación:', event, session ? session.user.id : null);
+  if(event === 'SIGNED_OUT'){
+    const adminPanel = document.getElementById('adminPanel');
+    const workerPanel = document.getElementById('workerPanel');
+    const estabaLogueado = (adminPanel && !adminPanel.classList.contains('hidden')) ||
+                            (workerPanel && !workerPanel.classList.contains('hidden'));
+    if(estabaLogueado){
+      currentWorker = null;
+      adminPanel.classList.add('hidden');
+      workerPanel.classList.add('hidden');
+      resetLoginForms();
+      showToast('Tu sesión se cerró. Inicia sesión de nuevo.', 'error');
+    }
+  }
+});
+
 const hashRole = applyDedicatedLinkLock();
 const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') || 'admin';
 setLoginRoleTab(savedLoginRole);
