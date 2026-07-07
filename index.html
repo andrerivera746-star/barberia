@@ -316,8 +316,21 @@
   .btn-gold:hover{background:var(--gold-light);}
   .btn-danger{background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;}
   .btn-link{background:none;border:none;color:var(--gold);font-size:13px;font-weight:600;text-decoration:underline;cursor:pointer;}
-  .btn-link.view-worker-btn{font-size:16px;padding:6px 8px;border-radius:10px;transition:background .2s;}
-  .btn-link.view-worker-btn:hover{background:rgba(163,129,79,.08);text-decoration:none;}
+
+  /* ---------- Menú "⋯" de acciones por fila (reemplaza la fila de botones sueltos) ---------- */
+  .row-menu{position:relative;display:inline-flex;}
+  .row-menu-btn{background:none;border:none;color:var(--muted);font-size:18px;font-weight:700;
+    padding:4px 10px;border-radius:8px;line-height:1;transition:background .15s,color .15s;}
+  .row-menu-btn:hover{background:var(--cream-dark);color:var(--ink);}
+  .row-menu-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);
+    border-radius:12px;box-shadow:0 14px 32px rgba(28,23,18,.14);min-width:190px;padding:6px;z-index:60;
+    display:flex;flex-direction:column;gap:1px;}
+  .row-menu-item{background:none;border:none;text-align:left;padding:9px 10px;border-radius:8px;font-size:13.5px;
+    font-weight:500;color:var(--ink);display:flex;align-items:center;gap:9px;white-space:nowrap;width:100%;}
+  .row-menu-item:hover{background:var(--cream-dark);}
+  .row-menu-item.row-menu-danger{color:var(--danger);}
+  .row-menu-item.row-menu-danger:hover{background:rgba(179,69,59,.08);}
+
   table{width:100%;border-collapse:collapse;font-size:13.5px;}
   th{text-align:left;color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;
     letter-spacing:.04em;padding:8px 10px;border-bottom:1px solid var(--line);}
@@ -2254,6 +2267,25 @@ document.getElementById("closeMoreSheet").addEventListener("click", closeMoreShe
 document.getElementById("adminMoreBackdrop").addEventListener("click", closeMoreSheet);
 
 /* ============================================================
+   MENÚ "⋯" DE ACCIONES POR FILA (Trabajadores, Clientes, Pagos)
+   Un solo manejador delegado sirve para las tres tablas: abre el
+   desplegable de la fila donde se hizo clic y cierra cualquier otro
+   que estuviera abierto (incluido al elegir una opción del menú).
+   ============================================================ */
+document.addEventListener("click", (e)=>{
+  const toggleBtn = e.target.closest("[data-menu-toggle]");
+  if(toggleBtn){
+    const dropdown = toggleBtn.closest(".row-menu").querySelector(".row-menu-dropdown");
+    const wasOpen = !dropdown.classList.contains("hidden");
+    document.querySelectorAll(".row-menu-dropdown").forEach(d=> d.classList.add("hidden"));
+    if(!wasOpen) dropdown.classList.remove("hidden");
+    e.stopPropagation();
+    return;
+  }
+  document.querySelectorAll(".row-menu-dropdown").forEach(d=> d.classList.add("hidden"));
+});
+
+/* ============================================================
    WORKER: LOGIN / NAVIGATION
    ============================================================ */
 function enterWorker(){
@@ -2448,11 +2480,16 @@ function renderAdminWorkers(){
       <td data-label="Usuario">${escapeHtml(w.username)}</td>
       <td data-label="Estado"><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
       <td data-label="Cortes atendidos">${cortes}</td>
-      <td data-label="" style="white-space:nowrap;">
-        <button type="button" class="btn-link view-worker-btn" data-view-worker="${w.id}" title="Ver operaciones">👁</button>
-        <button type="button" class="btn-link" data-export-worker="${w.id}" title="Descargar Excel">📥</button>
-        <button type="button" class="btn-link" data-edit-worker="${w.id}">Editar</button>
-        <button type="button" class="btn-danger" data-del-worker="${w.id}" style="margin-left:8px;">Eliminar</button>
+      <td data-label="">
+        <div class="row-menu">
+          <button type="button" class="row-menu-btn" data-menu-toggle>⋯</button>
+          <div class="row-menu-dropdown hidden">
+            <button type="button" class="row-menu-item" data-view-worker="${w.id}">👁 Ver operaciones</button>
+            <button type="button" class="row-menu-item" data-export-worker="${w.id}">📥 Descargar Excel</button>
+            <button type="button" class="row-menu-item" data-edit-worker="${w.id}">✎ Editar</button>
+            <button type="button" class="row-menu-item row-menu-danger" data-del-worker="${w.id}">🗑 Eliminar</button>
+          </div>
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -2548,9 +2585,14 @@ function renderAdminClients(filter){
       <td data-label="F. nacimiento">${escapeHtml(c.birthdate||"—")}</td>
       <td data-label="Celular">${escapeHtml(c.phone)}</td>
       <td data-label="Cliente desde">${escapeHtml(c.created_at ? new Date(c.created_at).toLocaleDateString() : "—")}</td>
-      <td data-label="" style="white-space:nowrap;">
-        <button class="btn-link" data-edit-client="${c.id}">Editar</button>
-        <button class="btn-danger" data-del-client="${c.id}" style="margin-left:8px;">Eliminar</button>
+      <td data-label="">
+        <div class="row-menu">
+          <button type="button" class="row-menu-btn" data-menu-toggle>⋯</button>
+          <div class="row-menu-dropdown hidden">
+            <button type="button" class="row-menu-item" data-edit-client="${c.id}">✎ Editar</button>
+            <button type="button" class="row-menu-item row-menu-danger" data-del-client="${c.id}">🗑 Eliminar</button>
+          </div>
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
@@ -2867,9 +2909,14 @@ function renderAdminPayments(){
       <td data-label="Método">${escapeHtml(p.method||"—")}</td>
       <td data-label="Atendido por"><select class="table-select" data-assign-payment="${p.id}">${workerOptions}</select></td>
       <td data-label="Estado"><span class="badge ${p.status}">${p.status==="pagado"?"Pagado":"Pendiente"}</span></td>
-      <td data-label="" style="white-space:nowrap;">
-        ${p.status==="pendiente" ? `<button class="btn-link" data-mark-paid="${p.id}">Marcar pagado</button>` : ""}
-        <button class="btn-danger" data-del-payment="${p.id}" style="margin-left:8px;">Eliminar</button>
+      <td data-label="">
+        <div class="row-menu">
+          <button type="button" class="row-menu-btn" data-menu-toggle>⋯</button>
+          <div class="row-menu-dropdown hidden">
+            ${p.status==="pendiente" ? `<button type="button" class="row-menu-item" data-mark-paid="${p.id}">✓ Marcar pagado</button>` : ""}
+            <button type="button" class="row-menu-item row-menu-danger" data-del-payment="${p.id}">🗑 Eliminar</button>
+          </div>
+        </div>
       </td>`;
     tbody.appendChild(tr);
   });
