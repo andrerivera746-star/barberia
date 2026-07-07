@@ -2732,7 +2732,10 @@ function renderAdminClients(filter){
   document.getElementById("clientsEmpty").classList.toggle("hidden", list.length>0);
   document.getElementById('clientCount').textContent = `(${DATA.clients.length} clientes)`;
 
-  const visibleClients = list.slice().reverse().slice(0, 10);
+  // DATA.clients ya llega de Supabase ordenado del más reciente al más antiguo
+  // (y los nuevos se agregan al inicio vía tiempo real), así que basta con
+  // tomar los primeros 10 para ver siempre lo más reciente arriba.
+  const visibleClients = list.slice(0, 10);
   visibleClients.forEach(c=>{
     const tr = document.createElement("tr");
     tr.innerHTML = `
