@@ -370,9 +370,9 @@
   .worker-logout-icon{background:#f4f4f7;border:none;color:var(--ink);width:38px;height:38px;
     border-radius:50%;font-size:16px;flex-shrink:0;}
 
-  .stat-chip-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:18px 16px 8px;}
-  .stat-chip{background:#fff;border:1px solid #ececec;border-radius:16px;padding:16px 12px;text-align:center;box-shadow:0 6px 20px rgba(28,23,18,.05);}
-  .stat-chip-value{display:block;font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--ink);}
+  .stat-chip-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:18px 16px 8px;}
+  .stat-chip{background:#fff;border:1px solid #ececec;border-radius:16px;padding:16px 8px;text-align:center;box-shadow:0 6px 20px rgba(28,23,18,.05);}
+  .stat-chip-value{display:block;font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--ink);}
   .stat-chip-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
 
   .worker-navbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 8px;}
@@ -503,7 +503,9 @@
     .worker-topbar{padding:14px 16px;gap:12px;}
     .worker-avatar{width:40px;height:40px;font-size:16px;}
     .worker-topbar-name{font-size:15px;}
-    .stat-chip-row{grid-template-columns:1fr 1fr 1fr;gap:10px;padding:14px 14px 8px;}
+    .stat-chip-row{grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 14px 8px;}
+    .stat-chip{padding:12px 6px;}
+    .stat-chip-value{font-size:15px;}
     .worker-navbar{grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 14px 8px;}
     .worker-nav-btn{padding:10px 4px;font-size:10px;}
     .worker-main{padding:16px 14px 120px;}
@@ -571,6 +573,7 @@
     <button class="admin-tab" data-tab="clientes"><span class="admin-tab-icon">📇</span><span class="admin-tab-label">Clientes</span></button>
     <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
     <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
+    <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
     <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
     <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
     <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
@@ -791,6 +794,29 @@
       </div>
     </section>
 
+    <!-- TAB: COMISIONES -->
+    <section class="admin-tab-panel hidden" data-panel="comisiones">
+      <div class="admin-panel-header">
+        <h2>Comisiones</h2>
+        <input type="date" class="search-input" id="commReportDate" style="width:auto;">
+      </div>
+
+      <div class="admin-card">
+        <div class="stat-row">
+          <div class="stat-box"><div class="label">Cobrado ese día</div><div class="value" id="commTotalCollected">$0.00</div></div>
+          <div class="stat-box"><div class="label">Comisiones a pagar</div><div class="value" id="commTotalPayout">$0.00</div></div>
+        </div>
+      </div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Trabajador</th><th>% Comisión</th><th>Cobrado</th><th>Comisión a pagar</th><th></th></tr></thead>
+          <tbody id="commissionsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="commissionsEmpty">No tienes trabajadores activos.</div>
+      </div>
+    </section>
+
     <!-- TAB: CORTES -->
     <section class="admin-tab-panel hidden" data-panel="cortes">
       <div class="admin-panel-header"><h2>Cortes</h2></div>
@@ -899,6 +925,7 @@
     <div class="stat-chip-row">
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayCount">0</span><span class="stat-chip-label">Hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerTodayTotal">$0</span><span class="stat-chip-label">Cobrado hoy</span></div>
+      <div class="stat-chip"><span class="stat-chip-value" id="workerCommissionToday">$0</span><span class="stat-chip-label">Comisión hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerActiveCount">0</span><span class="stat-chip-label">En curso</span></div>
     </div>
 
@@ -3200,6 +3227,13 @@ function renderWorkerHome(){
   document.getElementById("workerTodayCount").textContent = todays.length;
   document.getElementById("workerTodayTotal").textContent = money(total);
   document.getElementById("workerActiveCount").textContent = active;
+
+  // La comisión se recalcula desde cero cada día: se basa solo en lo
+  // cobrado hoy (todays), así que se "renueva" automáticamente sin
+  // guardar nada aparte.
+  const pct = parseFloat(currentWorker.commission_percent) || 0;
+  const commission = total * (pct / 100);
+  document.getElementById("workerCommissionToday").textContent = money(commission);
 }
 
 function renderAdminActiveCuts(){
@@ -3239,6 +3273,7 @@ function switchTab(name){
   if(name === 'pagos') renderAdminPayments();
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
   if(name === 'asistencia') renderAdminAsistencia();
+  if(name === 'comisiones') renderAdminComisiones();
 }
 
 /* ============================================================
@@ -3306,6 +3341,66 @@ async function renderAdminAsistencia(dateStr){
 }
 
 document.getElementById('asistReportDate').addEventListener('change', ()=> renderAdminAsistencia());
+
+/* ============================================================
+   ADMIN: TAB COMISIONES
+   ============================================================ */
+async function renderAdminComisiones(dateStr){
+  const dateInput = document.getElementById('commReportDate');
+  const date = dateStr || dateInput.value || new Date().toISOString().slice(0,10);
+  dateInput.value = date;
+
+  const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
+  const tbody = document.getElementById('commissionsTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('commissionsEmpty').classList.toggle('hidden', activeWorkers.length > 0);
+
+  let totalCollected = 0, totalPayout = 0;
+
+  activeWorkers.forEach(w => {
+    const cobrado = DATA.payments
+      .filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date)
+      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pct = parseFloat(w.commission_percent) || 0;
+    const comision = cobrado * (pct / 100);
+    totalCollected += cobrado;
+    totalPayout += comision;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td data-label="Trabajador">${escapeHtml(w.name)}</td>
+      <td data-label="% Comisión">
+        <input type="number" class="table-select" data-commission-input="${w.id}" min="0" max="100" step="0.1" value="${pct}" style="width:80px;">
+      </td>
+      <td data-label="Cobrado">${money(cobrado)}</td>
+      <td data-label="Comisión a pagar">${money(comision)}</td>
+      <td data-label=""><button type="button" class="btn-link" data-save-commission="${w.id}">Guardar</button></td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('commTotalCollected').textContent = money(totalCollected);
+  document.getElementById('commTotalPayout').textContent = money(totalPayout);
+
+  tbody.querySelectorAll('[data-save-commission]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const workerId = btn.dataset.saveCommission;
+      const input = tbody.querySelector(`[data-commission-input="${workerId}"]`);
+      const pct = parseFloat(input.value);
+      if (isNaN(pct) || pct < 0 || pct > 100) { showToast('Ingresa un porcentaje válido (0-100).', 'error'); return; }
+
+      const { error } = await supabaseClient.from('trabajadores').update({ commission_percent: pct }).eq('id', workerId);
+      if (error) { showToast('❌ Error al guardar: ' + error.message, 'error'); return; }
+
+      const w = DATA.workers.find(x => x.id === workerId);
+      if (w) w.commission_percent = pct;
+      saveDataLocal();
+      showToast('✅ Porcentaje de comisión guardado');
+      renderAdminComisiones(date);
+    });
+  });
+}
+
+document.getElementById('commReportDate').addEventListener('change', ()=> renderAdminComisiones());
 
 /* ============================================================
    WORKER: MI HISTORIAL
