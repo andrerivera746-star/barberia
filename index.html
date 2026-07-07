@@ -1136,9 +1136,8 @@ async function conectarSupabase() {
   document.getElementById('statusText').textContent = '⏳ Conectando...';
 
   try {
-    if (!window.supabase) throw new Error('Supabase JS no está cargado');
-    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
+    if (!supabaseClient) throw new Error('Supabase JS no está cargado');
+
     // Probar conexión con una consulta simple
     const { data, error } = await supabaseClient
       .from('clientes')
@@ -1654,104 +1653,61 @@ async function actualizarPagoSupabase(id, datos) {
   }
 }
 
-// TRABAJADORES
+// TRABAJADORES (gestionados vía la Edge Function "manage-worker", que crea/edita/
+// elimina la cuenta real de Supabase Auth con la service_role key en el servidor)
+async function llamarManageWorker(payload) {
+  const { data, error } = await supabaseClient.functions.invoke('manage-worker', { body: payload });
+  if (error) {
+    showToast('❌ ' + (error.message || 'Error al gestionar trabajador'), 'error');
+    return null;
+  }
+  if (!data || !data.success) {
+    showToast('❌ ' + ((data && data.error) || 'Error al gestionar trabajador'), 'error');
+    return null;
+  }
+  return data;
+}
+
 async function insertarTrabajadorSupabase(trabajador) {
-  if (!supabaseClient || !isConnected) {
-    DATA.workers.push(trabajador);
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('💾 Trabajador guardado localmente (sin conexión)');
-    return trabajador;
-  }
-
-  try {
-    const { data, error } = await supabaseClient
-      .from('trabajadores')
-      .insert([trabajador])
-      .select();
-
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      const idx = DATA.workers.findIndex(w => w.id === trabajador.id);
-      if (idx >= 0) DATA.workers[idx] = data[0];
-      else DATA.workers.push(data[0]);
-      saveDataLocal();
-      renderAdminWorkers();
-      showToast(`✅ Trabajador "${trabajador.name}" guardado en Supabase`);
-      return data[0];
-    }
-  } catch (error) {
-    console.error('Error al insertar trabajador:', error);
-    DATA.workers.push(trabajador);
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
-    return trabajador;
-  }
+  const result = await llamarManageWorker({
+    action: 'create',
+    name: trabajador.name,
+    username: trabajador.username,
+    password: trabajador.password,
+    active: trabajador.active
+  });
+  if (!result) return null;
+  DATA.workers.push(result.worker);
+  saveDataLocal();
+  renderAdminWorkers();
+  showToast(`✅ Trabajador "${result.worker.name}" creado`);
+  return result.worker;
 }
 
 async function eliminarTrabajadorSupabase(id) {
   if (!confirm('¿Eliminar este trabajador? Sus cortes registrados no se eliminarán.')) return;
 
-  if (!supabaseClient || !isConnected) {
-    DATA.workers = DATA.workers.filter(w => w.id !== id);
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('🗑️ Trabajador eliminado localmente');
-    return;
-  }
+  const result = await llamarManageWorker({ action: 'delete', id });
+  if (!result) return;
 
-  try {
-    const { error } = await supabaseClient
-      .from('trabajadores')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-
-    DATA.workers = DATA.workers.filter(w => w.id !== id);
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('✅ Trabajador eliminado de Supabase');
-  } catch (error) {
-    console.error('Error al eliminar trabajador:', error);
-    showToast('❌ Error al eliminar: ' + error.message, 'error');
-  }
+  DATA.workers = DATA.workers.filter(w => w.id !== id);
+  saveDataLocal();
+  renderAdminWorkers();
+  showToast('✅ Trabajador eliminado');
 }
 
 async function actualizarTrabajadorSupabase(id, datos) {
-  if (!supabaseClient || !isConnected) {
-    const idx = DATA.workers.findIndex(w => w.id === id);
-    if (idx >= 0) DATA.workers[idx] = { ...DATA.workers[idx], ...datos };
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('💾 Trabajador actualizado localmente');
-    return;
-  }
+  const payload = { action: 'update', id, name: datos.name, username: datos.username, active: datos.active };
+  if (datos.password) payload.password = datos.password;
 
-  try {
-    const { error } = await supabaseClient
-      .from('trabajadores')
-      .update({
-        name: datos.name,
-        username: datos.username,
-        password: datos.password,
-        active: datos.active
-      })
-      .eq('id', id);
+  const result = await llamarManageWorker(payload);
+  if (!result) return;
 
-    if (error) throw error;
-
-    const idx = DATA.workers.findIndex(w => w.id === id);
-    if (idx >= 0) DATA.workers[idx] = { ...DATA.workers[idx], ...datos };
-    saveDataLocal();
-    renderAdminWorkers();
-    showToast('✅ Trabajador actualizado en Supabase');
-  } catch (error) {
-    console.error('Error al actualizar trabajador:', error);
-    showToast('❌ Error al actualizar: ' + error.message, 'error');
-  }
+  const idx = DATA.workers.findIndex(w => w.id === id);
+  if (idx >= 0) DATA.workers[idx] = result.worker; else DATA.workers.push(result.worker);
+  saveDataLocal();
+  renderAdminWorkers();
+  showToast('✅ Trabajador actualizado');
 }
 
 /* ============================================================
@@ -1786,49 +1742,55 @@ function resetLoginForms(){
   document.getElementById("loginGate").classList.remove("hidden");
 }
 
-function saveSession(data){
-  localStorage.setItem('barberia_session', JSON.stringify(data));
+async function clearSession(){
+  if(supabaseClient) await supabaseClient.auth.signOut();
 }
 
-function clearSession(){
-  localStorage.removeItem('barberia_session');
+// Busca el perfil del trabajador vinculado a la cuenta de Supabase Auth
+// que acaba de iniciar sesión (user_id = auth.uid()).
+async function fetchWorkerProfile(userId){
+  const { data, error } = await supabaseClient
+    .from('trabajadores')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  if(error || !data) return null;
+  return data;
 }
 
-function restoreSession(){
+async function restoreSession(){
   try {
-    const raw = localStorage.getItem('barberia_session');
-    if(!raw) return false;
-    const session = JSON.parse(raw);
-    if(lockedRole && session.role !== lockedRole){
+    if(!supabaseClient) return false;
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if(!session) return false;
+    const role = session.user.app_metadata && session.user.app_metadata.role;
+
+    if(lockedRole && role !== lockedRole){
       // Se entró por un link dedicado (#admin o #trabajador) distinto a la sesión guardada:
       // no la restauramos, para no mezclar accesos entre dispositivos/links.
-      clearSession();
+      await clearSession();
       return false;
     }
-    if(session.role === 'admin'){
+    if(role === 'admin'){
       document.getElementById("loginGate").classList.add("hidden");
       sessionRestored = true;
       enterAdmin();
       return true;
     }
-    if(session.role === 'worker' && session.workerId){
-      const worker = DATA.workers.find(w=>w.id===session.workerId && (w.active===true || w.active==="true"));
-      if(worker){
+    if(role === 'worker'){
+      const worker = await fetchWorkerProfile(session.user.id);
+      if(worker && (worker.active===true || worker.active==="true")){
         currentWorker = worker;
         document.getElementById("loginGate").classList.add("hidden");
         sessionRestored = true;
         enterWorker();
         return true;
       }
-      if(!isConnected && DATA.workers.length === 0){
-        // Esperar carga en línea antes de invalidar la sesión.
-        return false;
-      }
     }
   } catch (err) {
     console.warn('No se pudo restaurar la sesión.', err);
   }
-  clearSession();
+  await clearSession();
   return false;
 }
 
@@ -1845,46 +1807,57 @@ document.querySelectorAll("[data-role-tab]").forEach(btn=>{
   btn.addEventListener("click", ()=> setLoginRoleTab(btn.dataset.roleTab));
 });
 
-document.getElementById("loginForm").addEventListener("submit", (e)=>{
+const ADMIN_AUTH_EMAIL = 'admin@barberia.local';
+
+document.getElementById("loginForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
   const pw = document.getElementById("loginPassword").value;
-  if(pw === DATA.adminPassword){
-    document.getElementById("loginGate").classList.add("hidden");
-    saveSession({ role: 'admin' });
-    enterAdmin();
-  } else {
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email: ADMIN_AUTH_EMAIL,
+    password: pw
+  });
+  submitBtn.disabled = false;
+
+  if(error || !data.session){
     document.getElementById("loginError").classList.remove("hidden");
+    return;
   }
+  document.getElementById("loginError").classList.add("hidden");
+  document.getElementById("loginGate").classList.add("hidden");
+  enterAdmin();
 });
 
 document.getElementById("workerLoginForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
-  const username = document.getElementById("workerLoginUser").value.trim();
+  const username = document.getElementById("workerLoginUser").value.trim().toLowerCase();
   const pw = document.getElementById("workerLoginPassword").value;
-  let worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
+  const errorEl = document.getElementById("workerLoginError");
+  const submitBtn = e.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
 
-  if(!worker && !isConnected){
-    const errorEl = document.getElementById("workerLoginError");
-    errorEl.textContent = 'Buscando trabajadores en Supabase. Por favor espera...';
+  const email = `${username}@barberia.local`;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
+
+  if(error || !data.session){
+    submitBtn.disabled = false;
+    errorEl.textContent = 'Usuario o contraseña incorrectos, o cuenta inactiva.';
     errorEl.classList.remove("hidden");
-    const connected = await conectarSupabase();
-    if(connected){
-      worker = DATA.workers.find(w => w.username === username && w.password === pw && (w.active === true || w.active === "true"));
-    }
+    return;
   }
 
-  if(worker){
+  const worker = await fetchWorkerProfile(data.session.user.id);
+  submitBtn.disabled = false;
+
+  if(worker && (worker.active === true || worker.active === "true")){
     currentWorker = worker;
+    errorEl.classList.add("hidden");
     document.getElementById("loginGate").classList.add("hidden");
-    saveSession({ role: 'worker', workerId: worker.id });
     enterWorker();
   } else {
-    const noWorkers = DATA.workers.length === 0;
-    const message = noWorkers
-      ? 'No hay trabajadores disponibles. Conecta a Supabase o registra trabajadores desde el panel administrador.'
-      : 'Usuario o contraseña incorrectos, o cuenta inactiva.';
-    const errorEl = document.getElementById("workerLoginError");
-    errorEl.textContent = message;
+    await supabaseClient.auth.signOut();
+    errorEl.textContent = 'Cuenta inactiva o no encontrada.';
     errorEl.classList.remove("hidden");
   }
 });
@@ -1904,9 +1877,9 @@ function enterAdmin(){
   switchTab("clientes");
 }
 
-document.getElementById("backToSiteBtn").addEventListener("click", ()=>{
+document.getElementById("backToSiteBtn").addEventListener("click", async ()=>{
   document.getElementById("adminPanel").classList.add("hidden");
-  clearSession();
+  await clearSession();
   resetLoginForms();
 });
 
@@ -1934,9 +1907,9 @@ function enterWorker(){
   switchWorkerTab("citas");
 }
 
-document.getElementById("workerLogoutBtn").addEventListener("click", ()=>{
+document.getElementById("workerLogoutBtn").addEventListener("click", async ()=>{
   currentWorker = null;
-  clearSession();
+  await clearSession();
   document.getElementById("workerPanel").classList.add("hidden");
   resetLoginForms();
 });
@@ -2125,7 +2098,8 @@ function loadWorkerForEdit(id){
   document.getElementById("wkrEditId").value = w.id;
   document.getElementById("wkrName").value = w.name || "";
   document.getElementById("wkrUsername").value = w.username || "";
-  document.getElementById("wkrPassword").value = w.password || "";
+  document.getElementById("wkrPassword").value = "";
+  document.getElementById("wkrPassword").placeholder = "Dejar en blanco para no cambiarla";
   document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = (w.active === true || w.active === "true") ? "true" : "false";
   document.getElementById("cancelEditWorkerBtn").classList.remove("hidden");
@@ -2139,6 +2113,7 @@ function resetWorkerForm(){
   document.getElementById("wkrName").value = "";
   document.getElementById("wkrUsername").value = "";
   document.getElementById("wkrPassword").value = "";
+  document.getElementById("wkrPassword").placeholder = "Mínimo 4 caracteres";
   document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = "true";
   document.getElementById("cancelEditWorkerBtn").classList.add("hidden");
@@ -2153,10 +2128,12 @@ document.getElementById("saveWorkerBtn").addEventListener("click", async ()=>{
   const name = document.getElementById("wkrName").value.trim();
   const username = document.getElementById("wkrUsername").value.trim();
   const password = document.getElementById("wkrPassword").value.trim();
-  if(!name || !username || !password){ showToast("Nombre, usuario y contraseña son obligatorios.", "error"); return; }
-  if(password.length < 4){ showToast("La contraseña debe tener al menos 4 caracteres.", "error"); return; }
   const editId = document.getElementById("wkrEditId").value;
   const active = document.getElementById("wkrActive").value === "true";
+
+  if(!name || !username){ showToast("Nombre y usuario son obligatorios.", "error"); return; }
+  if(!editId && !password){ showToast("La contraseña es obligatoria para un trabajador nuevo.", "error"); return; }
+  if(password && password.length < 4){ showToast("La contraseña debe tener al menos 4 caracteres.", "error"); return; }
 
   const usernameTaken = DATA.workers.some(w => w.username === username && w.id !== editId);
   if(usernameTaken){ showToast("Ese usuario ya está en uso por otro trabajador.", "error"); return; }
@@ -2165,8 +2142,7 @@ document.getElementById("saveWorkerBtn").addEventListener("click", async ()=>{
     await actualizarTrabajadorSupabase(editId, { name, username, password, active });
     resetWorkerForm();
   } else {
-    const trabajador = { id: uid("w"), name, username, password, active, created_at: new Date().toISOString() };
-    await insertarTrabajadorSupabase(trabajador);
+    await insertarTrabajadorSupabase({ name, username, password, active });
     resetWorkerForm();
   }
 });
@@ -2551,11 +2527,11 @@ function renderAdminPayments(){
 /* ============================================================
    ADMIN: TAB AJUSTES
    ============================================================ */
-document.getElementById("changePasswordBtn").addEventListener("click", ()=>{
+document.getElementById("changePasswordBtn").addEventListener("click", async ()=>{
   const pw = document.getElementById("newAdminPassword").value.trim();
   if(pw.length < 4){ showToast("Usa al menos 4 caracteres.", "error"); return; }
-  DATA.adminPassword = pw;
-  saveDataLocal();
+  const { error } = await supabaseClient.auth.updateUser({ password: pw });
+  if(error){ showToast("Error al actualizar: " + error.message, "error"); return; }
   document.getElementById("newAdminPassword").value = "";
   showToast("Contraseña actualizada.");
 });
@@ -3306,6 +3282,7 @@ function applyDedicatedLinkLock(){
    ============================================================ */
 loadData();
 renderLoginBrand();
+supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const hashRole = applyDedicatedLinkLock();
 const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') || 'admin';
 setLoginRoleTab(savedLoginRole);
