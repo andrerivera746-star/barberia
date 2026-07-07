@@ -13,27 +13,30 @@
 
 <style>
   :root{
-    --ink:#1c1712;
-    --ink-soft:#332b23;
+    --ink:#121212;
+    --ink-soft:#262220;
     --cream:#f7f2e7;
     --cream-dark:#eee7d8;
-    --gold:#a3814f;
-    --gold-light:#c9a86a;
+    --gold:#b3894f;
+    --gold-light:#d9b876;
+    --silver:#b8bcc2;
     --muted:#8a8072;
     --line:#e2d9c6;
     --danger:#b3453b;
     --success:#4c7a4f;
     --radius:16px;
-    --shadow: 0 16px 36px rgba(28,23,18,0.16);
+    --shadow: 0 16px 36px rgba(0,0,0,0.28);
     --font-display: 'Fraunces', serif;
     --font-body: 'Inter', sans-serif;
-    --brand-indigo:#2e3192;
-    --brand-indigo-light:#4d50c4;
-    --brand-bg:#f4f5fb;
+    /* Marca (pantalla de login): ahora en negro/dorado, a tono con el logo,
+       en vez del azul genérico anterior. */
+    --brand-indigo:#121212;
+    --brand-indigo-light:#b3894f;
+    --brand-bg:#f6f4f1;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{margin:0;font-family:var(--font-body);color:var(--ink);background:linear-gradient(180deg, #f7f8ff 0%, #eef2fb 100%);}
+  body{margin:0;font-family:var(--font-body);color:var(--ink);background:linear-gradient(180deg, #f8f6f2 0%, #efeae2 100%);}
   h1,h2,h3{font-family:var(--font-display);margin:0;}
   p{margin:0;}
   button{font-family:inherit;cursor:pointer;}
@@ -131,15 +134,18 @@
   /* ---------- ADMIN ---------- */
   #adminPanel{min-height:100vh;background:var(--cream);display:flex;align-items:flex-start;}
   #workerPanel{min-height:100vh;background:var(--cream);}
-  .admin-sidebar{width:230px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:26px 18px;
-    display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;}
-  .admin-brand{font-family:var(--font-display);font-weight:700;font-size:19px;margin-bottom:20px;
-    display:flex;align-items:center;gap:8px;}
-  .admin-brand .stripe{width:20px;height:20px;border-radius:4px;background:
-    repeating-linear-gradient(45deg, var(--gold) 0 4px, #7a1f1f 4px 8px, var(--cream) 8px 12px);}
-  .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:11px 14px;
+  .admin-sidebar{width:250px;flex-shrink:0;background:var(--ink);color:var(--cream);padding:28px 16px;
+    display:flex;flex-direction:column;gap:8px;position:sticky;top:0;height:100vh;}
+  .admin-brand{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:28px;
+    display:flex;align-items:center;gap:10px;padding:0 4px;}
+  .admin-brand img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;
+    box-shadow:0 0 0 1.5px rgba(179,137,79,.4);}
+  .admin-brand .stripe{width:20px;height:20px;border-radius:4px;flex-shrink:0;background:
+    repeating-linear-gradient(45deg, var(--gold) 0 4px, #000 4px 8px, var(--cream) 8px 12px);}
+  .admin-brand span.admin-brand-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .admin-tab{background:none;border:none;color:rgba(247,242,231,.75);text-align:left;padding:12px 14px;
     border-radius:10px;font-size:14px;font-weight:500;transition:background .15s,color .15s;
-    display:flex;align-items:center;gap:10px;}
+    display:flex;align-items:center;gap:12px;}
   .admin-tab .admin-tab-icon{font-size:16px;line-height:1;}
   .admin-tab:hover{background:rgba(247,242,231,.08);color:#fff;}
   .admin-tab.active{background:var(--gold);color:var(--ink);font-weight:700;}
@@ -566,7 +572,11 @@
 <!-- ================= ADMIN PANEL ================= -->
 <div id="adminPanel" class="hidden">
   <aside class="admin-sidebar">
-    <div class="admin-brand"><span class="stripe"></span> Panel</div>
+    <div class="admin-brand" id="adminBrand">
+      <span class="stripe" id="adminBrandStripe"></span>
+      <img id="adminBrandImg" class="hidden" alt="logo">
+      <span class="admin-brand-text" id="adminBrandText">Panel</span>
+    </div>
     <button class="admin-tab" data-tab="sitio"><span class="admin-tab-icon">🏠</span><span class="admin-tab-label">Sitio</span></button>
     <button class="admin-tab" data-tab="servicios"><span class="admin-tab-icon">✂️</span><span class="admin-tab-label">Servicios</span></button>
     <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
@@ -1862,6 +1872,23 @@ function renderLoginBrand(){
       el.textContent = s.logoText || "Barbería";
     }
   });
+
+  // Barra lateral del panel de administrador: mismo logo/nombre, en formato
+  // circular pequeño junto al texto (o el rombo decorativo si aún no hay logo).
+  const brandImg = document.getElementById("adminBrandImg");
+  const brandStripe = document.getElementById("adminBrandStripe");
+  const brandText = document.getElementById("adminBrandText");
+  if(brandImg && brandStripe && brandText){
+    brandText.textContent = s.logoText || "Panel";
+    if(s.logoImage){
+      brandImg.src = s.logoImage;
+      brandImg.classList.remove("hidden");
+      brandStripe.classList.add("hidden");
+    } else {
+      brandImg.classList.add("hidden");
+      brandStripe.classList.remove("hidden");
+    }
+  }
 }
 
 /* ============================================================
