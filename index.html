@@ -984,7 +984,7 @@
    🔴 CONFIGURACIÓN DE SUPABASE 🔴
    ============================================================ */
 const SUPABASE_URL = 'https://omcmoezotairucnhxsgz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9tY21vZXpvdGFpcnVjbmh4c2d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxOTQwNjAsImV4cCI6MjA5ODc3MDA2MH0.gjjoUguVLBhylLqBnqJbk-4uIIg0HbW26kujo2O6YBs';
+const SUPABASE_ANON_KEY = 'sb_publishable_pbRneXo0_tn4rwvXTV2D4A_X-ERJ-tO';
 
 /* ============================================================
    ICON LIBRARY
@@ -1324,6 +1324,12 @@ function actualizarVistasTrasCambioPago() {
 
 // CLIENTES
 async function insertarClienteSupabase(cliente) {
+  // DOI y email vacíos deben ir como null (no ""): si la tabla tiene una
+  // restricción UNIQUE en esas columnas, dos clientes con "" chocarían entre
+  // sí en el insert (409 conflict), mientras que NULL nunca colisiona en Postgres.
+  if(!cliente.doi) cliente.doi = null;
+  if(!cliente.email) cliente.email = null;
+
   if (!supabaseClient || !isConnected) {
     // Fallback a local
     DATA.clients.push(cliente);
@@ -1361,7 +1367,7 @@ async function insertarClienteSupabase(cliente) {
     saveDataLocal();
     renderAdminClients();
     renderLoginBrand();
-    showToast('⚠️ Guardado localmente (error en Supabase)', 'error');
+    showToast(`⚠️ Guardado localmente (${error.message || 'error en Supabase'})`, 'error');
     return cliente;
   }
 }
@@ -1396,6 +1402,11 @@ async function eliminarClienteSupabase(id) {
 }
 
 async function actualizarClienteSupabase(id, datos) {
+  // Misma normalización que en insertarClienteSupabase: "" -> null para evitar
+  // choques con la restricción UNIQUE cuando se deja el campo en blanco.
+  if(!datos.doi) datos.doi = null;
+  if(!datos.email) datos.email = null;
+
   if (!supabaseClient || !isConnected) {
     const idx = DATA.clients.findIndex(c => c.id === id);
     if (idx >= 0) DATA.clients[idx] = { ...DATA.clients[idx], ...datos };
