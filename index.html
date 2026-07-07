@@ -554,8 +554,9 @@
       </div>
 
       <form id="loginForm" data-role-form="admin">
+        <div class="field"><input type="text" id="loginUsername" placeholder="Usuario" required></div>
         <div class="field"><input type="password" id="loginPassword" placeholder="Contraseña" required></div>
-        <p id="loginError" class="hidden login-error">Contraseña incorrecta.</p>
+        <p id="loginError" class="hidden login-error">Usuario o contraseña incorrectos.</p>
         <button type="submit" class="btn-login">Entrar</button>
       </form>
 
@@ -586,6 +587,7 @@
     <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
     <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
     <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
+    <button class="admin-tab" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
     <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
     <button class="admin-back" id="backToSiteBtn"><span class="admin-tab-icon">↩️</span><span class="admin-tab-label">Cerrar sesión</span></button>
   </aside>
@@ -867,6 +869,30 @@
           <tbody id="asistenciaTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="asistenciaEmpty">No tienes trabajadores activos.</div>
+      </div>
+    </section>
+
+    <!-- TAB: ADMINISTRADORES -->
+    <section class="admin-tab-panel hidden" data-panel="administradores">
+      <div class="admin-panel-header"><h2>Administradores</h2></div>
+
+      <div class="admin-card">
+        <h3>Agregar administrador</h3>
+        <div class="grid-2">
+          <div class="field"><label>Usuario</label><input type="text" id="admUsername" placeholder="Ej. carlos.admin"></div>
+          <div class="field"><label>Contraseña</label><input type="password" id="admPassword" placeholder="Mínimo 6 caracteres"></div>
+        </div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveAdminBtn">Crear administrador</button>
+        </div>
+      </div>
+
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Usuario</th><th>Creado</th><th></th></tr></thead>
+          <tbody id="adminsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="adminsEmpty">No hay otros administradores.</div>
       </div>
     </section>
 
@@ -1969,24 +1995,30 @@ document.querySelectorAll("[data-role-tab]").forEach(btn=>{
   btn.addEventListener("click", ()=> setLoginRoleTab(btn.dataset.roleTab));
 });
 
-const ADMIN_AUTH_EMAIL = 'admin@barberia.local';
-
 document.getElementById("loginForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
+  const username = document.getElementById("loginUsername").value.trim().toLowerCase();
   const pw = document.getElementById("loginPassword").value;
+  const errorEl = document.getElementById("loginError");
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: ADMIN_AUTH_EMAIL,
-    password: pw
-  });
+
+  const email = `${username}@barberia.local`;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: pw });
   submitBtn.disabled = false;
 
   if(error || !data.session){
-    document.getElementById("loginError").classList.remove("hidden");
+    errorEl.classList.remove("hidden");
     return;
   }
-  document.getElementById("loginError").classList.add("hidden");
+  const role = data.session.user.app_metadata && data.session.user.app_metadata.role;
+  if(role !== 'admin'){
+    await supabaseClient.auth.signOut();
+    errorEl.textContent = 'Esta cuenta no tiene permisos de administrador.';
+    errorEl.classList.remove("hidden");
+    return;
+  }
+  errorEl.classList.add("hidden");
   document.getElementById("loginGate").classList.add("hidden");
   enterAdmin();
 });
@@ -3301,6 +3333,7 @@ function switchTab(name){
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
   if(name === 'asistencia') renderAdminAsistencia();
   if(name === 'comisiones') renderAdminComisiones();
+  if(name === 'administradores') renderAdminAdmins();
 }
 
 /* ============================================================
@@ -3428,6 +3461,72 @@ async function renderAdminComisiones(dateStr){
 }
 
 document.getElementById('commReportDate').addEventListener('change', ()=> renderAdminComisiones());
+
+/* ============================================================
+   ADMIN: TAB ADMINISTRADORES
+   ============================================================ */
+let currentAdminId = null;
+
+async function llamarManageAdmin(payload){
+  const { data, error } = await supabaseClient.functions.invoke('manage-admin', { body: payload });
+  if (error) {
+    showToast('❌ ' + (error.message || 'Error al gestionar administradores'), 'error');
+    return null;
+  }
+  if (!data || !data.success) {
+    showToast('❌ ' + ((data && data.error) || 'Error al gestionar administradores'), 'error');
+    return null;
+  }
+  return data;
+}
+
+async function renderAdminAdmins(){
+  const result = await llamarManageAdmin({ action: 'list' });
+  if(!result) return;
+  currentAdminId = result.callerId;
+
+  const tbody = document.getElementById('adminsTableBody');
+  tbody.innerHTML = '';
+  document.getElementById('adminsEmpty').classList.toggle('hidden', result.admins.length > 0);
+
+  result.admins.forEach(a=>{
+    const username = (a.email || '').split('@')[0];
+    const isSelf = a.id === currentAdminId;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td data-label="Usuario">${escapeHtml(username)}${isSelf ? ' <span style="color:var(--muted);font-size:12px;">(tú)</span>' : ''}</td>
+      <td data-label="Creado">${escapeHtml(a.created_at ? new Date(a.created_at).toLocaleDateString() : '—')}</td>
+      <td data-label="" style="white-space:nowrap;">
+        ${isSelf ? '' : `<button type="button" class="btn-danger" data-del-admin="${a.id}">Eliminar</button>`}
+      </td>`;
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('[data-del-admin]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm('¿Eliminar este administrador? Perderá acceso al panel de inmediato.')) return;
+      const result = await llamarManageAdmin({ action: 'delete', id: btn.dataset.delAdmin });
+      if(!result) return;
+      showToast('✅ Administrador eliminado');
+      renderAdminAdmins();
+    });
+  });
+}
+
+document.getElementById('saveAdminBtn').addEventListener('click', async ()=>{
+  const username = document.getElementById('admUsername').value.trim();
+  const password = document.getElementById('admPassword').value.trim();
+  if(!username || !password){ showToast('Usuario y contraseña son obligatorios.', 'error'); return; }
+  if(password.length < 6){ showToast('La contraseña debe tener al menos 6 caracteres.', 'error'); return; }
+
+  const result = await llamarManageAdmin({ action: 'create', username, password });
+  if(!result) return;
+
+  document.getElementById('admUsername').value = '';
+  document.getElementById('admPassword').value = '';
+  showToast('✅ Administrador creado');
+  renderAdminAdmins();
+});
 
 /* ============================================================
    WORKER: MI HISTORIAL
