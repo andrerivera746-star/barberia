@@ -241,10 +241,10 @@
     }
     .admin-more-backdrop.open{opacity:1;pointer-events:auto;}
     .admin-more-sheet{
-      display:block;position:fixed;left:0;right:0;bottom:0;z-index:160;background:var(--ink);
-      color:var(--cream);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));
-      max-height:75vh;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease;
-      box-shadow:0 -10px 30px rgba(0,0,0,.3);
+      display:block;position:fixed;left:0;right:0;top:0;z-index:160;background:var(--ink);
+      color:var(--cream);border-radius:0 0 20px 20px;padding:calc(18px + env(safe-area-inset-top)) 18px 18px;
+      max-height:75vh;overflow-y:auto;transform:translateY(-100%);transition:transform .25s ease;
+      box-shadow:0 10px 30px rgba(0,0,0,.3);
     }
     .admin-more-sheet.open{transform:translateY(0);}
     .admin-more-sheet-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
@@ -2201,6 +2201,7 @@ function switchWorkerTab(name){
 }
 
 document.querySelectorAll(".admin-tab").forEach(tab=>{
+  if(!tab.dataset.tab) return; // el botón "Más" no es una pestaña real, tiene su propio manejador
   tab.addEventListener("click", ()=> switchTab(tab.dataset.tab));
 });
 
