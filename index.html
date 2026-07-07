@@ -1341,6 +1341,8 @@ async function conectarSupabase() {
     // vean los pagos y clientes al instante, sin necesidad de recargar la página)
     suscribirRealtimePagos();
     suscribirRealtimeClientes();
+    suscribirRealtimeTrabajadores();
+    suscribirRealtimeAsistencias();
 
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
@@ -1374,9 +1376,15 @@ async function cargarTodosLosDatos() {
       DATA.services = servicios;
     }
 
-    // Cargar clientes
+    // Cargar clientes: el admin lee la tabla completa; un trabajador lee
+    // "clientes_worker_view", una vista sin DOI/fecha de nacimiento/email
+    // (esos datos ya no deben verse fuera del rol de administrador).
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const roleActual = session && session.user && session.user.app_metadata && session.user.app_metadata.role;
+    const tablaClientes = roleActual === 'worker' ? 'clientes_worker_view' : 'clientes';
+
     const { data: clientes, error: errClientes } = await supabaseClient
-      .from('clientes')
+      .from(tablaClientes)
       .select('*')
       .order('created_at', { ascending: false });
 
@@ -1545,6 +1553,96 @@ function actualizarVistasTrasCambioCliente() {
       renderClientChips(document.getElementById("wkClientSearch").value);
     }
   }
+}
+
+/* ============================================================
+   TIEMPO REAL: TRABAJADORES
+   Así, si el admin cambia el % de comisión (u otro dato) de un
+   trabajador, este lo ve reflejado al instante sin tener que cerrar
+   sesión y volver a entrar; y la lista de "Trabajadores"/"Comisiones"
+   del admin se actualiza sola si hay otra sesión de admin abierta.
+   ============================================================ */
+let realtimeTrabajadoresChannel = null;
+
+function suscribirRealtimeTrabajadores() {
+  if (!supabaseClient) return;
+
+  if (realtimeTrabajadoresChannel) {
+    supabaseClient.removeChannel(realtimeTrabajadoresChannel);
+    realtimeTrabajadoresChannel = null;
+  }
+
+  realtimeTrabajadoresChannel = supabaseClient
+    .channel('trabajadores-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'trabajadores' }, (payload) => {
+      manejarCambioTrabajadorRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (trabajadores)');
+      }
+    });
+}
+
+function manejarCambioTrabajadorRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'DELETE') {
+    DATA.workers = DATA.workers.filter(w => w.id !== viejo.id);
+  } else {
+    const idx = DATA.workers.findIndex(w => w.id === nuevo.id);
+    if (idx >= 0) DATA.workers[idx] = nuevo;
+    else DATA.workers.push(nuevo);
+
+    // Si el cambio es sobre el propio trabajador que tiene la app abierta
+    // (p.ej. el admin le acaba de editar el % de comisión), refresca su
+    // copia en memoria para que "Comisión hoy" se actualice ya mismo.
+    if (currentWorker && currentWorker.id === nuevo.id) {
+      currentWorker = nuevo;
+      renderWorkerHome();
+    }
+  }
+
+  saveDataLocal();
+
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    renderAdminWorkers();
+    const commPanel = document.querySelector('.admin-tab-panel[data-panel="comisiones"]');
+    if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
+  }
+}
+
+/* ============================================================
+   TIEMPO REAL: ASISTENCIAS
+   El admin ya tenía la tabla habilitada para tiempo real en Supabase,
+   pero nadie la escuchaba: su pestaña "Asistencia" solo se refrescaba
+   al cambiar de fecha o de pestaña. Ahora se actualiza sola.
+   ============================================================ */
+let realtimeAsistenciasChannel = null;
+
+function suscribirRealtimeAsistencias() {
+  if (!supabaseClient) return;
+
+  if (realtimeAsistenciasChannel) {
+    supabaseClient.removeChannel(realtimeAsistenciasChannel);
+    realtimeAsistenciasChannel = null;
+  }
+
+  realtimeAsistenciasChannel = supabaseClient
+    .channel('asistencias-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'asistencias' }, () => {
+      const adminPanel = document.getElementById('adminPanel');
+      if (adminPanel && !adminPanel.classList.contains('hidden')) {
+        const panel = document.querySelector('.admin-tab-panel[data-panel="asistencia"]');
+        if (panel && !panel.classList.contains('hidden')) renderAdminAsistencia();
+      }
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (asistencias)');
+      }
+    });
 }
 
 /* ============================================================
