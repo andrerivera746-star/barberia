@@ -3327,9 +3327,14 @@ function renderClientChips(filter){
   });
   wrap.appendChild(newChip);
 
-  const f = (filter||"").toLowerCase();
+  const f = (filter||"").trim().toLowerCase();
+  if(!f){
+    // Sin nada escrito, no mostramos clientes (con muchos registrados se vería
+    // saturado); solo aparecen al empezar a buscar por nombre o celular.
+    return;
+  }
   const list = DATA.clients
-    .filter(c => !f || (c.name||"").toLowerCase().includes(f) || (c.phone||"").includes(f))
+    .filter(c => (c.name||"").toLowerCase().includes(f) || (c.phone||"").includes(f))
     .slice().reverse().slice(0, 8);
 
   list.forEach(c=>{
