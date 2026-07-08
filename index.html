@@ -2470,8 +2470,13 @@ function enterWorker(){
 
 document.getElementById("workerLogoutBtn").addEventListener("click", async ()=>{
   currentWorker = null;
-  await clearSession();
+  // Ocultar el panel ANTES de cerrar la sesión (mismo orden que usa el admin):
+  // el vigilante de sesión revisa si algún panel sigue visible cuando la
+  // sesión se cierra, para detectar cierres inesperados en otra pestaña. Si
+  // se ocultara después, un cierre de sesión normal se vería igual que uno
+  // inesperado y mostraría un aviso de error de más.
   document.getElementById("workerPanel").classList.add("hidden");
+  await clearSession();
   resetLoginForms();
 });
 
