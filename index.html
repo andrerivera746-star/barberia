@@ -992,6 +992,7 @@
         <h2>Comisiones</h2>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <input type="date" class="search-input" id="commReportDate" style="width:auto;">
+          <button type="button" class="btn-secondary" id="refreshComisionesBtn">🔄 Actualizar</button>
           <button type="button" class="btn-gold" id="exportComisionesBtn">Descargar (.csv)</button>
         </div>
       </div>
@@ -1208,7 +1209,10 @@
       <div class="stat-chip"><span class="stat-chip-value" id="workerCommissionToday">$0</span><span class="stat-chip-label">Comisión hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerActiveCount">0</span><span class="stat-chip-label">En curso</span></div>
     </div>
-    <div id="workerCommissionBreakdown" style="padding:0 16px 10px;font-size:11.5px;color:var(--muted);text-align:center;"></div>
+    <div class="stat-chip-row" style="grid-template-columns:repeat(2,1fr);padding-top:0;">
+      <div class="stat-chip"><span class="stat-chip-value" id="workerCommCortes">$0</span><span class="stat-chip-label" id="workerCommCortesLabel">✂️ Cortes</span></div>
+      <div class="stat-chip"><span class="stat-chip-value" id="workerCommProductos">$0</span><span class="stat-chip-label" id="workerCommProductosLabel">📦 Productos</span></div>
+    </div>
 
     <nav class="worker-navbar">
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
@@ -4481,10 +4485,10 @@ function renderWorkerHome(){
   const comisionProductos = cobradoProductos * (pctProductos / 100);
   document.getElementById("workerCommissionToday").textContent = money(comisionCortes + comisionProductos);
 
-  const breakdownEl = document.getElementById("workerCommissionBreakdown");
-  if(breakdownEl){
-    breakdownEl.textContent = `✂️ Cortes: ${money(comisionCortes)} (${pctCortes}%)   ·   📦 Productos: ${money(comisionProductos)} (${pctProductos}%)`;
-  }
+  document.getElementById("workerCommCortes").textContent = money(comisionCortes);
+  document.getElementById("workerCommCortesLabel").textContent = `✂️ Cortes (${pctCortes}%)`;
+  document.getElementById("workerCommProductos").textContent = money(comisionProductos);
+  document.getElementById("workerCommProductosLabel").textContent = `📦 Productos (${pctProductos}%)`;
 }
 
 function renderAdminActiveCuts(){
@@ -4684,6 +4688,19 @@ async function renderAdminComisiones(dateStr){
 }
 
 document.getElementById('commReportDate').addEventListener('change', ()=> renderAdminComisiones());
+
+// Botón de respaldo por si la sincronización en tiempo real se quedó atrás
+// (por ejemplo, si el navegador estuvo un rato sin conexión): vuelve a pedir
+// los pagos directo a Supabase, sin esperar a que llegue el evento en vivo.
+document.getElementById('refreshComisionesBtn').addEventListener('click', async ()=>{
+  if(!supabaseClient || !isConnected){ showToast('Sin conexión a Supabase.', 'error'); return; }
+  const { data, error } = await supabaseClient.from('pagos').select('*').order('created_at', { ascending: false });
+  if(error){ showToast('❌ Error al actualizar: ' + error.message, 'error'); return; }
+  DATA.payments = data;
+  saveDataLocal();
+  renderAdminComisiones();
+  showToast('✅ Comisiones actualizadas');
+});
 
 /* ---------- Niveles de comisión (dentro de la pestaña Comisiones) ---------- */
 function renderNivelesList(){
