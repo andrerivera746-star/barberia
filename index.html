@@ -1569,6 +1569,7 @@ async function conectarSupabase() {
     suscribirRealtimeAsistencias();
     suscribirRealtimeProductos();
     suscribirRealtimeNiveles();
+    suscribirRealtimeServicios();
 
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
@@ -1592,27 +1593,34 @@ async function cargarTodosLosDatos() {
   if (!supabaseClient || !isConnected) return;
 
   try {
-    // Cargar servicios
-    const { data: servicios, error: errServicios } = await supabaseClient
-      .from('servicios')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (!errServicios && servicios && servicios.length > 0) {
-      DATA.services = servicios;
-    }
-
-    // Cargar clientes: el admin lee la tabla completa; un trabajador lee
-    // "clientes_worker_view", una vista sin DOI/fecha de nacimiento/email
-    // (esos datos ya no deben verse fuera del rol de administrador).
+    // La sesión se necesita primero para saber qué tabla de clientes leer;
+    // el resto de tablas no dependen entre sí, así que se piden todas a la
+    // vez con Promise.all en vez de una por una (esto era lo que hacía que
+    // entrar como admin demorara: 6 viajes al servidor en fila suman mucho
+    // más que el mismo trabajo hecho en paralelo).
     const { data: { session } } = await supabaseClient.auth.getSession();
     const roleActual = session && session.user && session.user.app_metadata && session.user.app_metadata.role;
     const tablaClientes = roleActual === 'worker' ? 'clientes_worker_view' : 'clientes';
 
-    const { data: clientes, error: errClientes } = await supabaseClient
-      .from(tablaClientes)
-      .select('*')
-      .order('created_at', { ascending: false });
+    const [
+      { data: servicios, error: errServicios },
+      { data: clientes, error: errClientes },
+      { data: pagos, error: errPagos },
+      { data: trabajadores, error: errTrabajadores },
+      { data: productos, error: errProductos },
+      { data: niveles, error: errNiveles }
+    ] = await Promise.all([
+      supabaseClient.from('servicios').select('*').order('created_at', { ascending: true }),
+      supabaseClient.from(tablaClientes).select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('pagos').select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('trabajadores').select('*').order('created_at', { ascending: true }),
+      supabaseClient.from('productos').select('*').order('created_at', { ascending: true }),
+      supabaseClient.from('comision_niveles').select('*').order('min_monto', { ascending: true })
+    ]);
+
+    if (!errServicios && servicios && servicios.length > 0) {
+      DATA.services = servicios;
+    }
 
     if (!errClientes && clientes) {
       DATA.clients = clientes;
@@ -1620,41 +1628,17 @@ async function cargarTodosLosDatos() {
       document.getElementById('clientCount').textContent = `(${clientes.length} clientes)`;
     }
 
-    // Cargar pagos
-    const { data: pagos, error: errPagos } = await supabaseClient
-      .from('pagos')
-      .select('*')
-      .order('created_at', { ascending: false });
-
     if (!errPagos && pagos) {
       DATA.payments = pagos;
     }
-
-    // Cargar trabajadores
-    const { data: trabajadores, error: errTrabajadores } = await supabaseClient
-      .from('trabajadores')
-      .select('*')
-      .order('created_at', { ascending: true });
 
     if (!errTrabajadores && trabajadores) {
       DATA.workers = trabajadores;
     }
 
-    // Cargar productos (inventario)
-    const { data: productos, error: errProductos } = await supabaseClient
-      .from('productos')
-      .select('*')
-      .order('created_at', { ascending: true });
-
     if (!errProductos && productos) {
       DATA.products = productos;
     }
-
-    // Cargar niveles de comisión
-    const { data: niveles, error: errNiveles } = await supabaseClient
-      .from('comision_niveles')
-      .select('*')
-      .order('min_monto', { ascending: true });
 
     if (!errNiveles && niveles) {
       DATA.comisionNiveles = niveles;
@@ -1867,6 +1851,60 @@ function manejarCambioTrabajadorRealtime(payload) {
     if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
     const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
     if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
+  }
+}
+
+/* ============================================================
+   TIEMPO REAL: SERVICIOS
+   Esta tabla no tenía canal de tiempo real: si el admin agregaba o
+   editaba un servicio, un trabajador con la app ya abierta no lo veía
+   en "Atender" hasta recargar la página. Mismo patrón que trabajadores.
+   ============================================================ */
+let realtimeServiciosChannel = null;
+
+function suscribirRealtimeServicios() {
+  if (!supabaseClient) return;
+
+  if (realtimeServiciosChannel) {
+    supabaseClient.removeChannel(realtimeServiciosChannel);
+    realtimeServiciosChannel = null;
+  }
+
+  realtimeServiciosChannel = supabaseClient
+    .channel('servicios-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' }, (payload) => {
+      manejarCambioServicioRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (servicios)');
+      }
+    });
+}
+
+function manejarCambioServicioRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'DELETE') {
+    DATA.services = DATA.services.filter(s => s.id !== viejo.id);
+  } else {
+    const idx = DATA.services.findIndex(s => s.id === nuevo.id);
+    if (idx >= 0) DATA.services[idx] = nuevo;
+    else DATA.services.push(nuevo);
+  }
+
+  saveDataLocal();
+
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    renderAdminServices();
+    refreshPaymentSelectors();
+  }
+
+  const workerPanel = document.getElementById('workerPanel');
+  if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
+    const attendPanel = document.querySelector('.worker-tab-panel[data-worker-panel="atender"]');
+    if (attendPanel && !attendPanel.classList.contains('hidden')) renderServicePicker();
   }
 }
 
