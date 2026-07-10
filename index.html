@@ -1070,6 +1070,34 @@
         </table>
         <div class="empty-state hidden" id="productsEmpty">Aún no tienes productos registrados.</div>
       </div>
+
+      <div class="admin-card">
+        <div class="admin-panel-header" style="margin-bottom:14px;">
+          <h3 style="margin:0;">Kardex de movimientos</h3>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <select class="table-select" id="kardexProductFilter"><option value="">Todos los productos</option></select>
+            <input type="date" class="search-input" id="kardexFromDate" style="width:auto;">
+            <input type="date" class="search-input" id="kardexToDate" style="width:auto;">
+            <button type="button" class="btn-gold" id="exportKardexBtn">Descargar (.csv)</button>
+          </div>
+        </div>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">
+          Cada venta, reabastecimiento o ajuste de stock queda registrado aquí con fecha, para que
+          puedas hacer tu inventario mensual y ver qué producto rota más, sin depender de la memoria.
+        </p>
+        <div class="stat-row" style="margin-bottom:16px;">
+          <div class="stat-box"><div class="label">Unidades vendidas</div><div class="value" id="kardexTotalSalidas">0</div></div>
+          <div class="stat-box"><div class="label">Unidades ingresadas</div><div class="value" id="kardexTotalEntradas">0</div></div>
+          <div class="stat-box"><div class="label">Producto que más rota</div><div class="value" id="kardexTopProducto" style="font-size:15px;">—</div></div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="responsive-table">
+            <thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Stock resultante</th><th>Motivo</th><th>Registrado por</th></tr></thead>
+            <tbody id="kardexTableBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state hidden" id="kardexEmpty">Aún no hay movimientos de inventario registrados.</div>
+      </div>
     </section>
 
     <!-- TAB: CORTES -->
@@ -1416,6 +1444,7 @@ function defaultData(){
     workers: [],
     products: [],
     comisionNiveles: [],
+    inventoryMovements: [],
     adminPassword: "barberia2026",
     loyalty: {
       enabled: true,
@@ -1503,6 +1532,7 @@ function loadData(){
   if(!Array.isArray(DATA.workers)) DATA.workers = [];
   if(!Array.isArray(DATA.products)) DATA.products = [];
   if(!Array.isArray(DATA.comisionNiveles)) DATA.comisionNiveles = [];
+  if(!Array.isArray(DATA.inventoryMovements)) DATA.inventoryMovements = [];
   if(!DATA.adminPassword) DATA.adminPassword = d.adminPassword;
   DATA.loyalty = Object.assign({}, d.loyalty, DATA.loyalty||{});
   if(!DATA.loyalty.notified || typeof DATA.loyalty.notified !== 'object') DATA.loyalty.notified = {};
@@ -1574,6 +1604,7 @@ async function conectarSupabase() {
     suscribirRealtimeProductos();
     suscribirRealtimeNiveles();
     suscribirRealtimeServicios();
+    suscribirRealtimeMovimientos();
 
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
@@ -1612,14 +1643,16 @@ async function cargarTodosLosDatos() {
       { data: pagos, error: errPagos },
       { data: trabajadores, error: errTrabajadores },
       { data: productos, error: errProductos },
-      { data: niveles, error: errNiveles }
+      { data: niveles, error: errNiveles },
+      { data: movimientos, error: errMovimientos }
     ] = await Promise.all([
       supabaseClient.from('servicios').select('*').order('created_at', { ascending: true }),
       supabaseClient.from(tablaClientes).select('*').order('created_at', { ascending: false }),
       supabaseClient.from('pagos').select('*').order('created_at', { ascending: false }),
       supabaseClient.from('trabajadores').select('*').order('created_at', { ascending: true }),
       supabaseClient.from('productos').select('*').order('created_at', { ascending: true }),
-      supabaseClient.from('comision_niveles').select('*').order('min_monto', { ascending: true })
+      supabaseClient.from('comision_niveles').select('*').order('min_monto', { ascending: true }),
+      supabaseClient.from('movimientos_inventario').select('*').order('created_at', { ascending: false })
     ]);
 
     if (!errServicios && servicios && servicios.length > 0) {
@@ -1648,12 +1681,17 @@ async function cargarTodosLosDatos() {
       DATA.comisionNiveles = niveles;
     }
 
+    if (!errMovimientos && movimientos) {
+      DATA.inventoryMovements = movimientos;
+    }
+
     saveDataLocal();
     renderLoginBrand();
     renderAdminServices();
     renderAdminClients();
     renderAdminPayments();
     renderAdminWorkers();
+    renderAdminInventario();
     checkLoyaltyMilestones();
 
   } catch (error) {
@@ -2037,6 +2075,53 @@ function suscribirRealtimeNiveles() {
 }
 
 /* ============================================================
+   TIEMPO REAL: KARDEX DE INVENTARIO
+   Si un movimiento se registra desde otro dispositivo (venta de un
+   trabajador, ajuste de otro admin), el kardex de la pestaña Inventario
+   se actualiza solo, sin recargar la página.
+   ============================================================ */
+let realtimeMovimientosChannel = null;
+
+function suscribirRealtimeMovimientos() {
+  if (!supabaseClient) return;
+
+  if (realtimeMovimientosChannel) {
+    supabaseClient.removeChannel(realtimeMovimientosChannel);
+    realtimeMovimientosChannel = null;
+  }
+
+  realtimeMovimientosChannel = supabaseClient
+    .channel('movimientos-inventario-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'movimientos_inventario' }, (payload) => {
+      manejarCambioMovimientoRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (kardex de inventario)');
+      }
+    });
+}
+
+function manejarCambioMovimientoRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'INSERT') {
+    const yaExiste = DATA.inventoryMovements.some(m => m.id === nuevo.id);
+    if (!yaExiste) DATA.inventoryMovements.unshift(nuevo);
+  } else if (eventType === 'DELETE') {
+    DATA.inventoryMovements = DATA.inventoryMovements.filter(m => m.id !== viejo.id);
+  }
+
+  saveDataLocal();
+
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    const invPanel = document.querySelector('.admin-tab-panel[data-panel="inventario"]');
+    if (invPanel && !invPanel.classList.contains('hidden')) renderKardexInventario();
+  }
+}
+
+/* ============================================================
    FUNCIONES CRUD PARA SUPABASE
    ============================================================ */
 
@@ -2382,6 +2467,52 @@ async function eliminarProductoSupabase(id) {
   } catch (error) {
     console.error('Error al eliminar producto:', error);
     showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+// KARDEX DE INVENTARIO: deja un registro de cada entrada/salida de stock
+// (venta, reabastecimiento, ajuste manual) para poder hacer inventario
+// mensual y ver qué producto rota más, sin depender de recordar "cuánto
+// había antes". No bloquea el flujo si falla: el cambio de stock en sí
+// ya se guardó, esto es solo el historial.
+async function registrarMovimientoInventario(producto, tipo, quantity, stockAnterior, stockNuevo, motivo, registradoPor){
+  const movimiento = {
+    id: uid('mov'),
+    product_id: producto.id,
+    product_name: producto.name,
+    tipo: tipo, // 'entrada' | 'salida'
+    quantity: quantity,
+    stock_anterior: stockAnterior,
+    stock_nuevo: stockNuevo,
+    motivo: motivo,
+    registrado_por: registradoPor,
+    date: toLocalDateStr(new Date()),
+    created_at: new Date().toISOString()
+  };
+
+  if (!supabaseClient || !isConnected) {
+    DATA.inventoryMovements.unshift(movimiento);
+    saveDataLocal();
+    return movimiento;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('movimientos_inventario')
+      .insert([movimiento])
+      .select();
+
+    if (error) throw error;
+
+    const guardado = (data && data[0]) || movimiento;
+    DATA.inventoryMovements.unshift(guardado);
+    saveDataLocal();
+    return guardado;
+  } catch (error) {
+    console.error('Error al registrar movimiento de inventario:', error);
+    DATA.inventoryMovements.unshift(movimiento);
+    saveDataLocal();
+    return movimiento;
   }
 }
 
@@ -3155,7 +3286,91 @@ function renderAdminInventario(){
   tbody.querySelectorAll("[data-del-prod]").forEach(btn=>{
     btn.addEventListener("click", ()=> eliminarProductoSupabase(btn.dataset.delProd));
   });
+
+  renderKardexInventario();
 }
+
+/* ---------- Kardex de movimientos (dentro de la pestaña Inventario) ---------- */
+function renderKardexInventario(){
+  const productFilter = document.getElementById("kardexProductFilter");
+  const prevSelected = productFilter.value;
+  productFilter.innerHTML = '<option value="">Todos los productos</option>' +
+    DATA.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  productFilter.value = prevSelected;
+
+  const fromDate = document.getElementById("kardexFromDate").value;
+  const toDate = document.getElementById("kardexToDate").value;
+  const productId = productFilter.value;
+
+  let list = (DATA.inventoryMovements || []).slice();
+  if(productId) list = list.filter(m => m.product_id === productId);
+  if(fromDate) list = list.filter(m => (m.date||"") >= fromDate);
+  if(toDate) list = list.filter(m => (m.date||"") <= toDate);
+  list.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  const totalSalidas = list.filter(m=>m.tipo==="salida").reduce((sum,m)=> sum + (parseFloat(m.quantity)||0), 0);
+  const totalEntradas = list.filter(m=>m.tipo==="entrada").reduce((sum,m)=> sum + (parseFloat(m.quantity)||0), 0);
+
+  const salidasPorProducto = {};
+  list.filter(m=>m.tipo==="salida").forEach(m=>{
+    salidasPorProducto[m.product_name] = (salidasPorProducto[m.product_name]||0) + (parseFloat(m.quantity)||0);
+  });
+  let topProducto = "—", topQty = 0;
+  Object.entries(salidasPorProducto).forEach(([name, qty])=>{
+    if(qty > topQty){ topQty = qty; topProducto = name; }
+  });
+
+  document.getElementById("kardexTotalSalidas").textContent = totalSalidas;
+  document.getElementById("kardexTotalEntradas").textContent = totalEntradas;
+  document.getElementById("kardexTopProducto").textContent = topProducto === "—" ? "—" : `${topProducto} (${topQty})`;
+
+  const tbody = document.getElementById("kardexTableBody");
+  tbody.innerHTML = "";
+  document.getElementById("kardexEmpty").classList.toggle("hidden", list.length > 0);
+
+  list.slice(0, 200).forEach(m=>{
+    const tipoLabel = m.tipo === "entrada" ? "🟢 Entrada" : "🔴 Salida";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Fecha">${escapeHtml(m.date||"—")}</td>
+      <td data-label="Producto">${escapeHtml(m.product_name||"—")}</td>
+      <td data-label="Tipo">${tipoLabel}</td>
+      <td data-label="Cantidad">${escapeHtml(String(m.quantity))}</td>
+      <td data-label="Stock resultante">${m.stock_nuevo != null ? escapeHtml(String(m.stock_nuevo)) : "—"}</td>
+      <td data-label="Motivo">${escapeHtml(m.motivo||"—")}</td>
+      <td data-label="Registrado por">${escapeHtml(m.registrado_por||"—")}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById("kardexProductFilter").addEventListener("change", renderKardexInventario);
+document.getElementById("kardexFromDate").addEventListener("change", renderKardexInventario);
+document.getElementById("kardexToDate").addEventListener("change", renderKardexInventario);
+
+function exportKardexCsv(){
+  const productId = document.getElementById("kardexProductFilter").value;
+  const fromDate = document.getElementById("kardexFromDate").value;
+  const toDate = document.getElementById("kardexToDate").value;
+
+  let list = (DATA.inventoryMovements || []).slice();
+  if(productId) list = list.filter(m => m.product_id === productId);
+  if(fromDate) list = list.filter(m => (m.date||"") >= fromDate);
+  if(toDate) list = list.filter(m => (m.date||"") <= toDate);
+  list.sort((a,b)=> new Date(b.created_at) - new Date(a.created_at));
+
+  const rows = list.map(m => ({
+    Fecha: m.date || "",
+    Producto: m.product_name || "",
+    Tipo: m.tipo === "entrada" ? "Entrada" : "Salida",
+    Cantidad: m.quantity,
+    StockAnterior: m.stock_anterior,
+    StockNuevo: m.stock_nuevo,
+    Motivo: m.motivo || "",
+    RegistradoPor: m.registrado_por || ""
+  }));
+  downloadCsv("kardex_inventario_" + toLocalDateStr(new Date()) + ".csv", rows);
+}
+document.getElementById("exportKardexBtn").addEventListener("click", exportKardexCsv);
 
 function loadProductForEdit(id){
   const prod = DATA.products.find(p=>p.id===id);
@@ -3194,11 +3409,30 @@ document.getElementById("saveProductBtn").addEventListener("click", async ()=>{
   const editId = document.getElementById("prodEditId").value;
 
   if(editId){
+    const prevProduct = DATA.products.find(p=>p.id===editId);
+    const prevStock = prevProduct ? (Number(prevProduct.stock) || 0) : 0;
     await actualizarProductoSupabase(editId, { name, price, stock, active, icon });
+    const delta = stock - prevStock;
+    if(delta !== 0){
+      await registrarMovimientoInventario(
+        { id: editId, name },
+        delta > 0 ? 'entrada' : 'salida',
+        Math.abs(delta),
+        prevStock,
+        stock,
+        delta > 0 ? 'Reabastecimiento (editado por admin)' : 'Ajuste de stock (editado por admin)',
+        'Administrador'
+      );
+      renderKardexInventario();
+    }
     resetProductForm();
   } else {
     const producto = { id: uid("prod"), name, price, stock, active, icon, created_at: new Date().toISOString() };
-    await insertarProductoSupabase(producto);
+    const guardado = await insertarProductoSupabase(producto);
+    if(stock > 0){
+      await registrarMovimientoInventario(guardado || producto, 'entrada', stock, 0, stock, 'Stock inicial', 'Administrador');
+      renderKardexInventario();
+    }
     resetProductForm();
   }
 });
@@ -4528,6 +4762,15 @@ document.getElementById("wkConfirmSaleBtn").addEventListener("click", async ()=>
   };
 
   await insertarPagoSupabase(venta);
+  await registrarMovimientoInventario(
+    product,
+    'salida',
+    qty,
+    Number(product.stock),
+    Number(product.stock) - qty,
+    'Venta',
+    currentWorker.name
+  );
   showToast(`✅ Venta registrada: ${product.name} x${qty}`);
   renderWorkerSaleForm();
   renderWorkerHome();
