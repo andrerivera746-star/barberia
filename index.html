@@ -4255,6 +4255,10 @@ function renderWorkerCitas(){
   list.forEach(p => {
     const client = DATA.clients.find(c => c.id === p.clientid);
     const method = p.method || "Efectivo";
+    // Recordatorio del precio de referencia del servicio, para que el
+    // trabajador no se confunda al cobrar a mano cuando maneja varios
+    // servicios con precios distintos (el monto sigue siendo manual).
+    const service = DATA.services.find(s => s.id === p.serviceid);
     const card = document.createElement("div");
     card.className = "cita-card";
     card.innerHTML = `
@@ -4271,7 +4275,10 @@ function renderWorkerCitas(){
               <option value="Yape" ${method === "Yape" ? "selected" : ""}>Yape</option>
             </select>
           </label>
-          <input type="text" class="cita-amount-input" data-amount-for="${p.id}" placeholder="Monto" value="${escapeHtml(p.amount || "")}" style="width:110px;">
+          <div>
+            <input type="text" class="cita-amount-input" data-amount-for="${p.id}" placeholder="Monto" value="${escapeHtml(p.amount || "")}" style="width:110px;">
+            ${service && service.price ? `<div style="font-size:11px;color:var(--muted);margin-top:4px;text-align:right;">💰 ${escapeHtml(service.title)}: ${money(service.price)}</div>` : ""}
+          </div>
         </div>
         <div class="cita-yape-fields" data-yape-section-for="${p.id}" style="display:${method === "Yape" ? "flex" : "none"};gap:10px;flex-wrap:wrap;align-items:center;width:100%;">
           <input type="text" class="cita-amount-input" data-yape-code-for="${p.id}" placeholder="Código Yape" value="${escapeHtml(p.yape_code || "")}" style="width:170px;">
