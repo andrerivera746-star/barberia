@@ -1004,7 +1004,15 @@
           El % de cada trabajador ya no se escribe a mano: se calcula solo según en qué nivel
           caiga lo que cobró <strong>ese día</strong>. Ej: si pones un nivel "de 0 a 500 = 5%" y otro
           "de 500 a 1500 = 8%", un trabajador que cobró 900 ese día gana 8% automáticamente.
+          La comisión por <strong>cortes</strong> y la comisión por <strong>venta de productos</strong>
+          son independientes: define un nivel para cada una. Si un día no hay venta de productos
+          (por ejemplo, sin stock), esa parte simplemente da 0% y el trabajador sigue ganando su
+          comisión normal de cortes sin verse afectada.
         </p>
+        <div class="method-btn-row" id="nivelTipoPicker" style="margin-bottom:0;">
+          <button type="button" class="method-btn selected" data-nivel-tipo="cortes">✂️ Cortes</button>
+          <button type="button" class="method-btn" data-nivel-tipo="productos">📦 Venta de productos</button>
+        </div>
         <div class="grid-2">
           <div class="field"><label>Monto mínimo</label><input type="text" id="nivelMin" placeholder="Ej. 0"></div>
           <div class="field"><label>Monto máximo (vacío = sin límite)</label><input type="text" id="nivelMax" placeholder="Ej. 500"></div>
@@ -1019,7 +1027,7 @@
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table class="responsive-table">
-          <thead><tr><th>Trabajador</th><th>Nivel actual</th><th>Cobrado</th><th>Comisión a pagar</th></tr></thead>
+          <thead><tr><th>Trabajador</th><th>Cortes</th><th>Comisión cortes</th><th>Productos</th><th>Comisión productos</th><th>Total a pagar</th></tr></thead>
           <tbody id="commissionsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="commissionsEmpty">No tienes trabajadores activos.</div>
@@ -2389,9 +2397,14 @@ async function eliminarNivelComisionSupabase(id) {
 // Devuelve el % de comisión que corresponde a un monto vendido/cobrado,
 // según los niveles que definió el admin (el que tenga el mínimo más alto
 // que aún cumpla el monto, para evitar ambigüedad si dos niveles se cruzan).
-function calcularComisionPorNivel(monto) {
+// "tipo" separa los niveles de cortes de los de venta de productos: son dos
+// sistemas de comisión independientes (los niveles sin tipo guardado antes
+// de esta función se tratan como "cortes", para no perder lo ya configurado).
+function calcularComisionPorNivel(monto, tipo) {
+  tipo = tipo || 'cortes';
   if (!Array.isArray(DATA.comisionNiveles) || DATA.comisionNiveles.length === 0) return 0;
   const nivel = DATA.comisionNiveles
+    .filter(n => (n.tipo || 'cortes') === tipo)
     .filter(n => {
       const min = parseFloat(n.min_monto) || 0;
       const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? null : parseFloat(n.max_monto);
@@ -3749,16 +3762,23 @@ function exportComisionesCsv(){
   const date = document.getElementById('commReportDate').value || new Date().toISOString().slice(0,10);
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
   const rows = activeWorkers.map(w => {
-    const cobrado = DATA.payments
-      .filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date)
-      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pct = parseFloat(w.commission_percent) || 0;
+    const pagosDia = DATA.payments.filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date);
+    const cobradoCortes = pagosDia.filter(p => !p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const cobradoProductos = pagosDia.filter(p => p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+    const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
+    const comisionCortes = cobradoCortes * (pctCortes / 100);
+    const comisionProductos = cobradoProductos * (pctProductos / 100);
     return {
       Trabajador: w.name,
       Fecha: date,
-      PorcentajeComision: pct,
-      Cobrado: cobrado.toFixed(2),
-      ComisionAPagar: (cobrado * (pct/100)).toFixed(2)
+      CobradoCortes: cobradoCortes.toFixed(2),
+      PorcentajeCortes: pctCortes,
+      ComisionCortes: comisionCortes.toFixed(2),
+      CobradoProductos: cobradoProductos.toFixed(2),
+      PorcentajeProductos: pctProductos,
+      ComisionProductos: comisionProductos.toFixed(2),
+      ComisionTotal: (comisionCortes + comisionProductos).toFixed(2)
     };
   });
   downloadCsv('comisiones_' + date + '.csv', rows);
@@ -4408,11 +4428,15 @@ function renderWorkerHome(){
   document.getElementById("workerTodayTotal").textContent = money(total);
   document.getElementById("workerActiveCount").textContent = active;
 
-  // La comisión se recalcula desde cero cada día: se basa solo en lo
-  // cobrado hoy (todays), y el % ya no es fijo por trabajador — sube
-  // solo según el nivel de venta diaria que definió el admin.
-  const pct = calcularComisionPorNivel(total);
-  const commission = total * (pct / 100);
+  // La comisión de cortes y la de venta de productos son independientes:
+  // cada una se calcula solo sobre lo suyo y usa sus propios niveles. Si
+  // hoy no hubo venta de productos (sin stock, por ejemplo), esa parte da
+  // 0% y la comisión de cortes sigue calculándose normal, sin verse afectada.
+  const cobradoCortes = todays.filter(p=>!p.product_id).reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const cobradoProductos = todays.filter(p=>p.product_id).reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
+  const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+  const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
+  const commission = (cobradoCortes * (pctCortes / 100)) + (cobradoProductos * (pctProductos / 100));
   document.getElementById("workerCommissionToday").textContent = money(commission);
 }
 
@@ -4579,20 +4603,27 @@ async function renderAdminComisiones(dateStr){
   let totalCollected = 0, totalPayout = 0;
 
   activeWorkers.forEach(w => {
-    const cobrado = DATA.payments
-      .filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date)
-      .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pct = calcularComisionPorNivel(cobrado);
-    const comision = cobrado * (pct / 100);
-    totalCollected += cobrado;
+    const pagosDia = DATA.payments.filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date);
+    // Cortes y venta de productos son comisiones independientes: se calculan
+    // por separado (cada una con sus propios niveles) y luego se suman.
+    const cobradoCortes = pagosDia.filter(p => !p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const cobradoProductos = pagosDia.filter(p => p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+    const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
+    const comisionCortes = cobradoCortes * (pctCortes / 100);
+    const comisionProductos = cobradoProductos * (pctProductos / 100);
+    const comision = comisionCortes + comisionProductos;
+    totalCollected += cobradoCortes + cobradoProductos;
     totalPayout += comision;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td data-label="Trabajador">${escapeHtml(w.name)}</td>
-      <td data-label="Nivel actual">${pct}%</td>
-      <td data-label="Cobrado">${money(cobrado)}</td>
-      <td data-label="Comisión a pagar">${money(comision)}</td>`;
+      <td data-label="Cortes">${money(cobradoCortes)} (${pctCortes}%)</td>
+      <td data-label="Comisión cortes">${money(comisionCortes)}</td>
+      <td data-label="Productos">${money(cobradoProductos)} (${pctProductos}%)</td>
+      <td data-label="Comisión productos">${money(comisionProductos)}</td>
+      <td data-label="Total a pagar"><strong>${money(comision)}</strong></td>`;
     tbody.appendChild(tr);
   });
 
@@ -4608,10 +4639,17 @@ function renderNivelesList(){
   wrap.innerHTML = '';
   document.getElementById('nivelesEmpty').classList.toggle('hidden', DATA.comisionNiveles.length > 0);
 
-  DATA.comisionNiveles
-    .slice()
-    .sort((a,b)=> (parseFloat(a.min_monto)||0) - (parseFloat(b.min_monto)||0))
-    .forEach(n=>{
+  const ordenados = DATA.comisionNiveles.slice().sort((a,b)=> (parseFloat(a.min_monto)||0) - (parseFloat(b.min_monto)||0));
+  const nivelesCortes = ordenados.filter(n => (n.tipo || 'cortes') === 'cortes');
+  const nivelesProductos = ordenados.filter(n => n.tipo === 'productos');
+
+  const renderGrupo = (titulo, lista) => {
+    if(lista.length === 0) return;
+    const heading = document.createElement('div');
+    heading.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;';
+    heading.textContent = titulo;
+    wrap.appendChild(heading);
+    lista.forEach(n=>{
       const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? 'sin límite' : money(n.max_monto);
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream-dark);border-radius:10px;padding:10px 14px;';
@@ -4620,11 +4658,23 @@ function renderNivelesList(){
         <button type="button" class="btn-danger" data-del-nivel="${n.id}">Eliminar</button>`;
       wrap.appendChild(row);
     });
+  };
+
+  renderGrupo('✂️ Comisión por cortes', nivelesCortes);
+  renderGrupo('📦 Comisión por venta de productos', nivelesProductos);
 
   wrap.querySelectorAll('[data-del-nivel]').forEach(btn=>{
     btn.addEventListener('click', ()=> eliminarNivelComisionSupabase(btn.dataset.delNivel));
   });
 }
+
+let nivelTipoSeleccionado = 'cortes';
+document.querySelectorAll('#nivelTipoPicker .method-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    nivelTipoSeleccionado = btn.dataset.nivelTipo;
+    document.querySelectorAll('#nivelTipoPicker .method-btn').forEach(b=> b.classList.toggle('selected', b===btn));
+  });
+});
 
 document.getElementById('saveNivelBtn').addEventListener('click', async ()=>{
   const min = parseFloat(document.getElementById('nivelMin').value);
@@ -4636,7 +4686,7 @@ document.getElementById('saveNivelBtn').addEventListener('click', async ()=>{
   const max = maxRaw === '' ? null : parseFloat(maxRaw);
   if(max !== null && (isNaN(max) || max <= min)){ showToast('El monto máximo debe ser mayor al mínimo.', 'error'); return; }
 
-  const nivel = { id: uid('niv'), min_monto: min, max_monto: max, porcentaje: pct, created_at: new Date().toISOString() };
+  const nivel = { id: uid('niv'), tipo: nivelTipoSeleccionado, min_monto: min, max_monto: max, porcentaje: pct, created_at: new Date().toISOString() };
   await insertarNivelComisionSupabase(nivel);
 
   document.getElementById('nivelMin').value = '';
