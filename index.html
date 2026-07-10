@@ -827,6 +827,11 @@
             <select id="wkrActive"><option value="true">Activo</option><option value="false">Inactivo</option></select>
           </div>
         </div>
+        <div class="field"><label>% de comisión por cortes</label><input type="text" id="wkrCommission" placeholder="Ej. 10"></div>
+        <p style="font-size:12px;color:var(--muted);margin:-8px 0 14px;">
+          Este % es fijo por trabajador y solo aplica a cortes. La comisión por venta de
+          productos es aparte y se define por rangos en la pestaña Comisiones.
+        </p>
         <div class="modal-actions" style="margin-top:6px;">
           <button class="btn-gold" id="saveWorkerBtn">Guardar trabajador</button>
           <button class="btn-secondary hidden" id="cancelEditWorkerBtn">Cancelar edición</button>
@@ -835,7 +840,7 @@
 
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table class="responsive-table">
-          <thead><tr><th>Nombre</th><th>Usuario</th><th>Estado</th><th>Cortes atendidos</th><th></th></tr></thead>
+          <thead><tr><th>Nombre</th><th>Usuario</th><th>Estado</th><th>% Comisión</th><th>Cortes atendidos</th><th></th></tr></thead>
           <tbody id="workersTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="workersEmpty">Aún no tienes trabajadores registrados.</div>
@@ -999,20 +1004,14 @@
       </div>
 
       <div class="admin-card">
-        <h3>Niveles de comisión por venta diaria</h3>
+        <h3>Niveles de comisión por venta de productos</h3>
         <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
-          El % de cada trabajador ya no se escribe a mano: se calcula solo según en qué nivel
-          caiga lo que cobró <strong>ese día</strong>. Ej: si pones un nivel "de 0 a 500 = 5%" y otro
-          "de 500 a 1500 = 8%", un trabajador que cobró 900 ese día gana 8% automáticamente.
-          La comisión por <strong>cortes</strong> y la comisión por <strong>venta de productos</strong>
-          son independientes: define un nivel para cada una. Si un día no hay venta de productos
-          (por ejemplo, sin stock), esa parte simplemente da 0% y el trabajador sigue ganando su
-          comisión normal de cortes sin verse afectada.
+          Esto solo aplica a la comisión por <strong>venta de productos</strong>: se calcula sola
+          según en qué nivel caiga lo que se vendió <strong>ese día</strong>. Ej: si pones un nivel
+          "de 0 a 500 = 5%" y otro "de 500 a 1500 = 8%", un trabajador que vendió 900 en productos
+          ese día gana 8% automáticamente. La comisión por <strong>cortes</strong> es aparte: un %
+          fijo que le pones a cada trabajador en la pestaña Trabajadores, sin importar cuánto cobre.
         </p>
-        <div class="method-btn-row" id="nivelTipoPicker" style="margin-bottom:0;">
-          <button type="button" class="method-btn selected" data-nivel-tipo="cortes">✂️ Cortes</button>
-          <button type="button" class="method-btn" data-nivel-tipo="productos">📦 Venta de productos</button>
-        </div>
         <div class="grid-2">
           <div class="field"><label>Monto mínimo</label><input type="text" id="nivelMin" placeholder="Ej. 0"></div>
           <div class="field"><label>Monto máximo (vacío = sin límite)</label><input type="text" id="nivelMax" placeholder="Ej. 500"></div>
@@ -1209,6 +1208,7 @@
       <div class="stat-chip"><span class="stat-chip-value" id="workerCommissionToday">$0</span><span class="stat-chip-label">Comisión hoy</span></div>
       <div class="stat-chip"><span class="stat-chip-value" id="workerActiveCount">0</span><span class="stat-chip-label">En curso</span></div>
     </div>
+    <div id="workerCommissionBreakdown" style="padding:0 16px 10px;font-size:11.5px;color:var(--muted);text-align:center;"></div>
 
     <nav class="worker-navbar">
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
@@ -1723,6 +1723,11 @@ function actualizarVistasTrasCambioPago() {
     renderAdminActiveCuts();
     const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
     if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
+    // Si el admin ya tenía la pestaña Comisiones abierta cuando llegó la venta/corte
+    // por tiempo real, esta faltaba en la lista de refrescos: los montos se
+    // quedaban "congelados" hasta cambiar de pestaña o de fecha a mano.
+    const commPanel = document.querySelector('.admin-tab-panel[data-panel="comisiones"]');
+    if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
   }
 
   // Panel trabajador: su resumen, su tarjeta de corte activo y su historial
@@ -2575,6 +2580,34 @@ async function actualizarTrabajadorSupabase(id, datos) {
   showToast('✅ Trabajador actualizado');
 }
 
+// El % de comisión por cortes es un campo simple de la tabla "trabajadores"
+// (no toca la cuenta de Auth), así que se actualiza directo con el cliente
+// normal en vez de pasar por la Edge Function "manage-worker".
+async function actualizarComisionTrabajadorSupabase(id, pct) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.workers.findIndex(w => w.id === id);
+    if (idx >= 0) { DATA.workers[idx].commission_percent = pct; saveDataLocal(); renderAdminWorkers(); }
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('trabajadores')
+      .update({ commission_percent: pct })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const idx = DATA.workers.findIndex(w => w.id === id);
+    if (idx >= 0) DATA.workers[idx].commission_percent = pct;
+    saveDataLocal();
+    renderAdminWorkers();
+  } catch (error) {
+    console.error('Error al actualizar % de comisión:', error);
+    showToast('❌ No se pudo guardar el % de comisión: ' + error.message, 'error');
+  }
+}
+
 /* ============================================================
    RENDER: LOGIN BRAND
    ============================================================ */
@@ -3149,6 +3182,7 @@ function renderAdminWorkers(){
       <td data-label="Nombre">${escapeHtml(w.name)}</td>
       <td data-label="Usuario">${escapeHtml(w.username)}</td>
       <td data-label="Estado"><span class="badge ${active?"pagado":"inactivo"}">${active?"Activo":"Inactivo"}</span></td>
+      <td data-label="% Comisión">${parseFloat(w.commission_percent) || 0}%</td>
       <td data-label="Cortes atendidos">${cortes}</td>
       <td data-label="">
         <div class="row-menu">
@@ -3190,6 +3224,7 @@ function loadWorkerForEdit(id){
   document.getElementById("wkrPassword").placeholder = "Dejar en blanco para no cambiarla";
   document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = (w.active === true || w.active === "true") ? "true" : "false";
+  document.getElementById("wkrCommission").value = w.commission_percent != null ? w.commission_percent : "";
   document.getElementById("cancelEditWorkerBtn").classList.remove("hidden");
   window.scrollTo({top:0, behavior:"smooth"});
 }
@@ -3204,6 +3239,7 @@ function resetWorkerForm(){
   document.getElementById("wkrPassword").placeholder = "Mínimo 4 caracteres";
   document.getElementById("wkrPassword").type = "password";
   document.getElementById("wkrActive").value = "true";
+  document.getElementById("wkrCommission").value = "";
   document.getElementById("cancelEditWorkerBtn").classList.add("hidden");
 }
 
@@ -3218,19 +3254,24 @@ document.getElementById("saveWorkerBtn").addEventListener("click", async ()=>{
   const password = document.getElementById("wkrPassword").value.trim();
   const editId = document.getElementById("wkrEditId").value;
   const active = document.getElementById("wkrActive").value === "true";
+  const commissionRaw = document.getElementById("wkrCommission").value.trim();
 
   if(!name || !username){ showToast("Nombre y usuario son obligatorios.", "error"); return; }
   if(!editId && !password){ showToast("La contraseña es obligatoria para un trabajador nuevo.", "error"); return; }
   if(password && password.length < 4){ showToast("La contraseña debe tener al menos 4 caracteres.", "error"); return; }
+  const commissionPct = commissionRaw === "" ? 0 : parseFloat(commissionRaw);
+  if(isNaN(commissionPct) || commissionPct < 0 || commissionPct > 100){ showToast("El % de comisión debe estar entre 0 y 100.", "error"); return; }
 
   const usernameTaken = DATA.workers.some(w => w.username === username && w.id !== editId);
   if(usernameTaken){ showToast("Ese usuario ya está en uso por otro trabajador.", "error"); return; }
 
   if(editId){
     await actualizarTrabajadorSupabase(editId, { name, username, password, active });
+    await actualizarComisionTrabajadorSupabase(editId, commissionPct);
     resetWorkerForm();
   } else {
-    await insertarTrabajadorSupabase({ name, username, password, active });
+    const nuevo = await insertarTrabajadorSupabase({ name, username, password, active });
+    if(nuevo) await actualizarComisionTrabajadorSupabase(nuevo.id, commissionPct);
     resetWorkerForm();
   }
 });
@@ -3765,7 +3806,7 @@ function exportComisionesCsv(){
     const pagosDia = DATA.payments.filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date);
     const cobradoCortes = pagosDia.filter(p => !p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     const cobradoProductos = pagosDia.filter(p => p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+    const pctCortes = parseFloat(w.commission_percent) || 0;
     const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
     const comisionCortes = cobradoCortes * (pctCortes / 100);
     const comisionProductos = cobradoProductos * (pctProductos / 100);
@@ -4434,10 +4475,16 @@ function renderWorkerHome(){
   // 0% y la comisión de cortes sigue calculándose normal, sin verse afectada.
   const cobradoCortes = todays.filter(p=>!p.product_id).reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
   const cobradoProductos = todays.filter(p=>p.product_id).reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
-  const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+  const pctCortes = parseFloat(currentWorker.commission_percent) || 0;
   const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
-  const commission = (cobradoCortes * (pctCortes / 100)) + (cobradoProductos * (pctProductos / 100));
-  document.getElementById("workerCommissionToday").textContent = money(commission);
+  const comisionCortes = cobradoCortes * (pctCortes / 100);
+  const comisionProductos = cobradoProductos * (pctProductos / 100);
+  document.getElementById("workerCommissionToday").textContent = money(comisionCortes + comisionProductos);
+
+  const breakdownEl = document.getElementById("workerCommissionBreakdown");
+  if(breakdownEl){
+    breakdownEl.textContent = `✂️ Cortes: ${money(comisionCortes)} (${pctCortes}%)   ·   📦 Productos: ${money(comisionProductos)} (${pctProductos}%)`;
+  }
 }
 
 function renderAdminActiveCuts(){
@@ -4514,7 +4561,12 @@ function switchTab(name){
   if(name === 'pagos') renderAdminPayments();
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
   if(name === 'asistencia') renderAdminAsistencia();
-  if(name === 'comisiones') renderAdminComisiones();
+  if(name === 'comisiones'){
+    // Siempre vuelve a "hoy" al entrar a la pestaña, para no quedarse viendo
+    // sin darse cuenta la fecha que se dejó seleccionada la última vez.
+    document.getElementById('commReportDate').value = new Date().toISOString().slice(0,10);
+    renderAdminComisiones();
+  }
   if(name === 'inventario') renderAdminInventario();
   if(name === 'administradores') renderAdminAdmins();
 }
@@ -4608,7 +4660,7 @@ async function renderAdminComisiones(dateStr){
     // por separado (cada una con sus propios niveles) y luego se suman.
     const cobradoCortes = pagosDia.filter(p => !p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     const cobradoProductos = pagosDia.filter(p => p.product_id).reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pctCortes = calcularComisionPorNivel(cobradoCortes, 'cortes');
+    const pctCortes = parseFloat(w.commission_percent) || 0;
     const pctProductos = calcularComisionPorNivel(cobradoProductos, 'productos');
     const comisionCortes = cobradoCortes * (pctCortes / 100);
     const comisionProductos = cobradoProductos * (pctProductos / 100);
@@ -4637,44 +4689,30 @@ document.getElementById('commReportDate').addEventListener('change', ()=> render
 function renderNivelesList(){
   const wrap = document.getElementById('nivelesList');
   wrap.innerHTML = '';
-  document.getElementById('nivelesEmpty').classList.toggle('hidden', DATA.comisionNiveles.length > 0);
+  // Los niveles solo se usan para venta de productos ahora; si quedó algún
+  // nivel viejo de "cortes" de cuando existía ese sistema, se ignora aquí
+  // (no se borra, por si se quisiera reactivar más adelante).
+  const nivelesProductos = DATA.comisionNiveles
+    .filter(n => n.tipo === 'productos')
+    .slice()
+    .sort((a,b)=> (parseFloat(a.min_monto)||0) - (parseFloat(b.min_monto)||0));
 
-  const ordenados = DATA.comisionNiveles.slice().sort((a,b)=> (parseFloat(a.min_monto)||0) - (parseFloat(b.min_monto)||0));
-  const nivelesCortes = ordenados.filter(n => (n.tipo || 'cortes') === 'cortes');
-  const nivelesProductos = ordenados.filter(n => n.tipo === 'productos');
+  document.getElementById('nivelesEmpty').classList.toggle('hidden', nivelesProductos.length > 0);
 
-  const renderGrupo = (titulo, lista) => {
-    if(lista.length === 0) return;
-    const heading = document.createElement('div');
-    heading.style.cssText = 'font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-top:6px;';
-    heading.textContent = titulo;
-    wrap.appendChild(heading);
-    lista.forEach(n=>{
-      const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? 'sin límite' : money(n.max_monto);
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream-dark);border-radius:10px;padding:10px 14px;';
-      row.innerHTML = `
-        <span style="font-size:13.5px;">De ${money(n.min_monto)} a ${max} → <strong>${n.porcentaje}%</strong></span>
-        <button type="button" class="btn-danger" data-del-nivel="${n.id}">Eliminar</button>`;
-      wrap.appendChild(row);
-    });
-  };
-
-  renderGrupo('✂️ Comisión por cortes', nivelesCortes);
-  renderGrupo('📦 Comisión por venta de productos', nivelesProductos);
+  nivelesProductos.forEach(n=>{
+    const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? 'sin límite' : money(n.max_monto);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream-dark);border-radius:10px;padding:10px 14px;';
+    row.innerHTML = `
+      <span style="font-size:13.5px;">De ${money(n.min_monto)} a ${max} → <strong>${n.porcentaje}%</strong></span>
+      <button type="button" class="btn-danger" data-del-nivel="${n.id}">Eliminar</button>`;
+    wrap.appendChild(row);
+  });
 
   wrap.querySelectorAll('[data-del-nivel]').forEach(btn=>{
     btn.addEventListener('click', ()=> eliminarNivelComisionSupabase(btn.dataset.delNivel));
   });
 }
-
-let nivelTipoSeleccionado = 'cortes';
-document.querySelectorAll('#nivelTipoPicker .method-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    nivelTipoSeleccionado = btn.dataset.nivelTipo;
-    document.querySelectorAll('#nivelTipoPicker .method-btn').forEach(b=> b.classList.toggle('selected', b===btn));
-  });
-});
 
 document.getElementById('saveNivelBtn').addEventListener('click', async ()=>{
   const min = parseFloat(document.getElementById('nivelMin').value);
@@ -4686,7 +4724,7 @@ document.getElementById('saveNivelBtn').addEventListener('click', async ()=>{
   const max = maxRaw === '' ? null : parseFloat(maxRaw);
   if(max !== null && (isNaN(max) || max <= min)){ showToast('El monto máximo debe ser mayor al mínimo.', 'error'); return; }
 
-  const nivel = { id: uid('niv'), tipo: nivelTipoSeleccionado, min_monto: min, max_monto: max, porcentaje: pct, created_at: new Date().toISOString() };
+  const nivel = { id: uid('niv'), tipo: 'productos', min_monto: min, max_monto: max, porcentaje: pct, created_at: new Date().toISOString() };
   await insertarNivelComisionSupabase(nivel);
 
   document.getElementById('nivelMin').value = '';
