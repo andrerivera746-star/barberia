@@ -1044,14 +1044,20 @@
             <select id="prodActive"><option value="true">Activo</option><option value="false">Inactivo</option></select>
           </div>
         </div>
+        <div class="field"><label>Ícono</label><div class="icon-picker" id="prodIconPicker"></div></div>
         <div class="modal-actions" style="margin-top:6px;">
           <button class="btn-gold" id="saveProductBtn">Guardar producto</button>
           <button class="btn-secondary hidden" id="cancelEditProductBtn">Cancelar edición</button>
         </div>
       </div>
 
-      <div class="services-admin-grid" id="productsAdminGrid"></div>
-      <div class="empty-state hidden" id="productsEmpty">Aún no tienes productos registrados.</div>
+      <div class="admin-card" style="padding:0;overflow-x:auto;">
+        <table class="responsive-table">
+          <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="productsTableBody"></tbody>
+        </table>
+        <div class="empty-state hidden" id="productsEmpty">Aún no tienes productos registrados.</div>
+      </div>
     </section>
 
     <!-- TAB: CORTES -->
@@ -2273,7 +2279,8 @@ async function actualizarProductoSupabase(id, datos) {
         name: datos.name,
         price: datos.price,
         stock: datos.stock,
-        active: datos.active
+        active: datos.active,
+        icon: datos.icon
       })
       .eq('id', id);
 
@@ -3008,37 +3015,52 @@ document.getElementById("saveServiceBtn").addEventListener("click", async ()=>{
 /* ============================================================
    ADMIN: TAB INVENTARIO
    ============================================================ */
+function renderProductIconPicker(selected){
+  const wrap = document.getElementById("prodIconPicker");
+  wrap.innerHTML = "";
+  Object.keys(ICONS).forEach(key=>{
+    const label = document.createElement("label");
+    label.innerHTML = `<input type="radio" name="prodIcon" value="${key}" ${key===selected?"checked":""}><span>${ICONS[key]}</span>`;
+    wrap.appendChild(label);
+  });
+}
+renderProductIconPicker("bottle");
+
 function renderAdminInventario(){
-  const grid = document.getElementById("productsAdminGrid");
-  grid.innerHTML = "";
+  const tbody = document.getElementById("productsTableBody");
+  tbody.innerHTML = "";
   document.getElementById("productsEmpty").classList.toggle("hidden", DATA.products.length > 0);
 
   DATA.products.forEach(prod=>{
     const active = prod.active === true || prod.active === "true";
     const lowStock = Number(prod.stock) <= 3;
-    const card = document.createElement("div");
-    card.className = "service-admin-card";
-    card.innerHTML = `
-      <div class="top">
-        <span class="badge ${active ? "pagado" : "inactivo"}">${active ? "Activo" : "Inactivo"}</span>
-        <div style="display:flex;gap:8px;">
-          <button class="btn-link" data-edit-prod="${prod.id}">Editar</button>
-          <button class="btn-danger" data-del-prod="${prod.id}">Eliminar</button>
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td data-label="Producto">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="service-icon" style="width:22px;height:22px;color:var(--gold);flex-shrink:0;display:inline-flex;">${ICONS[prod.icon]||ICONS.bottle}</span>
+          <span>${escapeHtml(prod.name)}</span>
         </div>
-      </div>
-      <div style="font-weight:700;margin-top:8px;">${escapeHtml(prod.name)}</div>
-      <div style="font-size:12.5px;color:var(--muted);">${money(prod.price)}</div>
-      <div style="font-size:12.5px;margin-top:4px;color:${lowStock ? "var(--danger)" : "var(--muted)"};">
-        Stock: ${escapeHtml(String(prod.stock))}${lowStock ? " ⚠️ bajo" : ""}
-      </div>
-    `;
-    grid.appendChild(card);
+      </td>
+      <td data-label="Precio">${money(prod.price)}</td>
+      <td data-label="Stock" style="${lowStock ? "color:var(--danger);font-weight:700;" : ""}">${escapeHtml(String(prod.stock))}${lowStock ? " ⚠️" : ""}</td>
+      <td data-label="Estado"><span class="badge ${active ? "pagado" : "inactivo"}">${active ? "Activo" : "Inactivo"}</span></td>
+      <td data-label="">
+        <div class="row-menu">
+          <button type="button" class="row-menu-btn" data-menu-toggle>⋯</button>
+          <div class="row-menu-dropdown hidden">
+            <button type="button" class="row-menu-item" data-edit-prod="${prod.id}">✎ Editar</button>
+            <button type="button" class="row-menu-item row-menu-danger" data-del-prod="${prod.id}">🗑 Eliminar</button>
+          </div>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
   });
 
-  grid.querySelectorAll("[data-edit-prod]").forEach(btn=>{
+  tbody.querySelectorAll("[data-edit-prod]").forEach(btn=>{
     btn.addEventListener("click", ()=> loadProductForEdit(btn.dataset.editProd));
   });
-  grid.querySelectorAll("[data-del-prod]").forEach(btn=>{
+  tbody.querySelectorAll("[data-del-prod]").forEach(btn=>{
     btn.addEventListener("click", ()=> eliminarProductoSupabase(btn.dataset.delProd));
   });
 }
@@ -3052,6 +3074,7 @@ function loadProductForEdit(id){
   document.getElementById("prodPrice").value = prod.price || "";
   document.getElementById("prodStock").value = prod.stock || 0;
   document.getElementById("prodActive").value = (prod.active === true || prod.active === "true") ? "true" : "false";
+  renderProductIconPicker(prod.icon || "bottle");
   document.getElementById("cancelEditProductBtn").classList.remove("hidden");
   window.scrollTo({top:0, behavior:"smooth"});
 }
@@ -3064,6 +3087,7 @@ function resetProductForm(){
   document.getElementById("prodPrice").value = "";
   document.getElementById("prodStock").value = "";
   document.getElementById("prodActive").value = "true";
+  renderProductIconPicker("bottle");
   document.getElementById("cancelEditProductBtn").classList.add("hidden");
 }
 
@@ -3073,13 +3097,15 @@ document.getElementById("saveProductBtn").addEventListener("click", async ()=>{
   const price = document.getElementById("prodPrice").value.trim();
   const stock = parseInt(document.getElementById("prodStock").value, 10) || 0;
   const active = document.getElementById("prodActive").value === "true";
+  const iconInput = document.querySelector('input[name="prodIcon"]:checked');
+  const icon = iconInput ? iconInput.value : "bottle";
   const editId = document.getElementById("prodEditId").value;
 
   if(editId){
-    await actualizarProductoSupabase(editId, { name, price, stock, active });
+    await actualizarProductoSupabase(editId, { name, price, stock, active, icon });
     resetProductForm();
   } else {
-    const producto = { id: uid("prod"), name, price, stock, active, created_at: new Date().toISOString() };
+    const producto = { id: uid("prod"), name, price, stock, active, icon, created_at: new Date().toISOString() };
     await insertarProductoSupabase(producto);
     resetProductForm();
   }
@@ -4271,7 +4297,7 @@ function renderProductPicker(){
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "service-pick-btn" + (wkSelectedProductId===prod.id ? " selected" : "");
-    btn.innerHTML = `<div class="service-icon">${ICONS.bottle}</div><span>${escapeHtml(prod.name)}</span><span style="font-size:11px;color:var(--muted);">${money(prod.price)} · stock ${escapeHtml(String(prod.stock))}</span>`;
+    btn.innerHTML = `<div class="service-icon">${ICONS[prod.icon]||ICONS.bottle}</div><span>${escapeHtml(prod.name)}</span><span style="font-size:11px;color:var(--muted);">${money(prod.price)} · stock ${escapeHtml(String(prod.stock))}</span>`;
     btn.addEventListener("click", ()=>{
       wkSelectedProductId = prod.id;
       document.getElementById("wkSaleFields").classList.remove("hidden");
