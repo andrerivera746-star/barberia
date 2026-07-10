@@ -465,7 +465,7 @@
   .stat-chip-value{display:block;font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--ink);}
   .stat-chip-label{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px;}
 
-  .worker-navbar{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 16px 8px;}
+  .worker-navbar{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 16px 8px;}
   .worker-nav-btn{display:flex;flex-direction:column;align-items:center;gap:6px;background:#fff;
     border:1px solid #ececec;border-radius:18px;padding:14px 4px;font-size:11px;font-weight:700;color:var(--muted);transition:all .25s ease;}
   .worker-nav-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(28,23,18,.06);}
@@ -597,7 +597,7 @@
     .stat-chip-row{grid-template-columns:repeat(4,1fr);gap:8px;padding:14px 14px 8px;}
     .stat-chip{padding:12px 6px;}
     .stat-chip-value{font-size:15px;}
-    .worker-navbar{grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 14px 8px;}
+    .worker-navbar{grid-template-columns:repeat(5,1fr);gap:6px;padding:12px 14px 8px;}
     .worker-nav-btn{padding:10px 4px;font-size:10px;}
     .worker-main{padding:16px 14px 120px;}
     .worker-section-title{margin:20px 0 10px;}
@@ -692,6 +692,7 @@
       <button class="admin-tab admin-tab-secondary" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span><span class="loyalty-nav-dot hidden" id="loyaltyNavDot"></span></button>
       <button class="admin-tab" data-tab="pagos"><span class="admin-tab-icon">💳</span><span class="admin-tab-label">Pagos</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
+      <button class="admin-tab admin-tab-secondary" data-tab="inventario"><span class="admin-tab-icon">📦</span><span class="admin-tab-label">Inventario</span></button>
       <button class="admin-tab" data-tab="cortes"><span class="admin-tab-icon">⏱️</span><span class="admin-tab-label">Cortes</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
       <button class="admin-tab admin-tab-secondary" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
@@ -714,6 +715,7 @@
       <button class="admin-tab" data-tab="trabajadores"><span class="admin-tab-icon">👥</span><span class="admin-tab-label">Trabajadores</span></button>
       <button class="admin-tab" data-tab="fidelizacion"><span class="admin-tab-icon">🎁</span><span class="admin-tab-label">Fidelización</span></button>
       <button class="admin-tab" data-tab="comisiones"><span class="admin-tab-icon">💰</span><span class="admin-tab-label">Comisiones</span></button>
+      <button class="admin-tab" data-tab="inventario"><span class="admin-tab-icon">📦</span><span class="admin-tab-label">Inventario</span></button>
       <button class="admin-tab" data-tab="asistencia"><span class="admin-tab-icon">🕐</span><span class="admin-tab-label">Asistencia</span></button>
       <button class="admin-tab" data-tab="administradores"><span class="admin-tab-icon">🔑</span><span class="admin-tab-label">Administradores</span></button>
       <button class="admin-tab" data-tab="ajustes"><span class="admin-tab-icon">⚙️</span><span class="admin-tab-label">Ajustes</span></button>
@@ -996,13 +998,60 @@
         </div>
       </div>
 
+      <div class="admin-card">
+        <h3>Niveles de comisión por venta diaria</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">
+          El % de cada trabajador ya no se escribe a mano: se calcula solo según en qué nivel
+          caiga lo que cobró <strong>ese día</strong>. Ej: si pones un nivel "de 0 a 500 = 5%" y otro
+          "de 500 a 1500 = 8%", un trabajador que cobró 900 ese día gana 8% automáticamente.
+        </p>
+        <div class="grid-2">
+          <div class="field"><label>Monto mínimo</label><input type="text" id="nivelMin" placeholder="Ej. 0"></div>
+          <div class="field"><label>Monto máximo (vacío = sin límite)</label><input type="text" id="nivelMax" placeholder="Ej. 500"></div>
+        </div>
+        <div class="field"><label>Porcentaje de comisión</label><input type="text" id="nivelPct" placeholder="Ej. 8"></div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveNivelBtn">Agregar nivel</button>
+        </div>
+        <div id="nivelesList" style="margin-top:16px;display:flex;flex-direction:column;gap:8px;"></div>
+        <div class="empty-state hidden" id="nivelesEmpty">Aún no has definido niveles de comisión.</div>
+      </div>
+
       <div class="admin-card" style="padding:0;overflow-x:auto;">
         <table class="responsive-table">
-          <thead><tr><th>Trabajador</th><th>% Comisión</th><th>Cobrado</th><th>Comisión a pagar</th><th></th></tr></thead>
+          <thead><tr><th>Trabajador</th><th>Nivel actual</th><th>Cobrado</th><th>Comisión a pagar</th></tr></thead>
           <tbody id="commissionsTableBody"></tbody>
         </table>
         <div class="empty-state hidden" id="commissionsEmpty">No tienes trabajadores activos.</div>
       </div>
+    </section>
+
+    <!-- TAB: INVENTARIO -->
+    <section class="admin-tab-panel hidden" data-panel="inventario">
+      <div class="admin-panel-header"><h2>Inventario</h2></div>
+
+      <div class="admin-card">
+        <h3 id="productFormTitle">Agregar producto</h3>
+        <input type="hidden" id="prodEditId">
+        <div class="grid-2">
+          <div class="field"><label>Nombre del producto</label><input type="text" id="prodName" placeholder="Ej. Cera para cabello"></div>
+          <div class="field"><label>Precio</label><input type="text" id="prodPrice" placeholder="Ej. 25.00"></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label>Stock disponible</label><input type="number" id="prodStock" min="0" step="1" placeholder="Ej. 10"></div>
+          <div class="field">
+            <label>Estado</label>
+            <select id="prodActive"><option value="true">Activo</option><option value="false">Inactivo</option></select>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top:6px;">
+          <button class="btn-gold" id="saveProductBtn">Guardar producto</button>
+          <button class="btn-secondary hidden" id="cancelEditProductBtn">Cancelar edición</button>
+        </div>
+      </div>
+
+      <div class="services-admin-grid" id="productsAdminGrid"></div>
+      <div class="empty-state hidden" id="productsEmpty">Aún no tienes productos registrados.</div>
     </section>
 
     <!-- TAB: CORTES -->
@@ -1150,6 +1199,7 @@
     <nav class="worker-navbar">
       <button class="worker-nav-btn active" data-worker-tab="citas"><span class="nav-icon">📅</span>Citas</button>
       <button class="worker-nav-btn" data-worker-tab="atender"><span class="nav-icon">✂️</span>Atender</button>
+      <button class="worker-nav-btn" data-worker-tab="vender"><span class="nav-icon">🛍️</span>Vender</button>
       <button class="worker-nav-btn" data-worker-tab="asistencia"><span class="nav-icon">🕐</span>Asistencia</button>
       <button class="worker-nav-btn" data-worker-tab="historial"><span class="nav-icon">📊</span>Historial</button>
     </nav>
@@ -1199,6 +1249,28 @@
         </div>
       </section>
 
+      <!-- TAB: VENDER PRODUCTO -->
+      <section class="worker-tab-panel hidden" data-worker-panel="vender">
+        <div class="worker-section-title">1. Elige el producto</div>
+        <div class="service-picker-grid" id="wkProductPicker"></div>
+        <div class="empty-state hidden" id="wkProductsEmpty">No hay productos disponibles.</div>
+
+        <div id="wkSaleFields" class="hidden">
+          <div class="worker-section-title">2. Cantidad</div>
+          <div class="field"><input type="number" id="wkSaleQty" min="1" step="1" value="1"></div>
+
+          <div class="worker-section-title">3. Cobro</div>
+          <div class="method-btn-row" id="wkSaleMethodPicker">
+            <button type="button" class="method-btn selected" data-sale-method="Efectivo">💵 Efectivo</button>
+            <button type="button" class="method-btn" data-sale-method="Yape">🟡 Yape</button>
+          </div>
+          <div id="wkSaleYapeFields" class="hidden">
+            <div class="field"><label>Código de operación</label><input type="text" id="wkSaleYapeCode" placeholder="Ej. 123456"></div>
+          </div>
+          <div class="field"><label>Monto cobrado</label><input type="text" id="wkSaleAmount" class="amount-input-big" placeholder="0.00"></div>
+        </div>
+      </section>
+
       <!-- TAB: MI HISTORIAL -->
       <section class="worker-tab-panel hidden" data-worker-panel="historial">
         <div class="stat-chip-row" style="grid-template-columns:repeat(2,1fr);padding:0 0 4px;">
@@ -1232,6 +1304,10 @@
 
     <div class="sticky-confirm-bar hidden" id="wkConfirmBar">
       <button class="btn-gold" id="wkAttendSaveBtn" style="width:100%;">✓ Registrar atención</button>
+    </div>
+
+    <div class="sticky-confirm-bar hidden" id="wkSaleConfirmBar">
+      <button class="btn-gold" id="wkConfirmSaleBtn" style="width:100%;">✓ Confirmar venta</button>
     </div>
   </div>
 </div>
@@ -1316,6 +1392,8 @@ function defaultData(){
     clients: [],
     payments: [],
     workers: [],
+    products: [],
+    comisionNiveles: [],
     adminPassword: "barberia2026",
     loyalty: {
       enabled: true,
@@ -1401,6 +1479,8 @@ function loadData(){
   if(!Array.isArray(DATA.clients)) DATA.clients = [];
   if(!Array.isArray(DATA.payments)) DATA.payments = [];
   if(!Array.isArray(DATA.workers)) DATA.workers = [];
+  if(!Array.isArray(DATA.products)) DATA.products = [];
+  if(!Array.isArray(DATA.comisionNiveles)) DATA.comisionNiveles = [];
   if(!DATA.adminPassword) DATA.adminPassword = d.adminPassword;
   DATA.loyalty = Object.assign({}, d.loyalty, DATA.loyalty||{});
   if(!DATA.loyalty.notified || typeof DATA.loyalty.notified !== 'object') DATA.loyalty.notified = {};
@@ -1469,6 +1549,8 @@ async function conectarSupabase() {
     suscribirRealtimeClientes();
     suscribirRealtimeTrabajadores();
     suscribirRealtimeAsistencias();
+    suscribirRealtimeProductos();
+    suscribirRealtimeNiveles();
 
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
@@ -1538,6 +1620,26 @@ async function cargarTodosLosDatos() {
 
     if (!errTrabajadores && trabajadores) {
       DATA.workers = trabajadores;
+    }
+
+    // Cargar productos (inventario)
+    const { data: productos, error: errProductos } = await supabaseClient
+      .from('productos')
+      .select('*')
+      .order('created_at', { ascending: true });
+
+    if (!errProductos && productos) {
+      DATA.products = productos;
+    }
+
+    // Cargar niveles de comisión
+    const { data: niveles, error: errNiveles } = await supabaseClient
+      .from('comision_niveles')
+      .select('*')
+      .order('min_monto', { ascending: true });
+
+    if (!errNiveles && niveles) {
+      DATA.comisionNiveles = niveles;
     }
 
     saveDataLocal();
@@ -1773,6 +1875,98 @@ function suscribirRealtimeAsistencias() {
     .subscribe((status) => {
       if (status === 'SUBSCRIBED') {
         console.log('🔄 Sincronización en tiempo real activa (asistencias)');
+      }
+    });
+}
+
+/* ============================================================
+   TIEMPO REAL: PRODUCTOS (inventario)
+   Si un trabajador vende algo y descuenta stock, o el admin agrega/edita
+   un producto, el resto de paneles abiertos lo ven al instante.
+   ============================================================ */
+let realtimeProductosChannel = null;
+
+function suscribirRealtimeProductos() {
+  if (!supabaseClient) return;
+
+  if (realtimeProductosChannel) {
+    supabaseClient.removeChannel(realtimeProductosChannel);
+    realtimeProductosChannel = null;
+  }
+
+  realtimeProductosChannel = supabaseClient
+    .channel('productos-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, (payload) => {
+      manejarCambioProductoRealtime(payload);
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (productos)');
+      }
+    });
+}
+
+function manejarCambioProductoRealtime(payload) {
+  const { eventType, new: nuevo, old: viejo } = payload;
+
+  if (eventType === 'DELETE') {
+    DATA.products = DATA.products.filter(p => p.id !== viejo.id);
+  } else {
+    const idx = DATA.products.findIndex(p => p.id === nuevo.id);
+    if (idx >= 0) DATA.products[idx] = nuevo;
+    else DATA.products.push(nuevo);
+  }
+
+  saveDataLocal();
+
+  const adminPanel = document.getElementById('adminPanel');
+  if (adminPanel && !adminPanel.classList.contains('hidden')) {
+    const invPanel = document.querySelector('.admin-tab-panel[data-panel="inventario"]');
+    if (invPanel && !invPanel.classList.contains('hidden')) renderAdminInventario();
+  }
+
+  const workerPanel = document.getElementById('workerPanel');
+  if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
+    const salePanel = document.querySelector('.worker-tab-panel[data-worker-panel="vender"]');
+    if (salePanel && !salePanel.classList.contains('hidden')) renderProductPicker();
+  }
+}
+
+/* ============================================================
+   TIEMPO REAL: NIVELES DE COMISIÓN
+   Si el admin agrega/edita/quita un nivel, la pestaña Comisiones y el
+   "Comisión hoy" del trabajador se recalculan solos, sin recargar.
+   ============================================================ */
+let realtimeNivelesChannel = null;
+
+function suscribirRealtimeNiveles() {
+  if (!supabaseClient) return;
+
+  if (realtimeNivelesChannel) {
+    supabaseClient.removeChannel(realtimeNivelesChannel);
+    realtimeNivelesChannel = null;
+  }
+
+  realtimeNivelesChannel = supabaseClient
+    .channel('niveles-realtime')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'comision_niveles' }, async () => {
+      const { data } = await supabaseClient
+        .from('comision_niveles')
+        .select('*')
+        .order('min_monto', { ascending: true });
+      if (data) DATA.comisionNiveles = data;
+      saveDataLocal();
+
+      const adminPanel = document.getElementById('adminPanel');
+      if (adminPanel && !adminPanel.classList.contains('hidden')) {
+        const commPanel = document.querySelector('.admin-tab-panel[data-panel="comisiones"]');
+        if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
+      }
+      if (currentWorker) renderWorkerHome();
+    })
+    .subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        console.log('🔄 Sincronización en tiempo real activa (niveles de comisión)');
       }
     });
 }
@@ -2023,6 +2217,181 @@ async function actualizarServicioSupabase(id, datos) {
     console.error('Error al actualizar servicio:', error);
     showToast('❌ Error al actualizar: ' + error.message, 'error');
   }
+}
+
+// PRODUCTOS (inventario)
+async function insertarProductoSupabase(producto) {
+  if (!supabaseClient || !isConnected) {
+    DATA.products.push(producto);
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('💾 Producto guardado localmente');
+    return producto;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('productos')
+      .insert([producto])
+      .select();
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      const idx = DATA.products.findIndex(p => p.id === producto.id);
+      if (idx >= 0) DATA.products[idx] = data[0];
+      else DATA.products.push(data[0]);
+      saveDataLocal();
+      renderAdminInventario();
+      showToast(`✅ Producto "${producto.name}" guardado en Supabase`);
+      return data[0];
+    }
+  } catch (error) {
+    console.error('Error al insertar producto:', error);
+    DATA.products.push(producto);
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('⚠️ Guardado localmente', 'error');
+    return producto;
+  }
+}
+
+async function actualizarProductoSupabase(id, datos) {
+  if (!supabaseClient || !isConnected) {
+    const idx = DATA.products.findIndex(p => p.id === id);
+    if (idx >= 0) DATA.products[idx] = { ...DATA.products[idx], ...datos };
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('💾 Producto actualizado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('productos')
+      .update({
+        name: datos.name,
+        price: datos.price,
+        stock: datos.stock,
+        active: datos.active
+      })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    const idx = DATA.products.findIndex(p => p.id === id);
+    if (idx >= 0) DATA.products[idx] = { ...DATA.products[idx], ...datos };
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('✅ Producto actualizado en Supabase');
+  } catch (error) {
+    console.error('Error al actualizar producto:', error);
+    showToast('❌ Error al actualizar: ' + error.message, 'error');
+  }
+}
+
+async function eliminarProductoSupabase(id) {
+  if (!confirm('¿Eliminar este producto de tu inventario?')) return;
+
+  if (!supabaseClient || !isConnected) {
+    DATA.products = DATA.products.filter(p => p.id !== id);
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('🗑️ Producto eliminado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('productos')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    DATA.products = DATA.products.filter(p => p.id !== id);
+    saveDataLocal();
+    renderAdminInventario();
+    showToast('✅ Producto eliminado de Supabase');
+  } catch (error) {
+    console.error('Error al eliminar producto:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+// NIVELES DE COMISIÓN
+async function insertarNivelComisionSupabase(nivel) {
+  if (!supabaseClient || !isConnected) {
+    DATA.comisionNiveles.push(nivel);
+    saveDataLocal();
+    renderAdminComisiones();
+    showToast('💾 Nivel guardado localmente');
+    return;
+  }
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('comision_niveles')
+      .insert([nivel])
+      .select();
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      DATA.comisionNiveles.push(data[0]);
+      DATA.comisionNiveles.sort((a, b) => parseFloat(a.min_monto) - parseFloat(b.min_monto));
+      saveDataLocal();
+      renderAdminComisiones();
+      showToast('✅ Nivel de comisión guardado');
+    }
+  } catch (error) {
+    console.error('Error al insertar nivel:', error);
+    showToast('❌ Error al guardar: ' + error.message, 'error');
+  }
+}
+
+async function eliminarNivelComisionSupabase(id) {
+  if (!confirm('¿Eliminar este nivel de comisión?')) return;
+
+  if (!supabaseClient || !isConnected) {
+    DATA.comisionNiveles = DATA.comisionNiveles.filter(n => n.id !== id);
+    saveDataLocal();
+    renderAdminComisiones();
+    showToast('🗑️ Nivel eliminado localmente');
+    return;
+  }
+
+  try {
+    const { error } = await supabaseClient
+      .from('comision_niveles')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    DATA.comisionNiveles = DATA.comisionNiveles.filter(n => n.id !== id);
+    saveDataLocal();
+    renderAdminComisiones();
+    showToast('✅ Nivel eliminado');
+  } catch (error) {
+    console.error('Error al eliminar nivel:', error);
+    showToast('❌ Error al eliminar: ' + error.message, 'error');
+  }
+}
+
+// Devuelve el % de comisión que corresponde a un monto vendido/cobrado,
+// según los niveles que definió el admin (el que tenga el mínimo más alto
+// que aún cumpla el monto, para evitar ambigüedad si dos niveles se cruzan).
+function calcularComisionPorNivel(monto) {
+  if (!Array.isArray(DATA.comisionNiveles) || DATA.comisionNiveles.length === 0) return 0;
+  const nivel = DATA.comisionNiveles
+    .filter(n => {
+      const min = parseFloat(n.min_monto) || 0;
+      const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? null : parseFloat(n.max_monto);
+      return monto >= min && (max === null || monto <= max);
+    })
+    .sort((a, b) => (parseFloat(b.min_monto) || 0) - (parseFloat(a.min_monto) || 0))[0];
+  return nivel ? (parseFloat(nivel.porcentaje) || 0) : 0;
 }
 
 // PAGOS
@@ -2411,7 +2780,7 @@ document.getElementById("backToSiteBtnMobile").addEventListener("click", handleA
 /* ============================================================
    ADMIN (mobile): panel "Más opciones"
    ============================================================ */
-const SECONDARY_TABS = ["sitio","servicios","trabajadores","fidelizacion","comisiones","asistencia","administradores","ajustes"];
+const SECONDARY_TABS = ["sitio","servicios","trabajadores","fidelizacion","comisiones","inventario","asistencia","administradores","ajustes"];
 
 function openMoreSheet(){
   document.getElementById("adminMoreSheet").classList.add("open");
@@ -2488,8 +2857,10 @@ function switchWorkerTab(name){
   document.querySelectorAll("[data-worker-tab]").forEach(t=> t.classList.toggle("active", t.dataset.workerTab===name));
   document.querySelectorAll(".worker-tab-panel").forEach(p=> p.classList.toggle("hidden", p.dataset.workerPanel!==name));
   document.getElementById("wkConfirmBar").classList.toggle("hidden", name !== "atender");
+  document.getElementById("wkSaleConfirmBar").classList.toggle("hidden", name !== "vender");
   if(name === "citas") renderWorkerCitas();
   if(name === "atender") renderWorkerAttendForm();
+  if(name === "vender") renderWorkerSaleForm();
   if(name === "asistencia") renderWorkerAsistencia();
   if(name === "historial") renderWorkerHistory();
 }
@@ -2631,6 +3002,86 @@ document.getElementById("saveServiceBtn").addEventListener("click", async ()=>{
   } else {
     await insertarServicioSupabase(servicio);
     resetServiceForm();
+  }
+});
+
+/* ============================================================
+   ADMIN: TAB INVENTARIO
+   ============================================================ */
+function renderAdminInventario(){
+  const grid = document.getElementById("productsAdminGrid");
+  grid.innerHTML = "";
+  document.getElementById("productsEmpty").classList.toggle("hidden", DATA.products.length > 0);
+
+  DATA.products.forEach(prod=>{
+    const active = prod.active === true || prod.active === "true";
+    const lowStock = Number(prod.stock) <= 3;
+    const card = document.createElement("div");
+    card.className = "service-admin-card";
+    card.innerHTML = `
+      <div class="top">
+        <span class="badge ${active ? "pagado" : "inactivo"}">${active ? "Activo" : "Inactivo"}</span>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-link" data-edit-prod="${prod.id}">Editar</button>
+          <button class="btn-danger" data-del-prod="${prod.id}">Eliminar</button>
+        </div>
+      </div>
+      <div style="font-weight:700;margin-top:8px;">${escapeHtml(prod.name)}</div>
+      <div style="font-size:12.5px;color:var(--muted);">${money(prod.price)}</div>
+      <div style="font-size:12.5px;margin-top:4px;color:${lowStock ? "var(--danger)" : "var(--muted)"};">
+        Stock: ${escapeHtml(String(prod.stock))}${lowStock ? " ⚠️ bajo" : ""}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  grid.querySelectorAll("[data-edit-prod]").forEach(btn=>{
+    btn.addEventListener("click", ()=> loadProductForEdit(btn.dataset.editProd));
+  });
+  grid.querySelectorAll("[data-del-prod]").forEach(btn=>{
+    btn.addEventListener("click", ()=> eliminarProductoSupabase(btn.dataset.delProd));
+  });
+}
+
+function loadProductForEdit(id){
+  const prod = DATA.products.find(p=>p.id===id);
+  if(!prod) return;
+  document.getElementById("productFormTitle").textContent = "Editar producto";
+  document.getElementById("prodEditId").value = prod.id;
+  document.getElementById("prodName").value = prod.name;
+  document.getElementById("prodPrice").value = prod.price || "";
+  document.getElementById("prodStock").value = prod.stock || 0;
+  document.getElementById("prodActive").value = (prod.active === true || prod.active === "true") ? "true" : "false";
+  document.getElementById("cancelEditProductBtn").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+document.getElementById("cancelEditProductBtn").addEventListener("click", resetProductForm);
+function resetProductForm(){
+  document.getElementById("productFormTitle").textContent = "Agregar producto";
+  document.getElementById("prodEditId").value = "";
+  document.getElementById("prodName").value = "";
+  document.getElementById("prodPrice").value = "";
+  document.getElementById("prodStock").value = "";
+  document.getElementById("prodActive").value = "true";
+  document.getElementById("cancelEditProductBtn").classList.add("hidden");
+}
+
+document.getElementById("saveProductBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("prodName").value.trim();
+  if(!name){ showToast("Escribe un nombre para el producto.", "error"); return; }
+  const price = document.getElementById("prodPrice").value.trim();
+  const stock = parseInt(document.getElementById("prodStock").value, 10) || 0;
+  const active = document.getElementById("prodActive").value === "true";
+  const editId = document.getElementById("prodEditId").value;
+
+  if(editId){
+    await actualizarProductoSupabase(editId, { name, price, stock, active });
+    resetProductForm();
+  } else {
+    const producto = { id: uid("prod"), name, price, stock, active, created_at: new Date().toISOString() };
+    await insertarProductoSupabase(producto);
+    resetProductForm();
   }
 });
 
@@ -3793,6 +4244,128 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
   renderWorkerHome();
 });
 
+/* ============================================================
+   WORKER: VENDER PRODUCTO (descuenta del inventario)
+   ============================================================ */
+let wkSelectedProductId = null;
+let wkSaleMethod = "Efectivo";
+
+function renderWorkerSaleForm(){
+  wkSelectedProductId = null;
+  wkSaleMethod = "Efectivo";
+  document.getElementById("wkSaleQty").value = "1";
+  document.getElementById("wkSaleAmount").value = "";
+  document.getElementById("wkSaleYapeCode").value = "";
+  document.getElementById("wkSaleFields").classList.add("hidden");
+  renderProductPicker();
+  renderSaleMethodPicker();
+}
+
+function renderProductPicker(){
+  const grid = document.getElementById("wkProductPicker");
+  grid.innerHTML = "";
+  const disponibles = (DATA.products || []).filter(p => (p.active === true || p.active === "true") && Number(p.stock) > 0);
+  document.getElementById("wkProductsEmpty").classList.toggle("hidden", disponibles.length > 0);
+
+  disponibles.forEach(prod=>{
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "service-pick-btn" + (wkSelectedProductId===prod.id ? " selected" : "");
+    btn.innerHTML = `<div class="service-icon">${ICONS.bottle}</div><span>${escapeHtml(prod.name)}</span><span style="font-size:11px;color:var(--muted);">${money(prod.price)} · stock ${escapeHtml(String(prod.stock))}</span>`;
+    btn.addEventListener("click", ()=>{
+      wkSelectedProductId = prod.id;
+      document.getElementById("wkSaleFields").classList.remove("hidden");
+      const qty = parseInt(document.getElementById("wkSaleQty").value, 10) || 1;
+      document.getElementById("wkSaleAmount").value = (parseFloat(prod.price) * qty).toFixed(2);
+      renderProductPicker();
+    });
+    grid.appendChild(btn);
+  });
+}
+
+document.getElementById("wkSaleQty").addEventListener("input", ()=>{
+  if(!wkSelectedProductId) return;
+  const prod = DATA.products.find(p=>p.id===wkSelectedProductId);
+  if(!prod) return;
+  const qty = parseInt(document.getElementById("wkSaleQty").value, 10) || 0;
+  document.getElementById("wkSaleAmount").value = (parseFloat(prod.price) * qty).toFixed(2);
+});
+
+function renderSaleMethodPicker(){
+  document.querySelectorAll("#wkSaleMethodPicker .method-btn").forEach(btn=>{
+    btn.classList.toggle("selected", btn.dataset.saleMethod === wkSaleMethod);
+  });
+  document.getElementById("wkSaleYapeFields").classList.toggle("hidden", wkSaleMethod !== "Yape");
+}
+document.querySelectorAll("#wkSaleMethodPicker .method-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    wkSaleMethod = btn.dataset.saleMethod;
+    renderSaleMethodPicker();
+  });
+});
+
+document.getElementById("wkConfirmSaleBtn").addEventListener("click", async ()=>{
+  if(!currentWorker) return;
+  if(!wkSelectedProductId){ showToast("Elige un producto.", "error"); return; }
+  const product = DATA.products.find(p=>p.id===wkSelectedProductId);
+  if(!product){ showToast("Producto no encontrado.", "error"); return; }
+
+  const qty = parseInt(document.getElementById("wkSaleQty").value, 10) || 0;
+  if(qty < 1){ showToast("Ingresa una cantidad válida.", "error"); return; }
+  if(qty > Number(product.stock)){ showToast(`Solo quedan ${product.stock} unidades disponibles.`, "error"); return; }
+
+  const amount = document.getElementById("wkSaleAmount").value.trim();
+  if(!amount){ showToast("Ingresa el monto cobrado.", "error"); return; }
+
+  let yapeCode = "";
+  if(wkSaleMethod === "Yape"){
+    yapeCode = document.getElementById("wkSaleYapeCode").value.trim();
+    if(!yapeCode){ showToast("Completa el código de Yape.", "error"); return; }
+  }
+
+  // Descuento de stock con bloqueo optimista: la condición ".eq('stock', product.stock)"
+  // hace que, si otro trabajador vendió este mismo producto un segundo antes, esta
+  // actualización no afecte ninguna fila (en vez de dejar el stock en negativo).
+  const { data: stockRows, error: stockErr } = await supabaseClient
+    .from('productos')
+    .update({ stock: Number(product.stock) - qty })
+    .eq('id', product.id)
+    .eq('stock', product.stock)
+    .select();
+
+  if(stockErr){ showToast('❌ Error al actualizar el stock: ' + stockErr.message, 'error'); return; }
+  if(!stockRows || stockRows.length === 0){
+    showToast('⚠️ El stock cambió justo ahora, revisa la cantidad disponible e intenta de nuevo.', 'error');
+    renderProductPicker();
+    return;
+  }
+
+  const venta = {
+    id: uid("p"),
+    clientid: null,
+    clientname: "Venta directa",
+    serviceid: "",
+    servicetitle: product.name,
+    product_id: product.id,
+    quantity: qty,
+    date: new Date().toISOString().slice(0,10),
+    time: new Date().toTimeString().slice(0,5),
+    amount: amount,
+    method: wkSaleMethod,
+    status: "pagado",
+    workerid: currentWorker.id,
+    workername: currentWorker.name,
+    yape_code: wkSaleMethod === "Yape" ? yapeCode : "",
+    notes: "",
+    created_at: new Date().toISOString()
+  };
+
+  await insertarPagoSupabase(venta);
+  showToast(`✅ Venta registrada: ${product.name} x${qty}`);
+  renderWorkerSaleForm();
+  renderWorkerHome();
+});
+
 function calcMinutesSince(iso){
   const start = new Date(iso);
   if(isNaN(start)) return 0;
@@ -3810,9 +4383,9 @@ function renderWorkerHome(){
   document.getElementById("workerActiveCount").textContent = active;
 
   // La comisión se recalcula desde cero cada día: se basa solo en lo
-  // cobrado hoy (todays), así que se "renueva" automáticamente sin
-  // guardar nada aparte.
-  const pct = parseFloat(currentWorker.commission_percent) || 0;
+  // cobrado hoy (todays), y el % ya no es fijo por trabajador — sube
+  // solo según el nivel de venta diaria que definió el admin.
+  const pct = calcularComisionPorNivel(total);
   const commission = total * (pct / 100);
   document.getElementById("workerCommissionToday").textContent = money(commission);
 }
@@ -3892,6 +4465,7 @@ function switchTab(name){
   if(name === 'fidelizacion') renderLoyaltyTab(document.getElementById("loyaltySearch").value);
   if(name === 'asistencia') renderAdminAsistencia();
   if(name === 'comisiones') renderAdminComisiones();
+  if(name === 'inventario') renderAdminInventario();
   if(name === 'administradores') renderAdminAdmins();
 }
 
@@ -3969,6 +4543,8 @@ async function renderAdminComisiones(dateStr){
   const date = dateStr || dateInput.value || new Date().toISOString().slice(0,10);
   dateInput.value = date;
 
+  renderNivelesList();
+
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
   const tbody = document.getElementById('commissionsTableBody');
   tbody.innerHTML = '';
@@ -3980,7 +4556,7 @@ async function renderAdminComisiones(dateStr){
     const cobrado = DATA.payments
       .filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date)
       .reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pct = parseFloat(w.commission_percent) || 0;
+    const pct = calcularComisionPorNivel(cobrado);
     const comision = cobrado * (pct / 100);
     totalCollected += cobrado;
     totalPayout += comision;
@@ -3988,38 +4564,59 @@ async function renderAdminComisiones(dateStr){
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td data-label="Trabajador">${escapeHtml(w.name)}</td>
-      <td data-label="% Comisión">
-        <input type="number" class="table-select" data-commission-input="${w.id}" min="0" max="100" step="0.1" value="${pct}" style="width:80px;">
-      </td>
+      <td data-label="Nivel actual">${pct}%</td>
       <td data-label="Cobrado">${money(cobrado)}</td>
-      <td data-label="Comisión a pagar">${money(comision)}</td>
-      <td data-label=""><button type="button" class="btn-link" data-save-commission="${w.id}">Guardar</button></td>`;
+      <td data-label="Comisión a pagar">${money(comision)}</td>`;
     tbody.appendChild(tr);
   });
 
   document.getElementById('commTotalCollected').textContent = money(totalCollected);
   document.getElementById('commTotalPayout').textContent = money(totalPayout);
-
-  tbody.querySelectorAll('[data-save-commission]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const workerId = btn.dataset.saveCommission;
-      const input = tbody.querySelector(`[data-commission-input="${workerId}"]`);
-      const pct = parseFloat(input.value);
-      if (isNaN(pct) || pct < 0 || pct > 100) { showToast('Ingresa un porcentaje válido (0-100).', 'error'); return; }
-
-      const { error } = await supabaseClient.from('trabajadores').update({ commission_percent: pct }).eq('id', workerId);
-      if (error) { showToast('❌ Error al guardar: ' + error.message, 'error'); return; }
-
-      const w = DATA.workers.find(x => x.id === workerId);
-      if (w) w.commission_percent = pct;
-      saveDataLocal();
-      showToast('✅ Porcentaje de comisión guardado');
-      renderAdminComisiones(date);
-    });
-  });
 }
 
 document.getElementById('commReportDate').addEventListener('change', ()=> renderAdminComisiones());
+
+/* ---------- Niveles de comisión (dentro de la pestaña Comisiones) ---------- */
+function renderNivelesList(){
+  const wrap = document.getElementById('nivelesList');
+  wrap.innerHTML = '';
+  document.getElementById('nivelesEmpty').classList.toggle('hidden', DATA.comisionNiveles.length > 0);
+
+  DATA.comisionNiveles
+    .slice()
+    .sort((a,b)=> (parseFloat(a.min_monto)||0) - (parseFloat(b.min_monto)||0))
+    .forEach(n=>{
+      const max = (n.max_monto === null || n.max_monto === undefined || n.max_monto === '') ? 'sin límite' : money(n.max_monto);
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--cream-dark);border-radius:10px;padding:10px 14px;';
+      row.innerHTML = `
+        <span style="font-size:13.5px;">De ${money(n.min_monto)} a ${max} → <strong>${n.porcentaje}%</strong></span>
+        <button type="button" class="btn-danger" data-del-nivel="${n.id}">Eliminar</button>`;
+      wrap.appendChild(row);
+    });
+
+  wrap.querySelectorAll('[data-del-nivel]').forEach(btn=>{
+    btn.addEventListener('click', ()=> eliminarNivelComisionSupabase(btn.dataset.delNivel));
+  });
+}
+
+document.getElementById('saveNivelBtn').addEventListener('click', async ()=>{
+  const min = parseFloat(document.getElementById('nivelMin').value);
+  const maxRaw = document.getElementById('nivelMax').value.trim();
+  const pct = parseFloat(document.getElementById('nivelPct').value);
+
+  if(isNaN(min) || min < 0){ showToast('Ingresa un monto mínimo válido.', 'error'); return; }
+  if(isNaN(pct) || pct < 0 || pct > 100){ showToast('Ingresa un porcentaje válido (0-100).', 'error'); return; }
+  const max = maxRaw === '' ? null : parseFloat(maxRaw);
+  if(max !== null && (isNaN(max) || max <= min)){ showToast('El monto máximo debe ser mayor al mínimo.', 'error'); return; }
+
+  const nivel = { id: uid('niv'), min_monto: min, max_monto: max, porcentaje: pct, created_at: new Date().toISOString() };
+  await insertarNivelComisionSupabase(nivel);
+
+  document.getElementById('nivelMin').value = '';
+  document.getElementById('nivelMax').value = '';
+  document.getElementById('nivelPct').value = '';
+});
 
 /* ============================================================
    ADMIN: TAB ADMINISTRADORES
