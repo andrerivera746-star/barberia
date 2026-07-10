@@ -1711,6 +1711,18 @@ async function cargarTodosLosDatos() {
     if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
     checkLoyaltyMilestones();
 
+    // Mismo problema que el de "Resumen", pero del lado del trabajador: si
+    // entró justo antes de que llegaran los datos reales de Supabase, su
+    // pantalla de inicio (Citas, los cuadros de arriba, Historial) se quedaba
+    // con lo que hubiera en el navegador (vacío en una sesión nueva) y nunca
+    // se refrescaba sola.
+    const workerPanel = document.getElementById('workerPanel');
+    if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
+      renderWorkerHome();
+      renderWorkerCitas();
+      renderWorkerHistory();
+    }
+
   } catch (error) {
     console.error('Error al cargar datos:', error);
   }
@@ -1777,10 +1789,11 @@ function actualizarVistasTrasCambioPago() {
     if (commPanel && !commPanel.classList.contains('hidden')) renderAdminComisiones();
   }
 
-  // Panel trabajador: su resumen, su tarjeta de corte activo y su historial
+  // Panel trabajador: su resumen, su lista de citas, su tarjeta de corte activo y su historial
   const workerPanel = document.getElementById('workerPanel');
   if (workerPanel && !workerPanel.classList.contains('hidden') && currentWorker) {
     renderWorkerHome();
+    renderWorkerCitas();
     renderWorkerHistory();
     if (typeof renderWorkerActiveCutCard === 'function') renderWorkerActiveCutCard();
   }
