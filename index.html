@@ -1702,6 +1702,13 @@ async function cargarTodosLosDatos() {
     renderAdminPayments();
     renderAdminWorkers();
     renderAdminInventario();
+    // El panel "Resumen" nunca se recalculaba aquí: justo al entrar se
+    // llena con lo que hubiera en el navegador (vacío en una sesión nueva),
+    // y cuando los datos reales de Supabase llegaban un segundo después,
+    // esos KPIs se quedaban pegados en 0 aunque el resto de pestañas sí
+    // se actualizaban bien.
+    const resumenPanel = document.querySelector('.admin-tab-panel[data-panel="resumen"]');
+    if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
     checkLoyaltyMilestones();
 
   } catch (error) {
