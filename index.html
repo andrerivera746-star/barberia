@@ -949,9 +949,13 @@
       <div class="admin-card">
         <h3>Registrar cobro manual</h3>
         <div class="grid-2">
-          <div class="field"><label>Cliente</label><select id="payClient"></select></div>
+          <div class="field">
+            <label>Cliente</label>
+            <input type="text" id="payClientSearch" placeholder="Buscar por nombre o celular...">
+          </div>
           <div class="field"><label>Servicio</label><select id="payService"></select></div>
         </div>
+        <div class="client-chip-row" id="payClientChips" style="margin:-6px 0 14px;"></div>
         <div class="grid-2">
           <div class="field"><label>Fecha</label><input type="date" id="payDate"></div>
           <div class="field"><label>Monto</label><input type="text" id="payAmount" placeholder="Ej. 15.00"></div>
@@ -3571,17 +3575,47 @@ document.getElementById("loyaltySearch").addEventListener("input", (e)=>{
    ADMIN: TAB PAGOS
    ============================================================ */
 function refreshPaymentSelectors(){
-  const clientSel = document.getElementById("payClient");
-  clientSel.innerHTML = DATA.clients.map(c=>{
-    const eligible = DATA.loyalty && DATA.loyalty.enabled && getClientLoyaltyInfo(c.id).eligible;
-    return `<option value="${c.id}">${eligible ? "🎁 " : ""}${escapeHtml(c.name)}</option>`;
-  }).join("") || `<option value="">Sin clientes aún</option>`;
   const serviceSel = document.getElementById("payService");
   serviceSel.innerHTML = DATA.services.map(s=>`<option value="${s.id}">${escapeHtml(s.title)}</option>`).join("");
   const workerSel = document.getElementById("payWorker");
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
   workerSel.innerHTML = `<option value="">Sin asignar</option>` + activeWorkers.map(w=>`<option value="${w.id}">${escapeHtml(w.name)}</option>`).join("");
 }
+
+// Cliente del cobro manual: con miles de clientes, un <select> con todos
+// se vuelve inmanejable. En vez de eso, se busca por nombre o celular (igual
+// que en "Atender" del trabajador) y solo se muestran las coincidencias.
+let payClientSelectedId = null;
+
+function renderPayClientResults(filter){
+  const wrap = document.getElementById("payClientChips");
+  wrap.innerHTML = "";
+  const f = (filter || "").trim().toLowerCase();
+  if(!f) return;
+
+  const matches = DATA.clients
+    .filter(c => (c.name||"").toLowerCase().includes(f) || (c.phone||"").includes(f))
+    .slice(0, 8);
+
+  matches.forEach(c=>{
+    const eligible = DATA.loyalty && DATA.loyalty.enabled && getClientLoyaltyInfo(c.id).eligible;
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "client-chip" + (payClientSelectedId === c.id ? " selected" : "");
+    chip.textContent = `${eligible ? "🎁 " : ""}${c.name}`;
+    chip.addEventListener("click", ()=>{
+      payClientSelectedId = c.id;
+      document.getElementById("payClientSearch").value = c.name;
+      wrap.innerHTML = "";
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+document.getElementById("payClientSearch").addEventListener("input", (e)=>{
+  payClientSelectedId = null;
+  renderPayClientResults(e.target.value);
+});
 
 function updateYapeFieldsVisibility(){
   const method = document.getElementById("payMethod").value;
@@ -3592,9 +3626,10 @@ document.getElementById("payMethod").addEventListener("change", updateYapeFields
 updateYapeFieldsVisibility();
 
 document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
-  const clientId = document.getElementById("payClient").value;
-  if(!clientId){ showToast("Agrega primero un cliente.", "error"); return; }
+  const clientId = payClientSelectedId;
+  if(!clientId){ showToast("Busca y elige un cliente de la lista.", "error"); return; }
   const client = DATA.clients.find(c=>c.id===clientId);
+  if(!client){ showToast("Ese cliente ya no existe, búscalo de nuevo.", "error"); return; }
   const serviceId = document.getElementById("payService").value;
   const service = DATA.services.find(s=>s.id===serviceId);
   const date = document.getElementById("payDate").value || toLocalDateStr(new Date());
@@ -3627,6 +3662,9 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
 
   await insertarPagoSupabase(pago);
   document.getElementById("payAmount").value = "";
+  document.getElementById("payClientSearch").value = "";
+  document.getElementById("payClientChips").innerHTML = "";
+  payClientSelectedId = null;
   renderAdminPayments();
 });
 
