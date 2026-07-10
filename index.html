@@ -3496,7 +3496,7 @@ async function redeemLoyaltyReward(clientId){
     clientname: client.name,
     serviceid: "",
     servicetitle: "Corte gratis (Fidelización)",
-    date: new Date().toISOString().slice(0,10),
+    date: toLocalDateStr(new Date()),
     time: new Date().toTimeString().slice(0,5),
     amount: "0.00",
     method: "Cortesía",
@@ -3559,7 +3559,7 @@ document.getElementById("addPaymentBtn").addEventListener("click", async ()=>{
   const client = DATA.clients.find(c=>c.id===clientId);
   const serviceId = document.getElementById("payService").value;
   const service = DATA.services.find(s=>s.id===serviceId);
-  const date = document.getElementById("payDate").value || new Date().toISOString().slice(0,10);
+  const date = document.getElementById("payDate").value || toLocalDateStr(new Date());
   const amount = document.getElementById("payAmount").value.trim();
   const method = document.getElementById("payMethod").value;
   const status = document.getElementById("payStatus").value;
@@ -3687,7 +3687,7 @@ document.getElementById("exportBackupBtn").addEventListener("click", ()=>{
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "respaldo_barberia_" + new Date().toISOString().slice(0,10) + ".json";
+  a.download = "respaldo_barberia_" + toLocalDateStr(new Date()) + ".json";
   a.click();
   URL.revokeObjectURL(url);
 });
@@ -3720,7 +3720,7 @@ function exportPaymentsCsv(fromDate, toDate){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'pagos_barberia_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = 'pagos_barberia_' + toLocalDateStr(new Date()) + '.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -3752,7 +3752,7 @@ function exportWorkerPaymentsCsv(workerId){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `pagos_${worker.username || worker.name || workerId}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download = `pagos_${worker.username || worker.name || workerId}_${toLocalDateStr(new Date())}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -3784,7 +3784,7 @@ function exportClientsCsv(){
     Email: c.email || "",
     ClienteDesde: c.created_at ? new Date(c.created_at).toLocaleDateString() : ""
   }));
-  downloadCsv('clientes_barberia_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+  downloadCsv('clientes_barberia_' + toLocalDateStr(new Date()) + '.csv', rows);
 }
 document.getElementById('exportClientsBtn').addEventListener('click', exportClientsCsv);
 
@@ -3799,12 +3799,12 @@ function exportLoyaltyCsv(){
       Estado: info.eligible ? 'Disponible' : 'En progreso'
     };
   });
-  downloadCsv('fidelizacion_barberia_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+  downloadCsv('fidelizacion_barberia_' + toLocalDateStr(new Date()) + '.csv', rows);
 }
 document.getElementById('exportLoyaltyBtn').addEventListener('click', exportLoyaltyCsv);
 
 function exportComisionesCsv(){
-  const date = document.getElementById('commReportDate').value || new Date().toISOString().slice(0,10);
+  const date = document.getElementById('commReportDate').value || toLocalDateStr(new Date());
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
   const rows = activeWorkers.map(w => {
     const pagosDia = DATA.payments.filter(p => p.workerid === w.id && p.status === 'pagado' && p.date === date);
@@ -3841,12 +3841,12 @@ function exportActiveCutsCsv(){
     TiempoTranscurridoMin: calcMinutesSince(p.started_at),
     Estado: 'En curso'
   }));
-  downloadCsv('cortes_en_curso_' + new Date().toISOString().slice(0,10) + '.csv', rows);
+  downloadCsv('cortes_en_curso_' + toLocalDateStr(new Date()) + '.csv', rows);
 }
 document.getElementById('exportActiveCutsBtn').addEventListener('click', exportActiveCutsCsv);
 
 async function exportAsistenciaCsv(){
-  const date = document.getElementById('asistReportDate').value || new Date().toISOString().slice(0,10);
+  const date = document.getElementById('asistReportDate').value || toLocalDateStr(new Date());
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
   const { data: registros, error } = await supabaseClient.from('asistencias').select('*').eq('date', date);
   if(error){ showToast('Error al cargar asistencia: ' + error.message, 'error'); return; }
@@ -3991,7 +3991,7 @@ function renderWorkerCitas(){
       p.amount = amount;
       p.method = method;
       p.status = "pagado";
-      p.date = p.start_date || new Date().toISOString().slice(0,10);
+      p.date = p.start_date || toLocalDateStr(new Date());
       p.finished_at = new Date().toISOString();
       p.duration_minutes = Math.max(0, Math.round((new Date(p.finished_at) - new Date(p.started_at)) / 60000));
 
@@ -4010,7 +4010,7 @@ function renderWorkerCitas(){
 let currentAsistencia = null;
 
 async function fetchAsistenciaHoy(workerId){
-  const today = new Date().toISOString().slice(0,10);
+  const today = toLocalDateStr(new Date());
   const { data, error } = await supabaseClient
     .from('asistencias')
     .select('*')
@@ -4063,7 +4063,7 @@ async function renderWorkerAsistencia(){
 async function marcarAsistencia(stepKey){
   if(!currentWorker) return;
   const now = new Date().toTimeString().slice(0,5);
-  const today = new Date().toISOString().slice(0,10);
+  const today = toLocalDateStr(new Date());
 
   if(!currentAsistencia){
     const nuevo = {
@@ -4285,7 +4285,7 @@ document.getElementById("wkAttendSaveBtn").addEventListener("click", async ()=>{
       serviceid: service.id,
       servicetitle: service.title || service.name || "Servicio",
       started_at: new Date().toISOString(),
-      start_date: new Date().toISOString().slice(0,10),
+      start_date: toLocalDateStr(new Date()),
       start_time: new Date().toTimeString().slice(0,5),
       amount: "",
       method: wkSelectedMethod,
@@ -4439,7 +4439,7 @@ document.getElementById("wkConfirmSaleBtn").addEventListener("click", async ()=>
     servicetitle: product.name,
     product_id: product.id,
     quantity: qty,
-    date: new Date().toISOString().slice(0,10),
+    date: toLocalDateStr(new Date()),
     time: new Date().toTimeString().slice(0,5),
     amount: amount,
     method: wkSaleMethod,
@@ -4465,7 +4465,7 @@ function calcMinutesSince(iso){
 
 function renderWorkerHome(){
   if(!currentWorker) return;
-  const today = new Date().toISOString().slice(0,10);
+  const today = toLocalDateStr(new Date());
   const todays = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="pagado" && p.date===today);
   const total = todays.reduce((sum,p)=> sum + (parseFloat(p.amount)||0), 0);
   const active = DATA.payments.filter(p=>p.workerid===currentWorker.id && p.status==="in_progress").length;
@@ -4528,7 +4528,7 @@ function renderAdminActiveCuts(){
    actualiza al instante junto con las demás pestañas.
    ============================================================ */
 function renderAdminResumen(){
-  const today = new Date().toISOString().slice(0,10);
+  const today = toLocalDateStr(new Date());
   const pagados = DATA.payments.filter(p => p.status === "pagado");
   const pendientes = DATA.payments.filter(p => p.status === "pendiente");
 
@@ -4568,7 +4568,7 @@ function switchTab(name){
   if(name === 'comisiones'){
     // Siempre vuelve a "hoy" al entrar a la pestaña, para no quedarse viendo
     // sin darse cuenta la fecha que se dejó seleccionada la última vez.
-    document.getElementById('commReportDate').value = new Date().toISOString().slice(0,10);
+    document.getElementById('commReportDate').value = toLocalDateStr(new Date());
     renderAdminComisiones();
   }
   if(name === 'inventario') renderAdminInventario();
@@ -4586,7 +4586,7 @@ function minutesBetween(t1, t2){
 
 async function renderAdminAsistencia(dateStr){
   const dateInput = document.getElementById('asistReportDate');
-  const date = dateStr || dateInput.value || new Date().toISOString().slice(0,10);
+  const date = dateStr || dateInput.value || toLocalDateStr(new Date());
   dateInput.value = date;
 
   const activeWorkers = DATA.workers.filter(w => w.active === true || w.active === "true");
@@ -4646,7 +4646,7 @@ document.getElementById('asistReportDate').addEventListener('change', ()=> rende
    ============================================================ */
 async function renderAdminComisiones(dateStr){
   const dateInput = document.getElementById('commReportDate');
-  const date = dateStr || dateInput.value || new Date().toISOString().slice(0,10);
+  const date = dateStr || dateInput.value || toLocalDateStr(new Date());
   dateInput.value = date;
 
   renderNivelesList();
@@ -4884,7 +4884,7 @@ document.querySelector('#workerOperationsOverlay').addEventListener('click', (ev
    WORKER: HISTORIAL (calendario + últimos 30 días)
    ============================================================ */
 let workerHistoryMode = 'calendar'; // 'calendar' | 'last30'
-let workerHistorySelectedDate = new Date().toISOString().slice(0,10);
+let workerHistorySelectedDate = toLocalDateStr(new Date());
 let workerHistoryCalMonth = new Date();
 
 const WH_MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
