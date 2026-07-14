@@ -3023,6 +3023,12 @@ document.getElementById("loginForm").addEventListener("submit", async (e)=>{
   errorEl.classList.add("hidden");
   document.getElementById("loginGate").classList.add("hidden");
   enterAdmin();
+  // La app ya se había conectado a Supabase ANTES de este login (como
+  // anónimo, para mostrar el estado de conexión), así que lo que haya en
+  // memoria en este punto puede estar vacío por RLS (o ser el respaldo
+  // genérico local). Hay que volver a pedir todo, ahora sí con la sesión
+  // de administrador ya activa.
+  conectarSupabase();
 });
 
 document.getElementById("workerLoginForm").addEventListener("submit", async (e)=>{
@@ -3051,6 +3057,10 @@ document.getElementById("workerLoginForm").addEventListener("submit", async (e)=
     errorEl.classList.add("hidden");
     document.getElementById("loginGate").classList.add("hidden");
     enterWorker();
+    // Mismo motivo que en el login de administrador: lo que haya en memoria
+    // en este punto viene de antes de loguearse (como anónimo), así que hay
+    // que volver a pedir todo ya con la sesión de trabajador activa.
+    conectarSupabase();
   } else {
     await supabaseClient.auth.signOut();
     errorEl.textContent = 'Cuenta inactiva o no encontrada.';
