@@ -1562,7 +1562,18 @@ function saveDataLocal(){
 /* ============================================================
    CONEXIÓN A SUPABASE
    ============================================================ */
-async function conectarSupabase() {
+// En redes móviles la primera conexión a un dominio nuevo a veces se queda
+// colgada (sin dar error ni éxito) y antes eso dejaba la app esperando para
+// siempre hasta que el usuario recargaba la página a mano. Con esto, si no
+// responde en 8 segundos se trata como fallo (para poder reintentar).
+function conTiempoLimite(promesa, ms){
+  return Promise.race([
+    promesa,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Tiempo de espera agotado')), ms))
+  ]);
+}
+
+async function conectarSupabase(silencioso = false) {
   const testBtn = document.getElementById('testBtn');
   testBtn.disabled = true;
   testBtn.textContent = '⏳ Probando...';
@@ -1572,16 +1583,16 @@ async function conectarSupabase() {
   try {
     if (!supabaseClient) throw new Error('Supabase JS no está cargado');
 
-    // Probar conexión con una consulta simple
-    const { data, error } = await supabaseClient
-      .from('clientes')
-      .select('id')
-      .limit(1);
+    // Probar conexión con una consulta simple (con límite de tiempo: ver nota arriba)
+    const { data, error } = await conTiempoLimite(
+      supabaseClient.from('clientes').select('id').limit(1),
+      8000
+    );
 
     if (error && error.code === '42P01') {
       document.getElementById('statusDot').className = 'dot offline';
       document.getElementById('statusText').textContent = '⚠️ Tabla no existe';
-      showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
+      if (!silencioso) showToast('⚠️ Crea la tabla "clientes" en Supabase', 'error');
       testBtn.disabled = false;
       testBtn.textContent = '🔌 Probar Conexión';
       return false;
@@ -1626,7 +1637,7 @@ async function conectarSupabase() {
     console.error('Error de conexión:', error);
     document.getElementById('statusDot').className = 'dot offline';
     document.getElementById('statusText').textContent = '❌ Error';
-    showToast('❌ Error de conexión: ' + error.message, 'error');
+    if (!silencioso) showToast('❌ Error de conexión: ' + error.message, 'error');
     testBtn.disabled = false;
     testBtn.textContent = '🔌 Probar Conexión';
     return false;
@@ -5428,7 +5439,7 @@ function renderWorkerHistory(){
 /* ============================================================
    BOTÓN DE CONEXIÓN
    ============================================================ */
-document.getElementById('testBtn').addEventListener('click', conectarSupabase);
+document.getElementById('testBtn').addEventListener('click', () => conectarSupabase());
 
 /* ============================================================
    LINKS DEDICADOS (admin.html / trabajador.html)
@@ -5487,8 +5498,25 @@ const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') |
 setLoginRoleTab(savedLoginRole);
 restoreSession();
 
-// Intentar conectar automáticamente al cargar
-conectarSupabase();
+// Intentar conectar automáticamente al cargar. Si la primera conexión se
+// cuelga o falla (común en redes móviles con conexión en frío), reintenta
+// sola unas veces antes de mostrar el error, para no depender de que el
+// usuario recargue la página a mano.
+async function conectarAlIniciarConReintentos(){
+  const maxIntentos = 4;
+  for (let intento = 1; intento <= maxIntentos; intento++){
+    const esUltimoIntento = intento === maxIntentos;
+    let ok = false;
+    try {
+      ok = await conTiempoLimite(conectarSupabase(!esUltimoIntento), 12000);
+    } catch (e) {
+      ok = false;
+    }
+    if (ok) return;
+    if (!esUltimoIntento) await new Promise(r => setTimeout(r, 1500));
+  }
+}
+conectarAlIniciarConReintentos();
 
 console.log('🪒 Barbería con Supabase');
 console.log('📌 Comandos disponibles:');
