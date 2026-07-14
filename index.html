@@ -5470,33 +5470,37 @@ function applyDedicatedLinkLock(){
 loadData();
 applyBrandTheme();
 renderLoginBrand();
-supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Vigila cambios de sesión en segundo plano (token renovado, cierre de sesión
-// desde otra pestaña/dispositivo, etc.). Antes esto no se escuchaba en ningún
-// lado, así que si la sesión se invalidaba sola, el panel se quedaba "zombi":
-// se veía como logueado pero cualquier guardado nuevo fallaba con error de RLS.
-supabaseClient.auth.onAuthStateChange((event, session)=>{
-  console.log('🔐 Evento de autenticación:', event, session ? session.user.id : null);
-  if(event === 'SIGNED_OUT'){
-    const adminPanel = document.getElementById('adminPanel');
-    const workerPanel = document.getElementById('workerPanel');
-    const estabaLogueado = (adminPanel && !adminPanel.classList.contains('hidden')) ||
-                            (workerPanel && !workerPanel.classList.contains('hidden'));
-    if(estabaLogueado){
-      currentWorker = null;
-      adminPanel.classList.add('hidden');
-      workerPanel.classList.add('hidden');
-      resetLoginForms();
-      showToast('Tu sesión se cerró. Inicia sesión de nuevo.', 'error');
+// En redes móviles a veces la librería de Supabase (se carga desde un CDN
+// externo, cdn.jsdelivr.net, con un <script> normal en el <head>) no llega a
+// cargar a la primera. Antes, si eso pasaba, "window.supabase" quedaba
+// indefinido y toda la app se cortaba en silencio (sin ningún mensaje) hasta
+// que el usuario refrescaba la página a mano. Esto reintenta cargarla
+// dinámicamente antes de rendirse.
+function asegurarSupabaseJsCargado(maxIntentos = 3){
+  return new Promise((resolve) => {
+    let intento = 0;
+    function intentar(){
+      if (window.supabase) { resolve(true); return; }
+      intento++;
+      if (intento > maxIntentos) { resolve(false); return; }
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+      let resuelto = false;
+      const terminar = () => {
+        if (resuelto) return;
+        resuelto = true;
+        if (window.supabase) resolve(true);
+        else intentar();
+      };
+      script.onload = terminar;
+      script.onerror = terminar;
+      document.head.appendChild(script);
+      setTimeout(terminar, 6000);
     }
-  }
-});
-
-const hashRole = applyDedicatedLinkLock();
-const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') || 'admin';
-setLoginRoleTab(savedLoginRole);
-restoreSession();
+    intentar();
+  });
+}
 
 // Intentar conectar automáticamente al cargar. Si la primera conexión se
 // cuelga o falla (común en redes móviles con conexión en frío), reintenta
@@ -5516,7 +5520,46 @@ async function conectarAlIniciarConReintentos(){
     if (!esUltimoIntento) await new Promise(r => setTimeout(r, 1500));
   }
 }
-conectarAlIniciarConReintentos();
+
+(async function iniciarApp(){
+  const cargado = window.supabase ? true : await asegurarSupabaseJsCargado();
+  if (!cargado) {
+    document.getElementById('statusDot').className = 'dot offline';
+    document.getElementById('statusText').textContent = '❌ Sin conexión';
+    showToast('❌ No se pudo cargar la librería de Supabase. Revisa tu conexión e intenta de nuevo.', 'error');
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // Vigila cambios de sesión en segundo plano (token renovado, cierre de
+  // sesión desde otra pestaña/dispositivo, etc.). Antes esto no se escuchaba
+  // en ningún lado, así que si la sesión se invalidaba sola, el panel se
+  // quedaba "zombi": se veía logueado pero cualquier guardado nuevo fallaba
+  // con error de RLS.
+  supabaseClient.auth.onAuthStateChange((event, session)=>{
+    console.log('🔐 Evento de autenticación:', event, session ? session.user.id : null);
+    if(event === 'SIGNED_OUT'){
+      const adminPanel = document.getElementById('adminPanel');
+      const workerPanel = document.getElementById('workerPanel');
+      const estabaLogueado = (adminPanel && !adminPanel.classList.contains('hidden')) ||
+                              (workerPanel && !workerPanel.classList.contains('hidden'));
+      if(estabaLogueado){
+        currentWorker = null;
+        adminPanel.classList.add('hidden');
+        workerPanel.classList.add('hidden');
+        resetLoginForms();
+        showToast('Tu sesión se cerró. Inicia sesión de nuevo.', 'error');
+      }
+    }
+  });
+
+  const hashRole = applyDedicatedLinkLock();
+  const savedLoginRole = hashRole || localStorage.getItem('barberia_login_role') || 'admin';
+  setLoginRoleTab(savedLoginRole);
+  restoreSession();
+  conectarAlIniciarConReintentos();
+})();
 
 console.log('🪒 Barbería con Supabase');
 console.log('📌 Comandos disponibles:');
