@@ -5457,9 +5457,7 @@ setLoginRoleTab(savedLoginRole);
 restoreSession();
 
 // Intentar conectar automáticamente al cargar
-setTimeout(() => {
-  conectarSupabase();
-}, 1000);
+conectarSupabase();
 
 console.log('🪒 Barbería con Supabase');
 console.log('📌 Comandos disponibles:');
