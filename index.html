@@ -1647,25 +1647,36 @@ async function cargarTodosLosDatos() {
     // más que el mismo trabajo hecho en paralelo).
     const { data: { session } } = await supabaseClient.auth.getSession();
     const roleActual = session && session.user && session.user.app_metadata && session.user.app_metadata.role;
-    const tablaClientes = roleActual === 'worker' ? 'clientes_worker_view' : 'clientes';
+    const esWorker = roleActual === 'worker';
+    const tablaClientes = esWorker ? 'clientes_worker_view' : 'clientes';
+
+    // El trabajador nunca usa la lista completa de "trabajadores" ni el log
+    // de "movimientos_inventario" (son solo del panel de admin, y además RLS
+    // ya se los devuelve vacíos), así que nos ahorramos esos 2 viajes al
+    // servidor cuando el que entra es un trabajador.
+    const promesas = [
+      supabaseClient.from('servicios').select('*').order('created_at', { ascending: true }),
+      supabaseClient.from(tablaClientes).select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('pagos').select('*').order('created_at', { ascending: false }),
+      supabaseClient.from('productos').select('*').order('created_at', { ascending: true }),
+      supabaseClient.from('comision_niveles').select('*').order('min_monto', { ascending: true }),
+    ];
+    if (!esWorker) {
+      promesas.push(supabaseClient.from('trabajadores').select('*').order('created_at', { ascending: true }));
+      promesas.push(supabaseClient.from('movimientos_inventario').select('*').order('created_at', { ascending: false }));
+    }
 
     const [
       { data: servicios, error: errServicios },
       { data: clientes, error: errClientes },
       { data: pagos, error: errPagos },
-      { data: trabajadores, error: errTrabajadores },
       { data: productos, error: errProductos },
       { data: niveles, error: errNiveles },
-      { data: movimientos, error: errMovimientos }
-    ] = await Promise.all([
-      supabaseClient.from('servicios').select('*').order('created_at', { ascending: true }),
-      supabaseClient.from(tablaClientes).select('*').order('created_at', { ascending: false }),
-      supabaseClient.from('pagos').select('*').order('created_at', { ascending: false }),
-      supabaseClient.from('trabajadores').select('*').order('created_at', { ascending: true }),
-      supabaseClient.from('productos').select('*').order('created_at', { ascending: true }),
-      supabaseClient.from('comision_niveles').select('*').order('min_monto', { ascending: true }),
-      supabaseClient.from('movimientos_inventario').select('*').order('created_at', { ascending: false })
-    ]);
+      trabajadoresResult,
+      movimientosResult
+    ] = await Promise.all(promesas);
+    const { data: trabajadores, error: errTrabajadores } = trabajadoresResult || {};
+    const { data: movimientos, error: errMovimientos } = movimientosResult || {};
 
     if (!errServicios && servicios && servicios.length > 0) {
       DATA.services = servicios;
@@ -1713,6 +1724,18 @@ async function cargarTodosLosDatos() {
     if (resumenPanel && !resumenPanel.classList.contains('hidden')) renderAdminResumen();
     checkLoyaltyMilestones();
 
+    // Mismo problema en el resto de pestañas de admin que dependen de estos
+    // datos pero no se refrescaban solas al llegar la info real de Supabase:
+    // se quedaban con lo que hubiera al momento de entrar hasta recargar.
+    const cortesPanel = document.querySelector('.admin-tab-panel[data-panel="cortes"]');
+    if (cortesPanel && !cortesPanel.classList.contains('hidden')) renderAdminActiveCuts();
+    const asistPanel = document.querySelector('.admin-tab-panel[data-panel="asistencia"]');
+    if (asistPanel && !asistPanel.classList.contains('hidden')) renderAdminAsistencia();
+    const comisPanel = document.querySelector('.admin-tab-panel[data-panel="comisiones"]');
+    if (comisPanel && !comisPanel.classList.contains('hidden')) renderAdminComisiones();
+    const fidelPanel = document.querySelector('.admin-tab-panel[data-panel="fidelizacion"]');
+    if (fidelPanel && !fidelPanel.classList.contains('hidden')) renderLoyaltyTab(document.getElementById("loyaltySearch").value);
+
     // Mismo problema que el de "Resumen", pero del lado del trabajador: si
     // entró justo antes de que llegaran los datos reales de Supabase, su
     // pantalla de inicio (Citas, los cuadros de arriba, Historial) se quedaba
@@ -1723,6 +1746,14 @@ async function cargarTodosLosDatos() {
       renderWorkerHome();
       renderWorkerCitas();
       renderWorkerHistory();
+      // Mismo problema: si el trabajador ya estaba parado en "Vender" o
+      // "Atender" cuando llegaron los datos reales, esas listas (productos,
+      // servicios) se quedaban con lo que hubiera al momento de entrar al
+      // tab y nunca se refrescaban solas.
+      const salePanel = document.querySelector('.worker-tab-panel[data-worker-panel="vender"]');
+      if (salePanel && !salePanel.classList.contains('hidden')) renderProductPicker();
+      const attendPanel = document.querySelector('.worker-tab-panel[data-worker-panel="atender"]');
+      if (attendPanel && !attendPanel.classList.contains('hidden')) renderServicePicker();
     }
 
   } catch (error) {
